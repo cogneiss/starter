@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
 use App\Http\Controllers\UserEmailVerificationController;
 use App\Http\Controllers\UserEmailVerificationNotificationController;
+use App\Http\Controllers\UserPasskeyController;
 use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserTwoFactorAuthenticationController;
@@ -40,6 +41,10 @@ Route::middleware('auth')->group(function (): void {
     // User Two-Factor Authentication...
     Route::get('settings/two-factor', [UserTwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
+
+    // User Passkeys...
+    Route::get('settings/passkeys', [UserPasskeyController::class, 'show'])
+        ->name('passkey.show');
 });
 
 Route::middleware('guest')->group(function (): void {
