@@ -1,0 +1,12 @@
+# The agent skill directories are five byte-identical mirrors of the same
+# content (Boost writes one per platform). Graphing all five inflates the graph
+# ~5x for zero extra information and makes every query more expensive to answer.
+# .claude/ is kept as the canonical copy.
+.agents/
+.cursor/
+.junie/
+.github/skills/
+
+# Generated artifacts — never inputs.
+graphify-out/
+.code-review-graph/

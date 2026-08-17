@@ -77,7 +77,7 @@ code-review-graph dead-code                      # unreferenced functions
 If a command complains the graph is stale or missing, rebuild it directly:
 
 ```bash
-graphify --update
+graphify update .
 code-review-graph update    # or: build, for a full re-parse
 ```
 

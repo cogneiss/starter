@@ -62,7 +62,11 @@ fi
 # fails loudly in the log if the package is broken under that interpreter.
 _GFY_PROBE="import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('graphify') else 1)"
 GRAPHIFY_PYTHON=""
-_PINNED='/Users/hardik/.local/share/uv/tools/graphifyy/bin/python'
+# Deliberately blank in the committed hook. `graphify hook install` bakes the
+# installing machine's absolute interpreter path in here, which is meaningless
+# to every other dev and churns the diff on each re-install. The three probes
+# below resolve the interpreter per-machine instead.
+_PINNED=''
 if [ -n "$_PINNED" ] && [ -x "$_PINNED" ] && "$_PINNED" -c "$_GFY_PROBE" 2>/dev/null; then
     GRAPHIFY_PYTHON="$_PINNED"
 fi
