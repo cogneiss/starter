@@ -12,12 +12,31 @@ want graph-backed search and impact analysis (recommended — they save a lot of
 time and a lot of AI tokens):
 
 ```bash
-pip install graphifyy          # knowledge graph extraction
-pip install code-review-graph  # call graph + impact analysis
+pip install "graphifyy[gemini]"  # knowledge graph extraction
+pip install code-review-graph    # call graph + impact analysis
 ```
 
 Everything below degrades gracefully. If the tools are not installed, the hooks
 detect it and exit quietly.
+
+### Graphing the docs (optional)
+
+Code is extracted locally with tree-sitter and needs no API key. Markdown —
+`CLAUDE.md`, `AGENTS.md`, `.ai/rules/`, the skill files — is extracted by an LLM
+and does need one. Without a key, `graphify .` fails; pass `--code-only` to skip
+the doc layer, or export a key to include it:
+
+```bash
+export GEMINI_API_KEY='...'   # aistudio.google.com/apikey, free tier is plenty
+graphify .                    # ~$0.05 for a full repo pass, then incremental
+```
+
+Install the `[gemini]` extra shown above, not bare `graphifyy` — the gemini
+backend talks over the OpenAI-compatible endpoint and errors out without it.
+`uv` users: `uv tool install "graphifyy[gemini]" --force`.
+
+A run may report that some files "produced no nodes"; the model occasionally
+omits them. Just run `graphify .` again — it retries only the missed files.
 
 ## Git hooks
 
