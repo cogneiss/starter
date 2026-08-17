@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "nunomaduro/laravel-starter-kit-inertia-react",
+    "name": "cogneiss/starter",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
     "keywords": [
