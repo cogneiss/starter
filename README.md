@@ -1,4 +1,10 @@
-- Inertia & React (this project) version: **[github.com/nunomaduro/laravel-starter-kit-inertia-react](https://github.com/nunomaduro/laravel-starter-kit-inertia-react)**
+> **This is Cogneiss' fork** of [nunomaduro/laravel-starter-kit-inertia-react](https://github.com/nunomaduro/laravel-starter-kit-inertia-react).
+> It tracks upstream and adds passkey (WebAuthn) sign-in, magic-link login, and a
+> [Base UI](https://base-ui.com) component layer (shadcn `base-nova`) in place of Radix.
+> See [FEATURES.md](FEATURES.md) for the full list.
+
+Upstream variants:
+
 - Blade version: **[github.com/nunomaduro/laravel-starter-kit](https://github.com/nunomaduro/laravel-starter-kit)**
 - Inertia & Vue version: **[github.com/nunomaduro/laravel-starter-kit-inertia-vue](https://github.com/nunomaduro/laravel-starter-kit-inertia-vue)**
 
@@ -9,11 +15,8 @@
 </p>
 
 <p>
-    <a href="https://github.com/nunomaduro/laravel-starter-kit-inertia-react/actions"><img src="https://github.com/nunomaduro/laravel-starter-kit-inertia-react/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
-    <a href="https://packagist.org/packages/nunomaduro/laravel-starter-kit-inertia-react"><img src="https://img.shields.io/packagist/dt/nunomaduro/laravel-starter-kit-inertia-react" alt="Total Downloads"></a>
-    <a href="https://packagist.org/packages/nunomaduro/laravel-starter-kit-inertia-react"><img src="https://img.shields.io/packagist/v/nunomaduro/laravel-starter-kit-inertia-react" alt="Latest Stable Version"></a>
-    <a href="https://packagist.org/packages/nunomaduro/laravel-starter-kit-inertia-react"><img src="https://img.shields.io/packagist/l/nunomaduro/laravel-starter-kit-inertia-react" alt="License"></a>
-    <a href="https://youtube.com/@nunomaduro?sub_confirmation=1"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCO_hYZF2gb_CyG5sA7ArlGg?style=flat&label=youtube&color=brightgreen"></a>
+    <a href="https://github.com/cogneiss/starter/actions"><img src="https://github.com/cogneiss/starter/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
 </p>
 
 **Laravel Starter Kit (Inertia & React)** is an ultra-strict, type-safe [Laravel](https://laravel.com) skeleton engineered for developers who refuse to compromise on code quality. This opinionated starter kit enforces rigorous development standards through meticulous tooling configuration and architectural decisions that prioritize type safety, immutability, and fail-fast principles.
@@ -39,10 +42,10 @@ This isn't just another Laravel boilerplate—it's a statement that PHP applicat
 
 > **Requires [PHP 8.5+](https://php.net/releases/) and a code coverage driver like [xdebug](https://xdebug.org/docs/install)**.
 
-Create your type-safe Laravel application using [Composer](https://getcomposer.org):
+This fork is not published to Packagist. Clone it:
 
 ```bash
-composer create-project nunomaduro/laravel-starter-kit-inertia-react --prefer-dist example-app
+git clone https://github.com/cogneiss/starter.git example-app
 ```
 
 ### Initial Setup
@@ -96,6 +99,13 @@ You should see 100% test coverage and all quality checks passing.
 ### Maintenance
 - `composer update:requirements` - Updates all PHP and Bun dependencies to latest versions
 
+### Staying in sync with upstream
+
+```bash
+git remote add upstream https://github.com/nunomaduro/laravel-starter-kit-inertia-react.git
+git fetch upstream && git merge upstream/main
+```
+
 ## License
 
-**Laravel Starter Kit Inertia React** was created by **[Nuno Maduro](https://x.com/enunomaduro)** under the **[MIT license](https://opensource.org/licenses/MIT)**.
+**Laravel Starter Kit Inertia React** was created by **[Nuno Maduro](https://x.com/enunomaduro)** under the **[MIT license](https://opensource.org/licenses/MIT)**. This fork is maintained by Cogneiss under the same license.
