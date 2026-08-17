@@ -27,3 +27,4 @@ Homestead.yaml
 /tmp/
 
 nginx.pid
+.gstack/
