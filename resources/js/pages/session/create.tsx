@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
+import { create as magicLink } from '@/routes/magic-link';
 import { request } from '@/routes/password';
 
 type Props = {
@@ -78,6 +79,13 @@ export default function Login({
                                     placeholder="Password"
                                 />
                                 <InputError message={errors.password} />
+                                <TextLink
+                                    href={magicLink()}
+                                    className="text-sm"
+                                    tabIndex={5}
+                                >
+                                    Email me a login link
+                                </TextLink>
                             </div>
 
                             <div className="flex items-center space-x-3">

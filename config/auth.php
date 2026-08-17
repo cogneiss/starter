@@ -105,6 +105,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Magic Links
+    |--------------------------------------------------------------------------
+    |
+    | The number of minutes a passwordless login link stays valid. Links are
+    | stored in the cache and are consumed on first use, so this only caps
+    | how long an unused link may sit in an inbox before it expires.
+    |
+    */
+
+    'magic_link' => [
+        'expire' => 15,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Password Confirmation Timeout
     |--------------------------------------------------------------------------
     |

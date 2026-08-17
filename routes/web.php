@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
 use App\Http\Controllers\UserEmailVerificationController;
 use App\Http\Controllers\UserEmailVerificationNotificationController;
+use App\Http\Controllers\UserMagicLinkController;
 use App\Http\Controllers\UserPasskeyController;
 use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserProfileController;
@@ -65,6 +66,16 @@ Route::middleware('guest')->group(function (): void {
         ->name('password.request');
     Route::post('forgot-password', [UserEmailResetNotificationController::class, 'store'])
         ->name('password.email');
+
+    // User Magic Link...
+    Route::get('magic-link', [UserMagicLinkController::class, 'create'])
+        ->name('magic-link.create');
+    Route::post('magic-link', [UserMagicLinkController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('magic-link.store');
+    Route::get('magic-link/{token}', [UserMagicLinkController::class, 'update'])
+        ->middleware('throttle:6,1')
+        ->name('magic-link.update');
 
     // Session...
     Route::get('login', [SessionController::class, 'create'])
