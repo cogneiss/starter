@@ -28,3 +28,7 @@ Homestead.yaml
 
 nginx.pid
 .gstack/
+
+# Generated knowledge-graph artifacts (rebuilt by .githooks/post-commit)
+/graphify-out/
+/.code-review-graph/

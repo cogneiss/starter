@@ -5,3 +5,4 @@
 *.html diff=html
 *.md diff=markdown
 *.php diff=php
+graphify-out/graph.json merge=graphify
