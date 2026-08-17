@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Auto-rebuild graphify + code-review-graph on commit. Incremental, handles errors gracefully."""
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+def run_background():
+    """Run graphify --update in background."""
+    try:
+        _force = os.environ.get('GRAPHIFY_FORCE', '').lower() in ('1', 'true', 'yes')
+        _root = Path('.')
+        _out = os.environ.get('GRAPHIFY_OUT', 'graphify-out')
+        _saved = Path(_out) / '.graphify_root'
+        if _saved.exists():
+            _txt = _saved.read_text(encoding='utf-8').strip()
+            if _txt:
+                _root = Path(_txt)
+
+        # Run graphify --update
+        cmd_graphify = ['graphify', '--update']
+        if _force:
+            cmd_graphify.append('--force')
+        subprocess.Popen(
+            cmd_graphify,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True
+        )
+
+        # Run code-review-graph index
+        subprocess.Popen(
+            ['code-review-graph', 'index'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True
+        )
+
+        # Refresh the work-memory lessons doc when saved QSA outcomes exist
+        # (best-effort; never fails the hook).
+        try:
+            md = (_root / _out) / 'memory'
+            if md.is_dir() and any(md.glob('*.md')):
+                from graphify.reflect import reflect as _reflect
+                _gj = (_root / _out) / 'graph.json'
+                _reflect(memory_dir=md, out_path=(_root / _out) / 'reflections' / 'LESSONS.md',
+                        graph_path=_gj if _gj.exists() else None)
+        except Exception:
+            pass
+
+    except TimeoutError as exc:
+        print(f'[graphify hook] {exc}')
+        sys.exit(1)
+    except Exception as exc:
+        print(f'[graphify hook] Rebuild failed: {exc}')
+        sys.exit(1)
+
+try:
+    _log = os.environ.get('GRAPHIFY_REBUILD_LOG') or os.path.join(os.path.expanduser('~'), '.cache', 'graphify-rebuild.log')
+    try:
+        os.makedirs(os.path.dirname(_log), exist_ok=True)
+        _out = open(_log, 'a', buffering=1, encoding='utf-8', errors='replace')
+    except OSError:
+        _out = subprocess.DEVNULL
+    _kw = dict(stdout=_out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=os.getcwd(), close_fds=True)
+    _cmd = [sys.executable, '-c', 'from __main__ import run_background; run_background()']
+    if os.name == 'nt':
+        _flags = 0x08000000 | 0x00000200  # CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
+        try:
+            subprocess.Popen(_cmd, creationflags=_flags | 0x01000000, **_kw)  # + CREATE_BREAKAWAY_FROM_JOB
+        except OSError:
+            subprocess.Popen(_cmd, creationflags=_flags, **_kw)
+    else:
+        subprocess.Popen(_cmd, start_new_session=True, **_kw)
+except OSError:
+    pass
