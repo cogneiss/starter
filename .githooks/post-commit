@@ -238,3 +238,12 @@ if command -v gitnexus >/dev/null 2>&1; then
     echo "[gitnexus] launching background re-index (log: $_GNX_LOG)"
     (gitnexus analyze . --skip-agents-md >>"$_GNX_LOG" 2>&1 &) >/dev/null 2>&1
 fi
+
+# --- laravel-brain: Laravel-aware route/model/event graph ---------------------
+# Runs in the foreground: it finishes in well under a second and, unlike the
+# graph tools above, it needs the app to boot. --no-interaction suppresses the
+# sponsor prompt, which would otherwise hang a non-tty commit.
+if [ -f artisan ] && [ -d vendor/laramint/laravel-brain ]; then
+    echo "[laravel-brain] rescanning"
+    php artisan brain:scan --no-interaction --quiet >/dev/null 2>&1 || true
+fi
