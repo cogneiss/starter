@@ -34,6 +34,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Automated Code Quality**: Pre-configured tools ensure consistent, pristine code across your entire team
 - **Just Better Laravel Defaults**: Thanks to **[Essentials](https://github.com/nunomaduro/essentials)** / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
+- **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
 - **Full Testing Suite**: More than 150 tests with 100% code coverage using Pest
 - 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
@@ -95,6 +96,11 @@ You should see 100% test coverage and all quality checks passing.
 - `composer test:types` - Runs PHPStan at level 9 (maximum strictness)
 - `composer test:unit` - Runs Pest tests with 100% code coverage requirement
 - `composer test` - Runs the complete test suite (type coverage, unit tests, linting, static analysis)
+
+### Code knowledge graphs
+- `php artisan brain:scan` - Rescans the Laravel graph (routes, models, events, jobs). Runs automatically after every commit
+- `php artisan brain:export-context --route=/settings/profile` - Budgeted AI context for one request path
+- Three more graph tools (graphify, code-review-graph, gitnexus) are optional — see [SETUP.md](SETUP.md)
 
 ### Maintenance
 - `composer update:requirements` - Updates all PHP and Bun dependencies to latest versions

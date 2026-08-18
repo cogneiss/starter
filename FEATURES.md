@@ -43,8 +43,9 @@ build.
 - Inertia v3 + React 19 single-page experience with server-side routing.
 - Two app shells (sidebar or header nav) and three auth layouts (simple, card,
   split) — swap by changing one import.
-- shadcn-style component set on Radix primitives, so keyboard navigation, focus
-  management, and ARIA come for free.
+- shadcn-style component set on [Base UI](https://base-ui.com) primitives
+  (`base-nova`), so keyboard navigation, focus management, and ARIA come for
+  free.
 - Tailwind v4, responsive down to mobile, collapsible sidebar with persisted
   state.
 - Password fields have a show/hide toggle with a proper `aria-label`.
@@ -112,9 +113,47 @@ build.
   guidelines in `.ai/`, so AI agents get version-correct docs and this project's
   conventions.
 - `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and `opencode.json` ship configured.
+- **Code knowledge graphs** wired into a post-commit hook, so AI agents answer
+  structural questions from an index instead of reading dozens of files — see
+  below.
 - **Pail** for readable log tailing during development.
 - `php artisan make:action` scaffolds an action; Essentials also ships its own
   Rector and Pint commands.
+
+### Code knowledge graphs
+
+Four indexes of this codebase, rebuilt automatically after every commit by
+`.githooks/post-commit` (wired up by `composer install`, nothing to run by hand).
+They exist to cut the tokens an AI agent burns rediscovering structure — a
+question like "what breaks if I change this" is one command instead of a
+file-by-file crawl.
+
+| Tool | Answers | Ships as |
+| --- | --- | --- |
+| [Laravel Brain](https://github.com/laramint/laravel-brain) | Routes, controllers, models and relationships, events, listeners, jobs, middleware, policies, DB operations per method | `require-dev`, already installed |
+| [graphify](https://pypi.org/project/graphifyy/) | "How does X relate to Y", where a concept lives | optional, `pip` |
+| [code-review-graph](https://github.com/tirth8205/code-review-graph) | Blast radius, callers, dead code, large functions | optional, `pip` |
+| [gitnexus](https://github.com/looptech-ai/gitnexus) | Execution flows, a symbol's callers and callees, diff-to-flow mapping | optional, `npm` |
+
+Laravel Brain is the one to reach for first: the other three are language-level
+and see symbols and calls, while only Laravel Brain knows that a route binds to a
+controller or that an event has listeners. Its context exporter returns a
+budgeted slice of a single request path —
+
+```bash
+php artisan brain:export-context --route=/settings/profile --budget=2000
+```
+
+— giving the route's middleware, call chain, complexity hotspots and queries in a
+few hundred words, instead of opening the controller, form request, action and
+model. There is also an interactive graph viewer at `/_laravel-brain` in dev.
+
+`.ai/rules/general.md` tells every AI agent which tool answers which question, so
+this routing costs nothing until a query is actually run. The three optional
+tools degrade gracefully — the hook detects a missing binary and skips it. None
+of the four run as an MCP server on purpose: an always-on MCP server re-sends its
+tool schemas every conversation turn whether you use it or not, which is the
+opposite of the point. Setup details are in [SETUP.md](SETUP.md).
 
 ### Better defaults
 
