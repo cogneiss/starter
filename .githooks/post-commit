@@ -228,3 +228,13 @@ if command -v code-review-graph >/dev/null 2>&1; then
     echo "[code-review-graph] launching background update (log: $_CRG_LOG)"
     (code-review-graph update >>"$_CRG_LOG" 2>&1 &) >/dev/null 2>&1
 fi
+
+# --- gitnexus: incremental knowledge-graph re-index ---------------------------
+# --skip-agents-md: analyze otherwise rewrites AGENTS.md/CLAUDE.md with guidance
+# pointing at the GitNexus MCP server, which this repo deliberately does not run.
+if command -v gitnexus >/dev/null 2>&1; then
+    _GNX_LOG="${HOME}/.cache/gitnexus-rebuild.log"
+    mkdir -p "$(dirname "$_GNX_LOG")"
+    echo "[gitnexus] launching background re-index (log: $_GNX_LOG)"
+    (gitnexus analyze . --skip-agents-md >>"$_GNX_LOG" 2>&1 &) >/dev/null 2>&1
+fi
