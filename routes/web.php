@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -98,6 +99,13 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
     Route::get('settings/two-factor', [UserTwoFactorAuthenticationController::class, 'show'])
         ->middleware('not-impersonating')
         ->name('two-factor.show');
+
+    // Browser Sessions...
+    Route::get('settings/sessions', [BrowserSessionController::class, 'show'])
+        ->name('browser-session.show');
+    Route::delete('settings/sessions', [BrowserSessionController::class, 'destroy'])
+        ->middleware('not-impersonating')
+        ->name('browser-session.destroy');
 
     // User Passkeys...
     Route::get('settings/passkeys', [UserPasskeyController::class, 'show'])

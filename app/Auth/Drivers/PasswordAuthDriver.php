@@ -6,6 +6,7 @@ namespace App\Auth\Drivers;
 
 use App\Auth\Contracts\AuthDriver;
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -41,8 +42,12 @@ final readonly class PasswordAuthDriver implements AuthDriver
         $provider = Auth::getProvider();
         $user = $provider->retrieveByCredentials($credentials);
 
-        return $user instanceof User && $provider->validateCredentials($user, $credentials)
-            ? $user
-            : null;
+        if ($user instanceof User && $provider->validateCredentials($user, $credentials)) {
+            return $user;
+        }
+
+        event(new Failed('web', $user, $credentials));
+
+        return null;
     }
 }

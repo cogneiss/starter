@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { show as showBrowserSessions } from '@/routes/browser-session';
 import { edit as editOrganization } from '@/routes/organization';
 import { edit as editMembers } from '@/routes/organization-member';
 import { show as showPasskeys } from '@/routes/passkey';
@@ -33,6 +34,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Passkeys',
         href: showPasskeys(),
+        icon: null,
+    },
+    {
+        title: 'Browser Sessions',
+        href: showBrowserSessions(),
         icon: null,
     },
     {

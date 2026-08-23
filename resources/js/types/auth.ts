@@ -35,3 +35,19 @@ export type Passkey = {
     created_at_diff: string | undefined;
     last_used_at_diff: string | undefined;
 };
+
+export type BrowserSession = {
+    id: string;
+    device: string;
+    ip_address: string | null;
+    last_active_diff: string;
+    current: boolean;
+};
+
+export type LoginHistoryEntry = {
+    id: string;
+    device: string;
+    ip_address: string | null;
+    successful: boolean;
+    created_at_diff: string;
+};
