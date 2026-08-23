@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Actions\SeedOrganizationRoles;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\User;
+use App\Support\OrganizationContext;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -38,15 +40,22 @@ final class UserFactory extends Factory
      * Create the user as an active member of the given organization, and make
      * it their current organization.
      */
-    public function forOrganization(Organization $organization): self
+    public function forOrganization(Organization $organization, string $role = 'Owner'): self
     {
-        return $this->afterCreating(function (User $user) use ($organization): void {
+        return $this->afterCreating(function (User $user) use ($organization, $role): void {
             OrganizationMembership::factory()->create([
                 'organization_id' => $organization->id,
                 'user_id' => $user->id,
             ]);
 
             $user->forceFill(['current_organization_id' => $organization->id])->save();
+
+            $roles = resolve(SeedOrganizationRoles::class)->handle($organization);
+
+            resolve(OrganizationContext::class)->runAs(
+                $organization,
+                fn (): User => $user->assignRole($roles[$role]),
+            );
         });
     }
 

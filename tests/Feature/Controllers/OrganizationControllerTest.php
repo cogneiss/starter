@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\OrganizationContext;
 use Inertia\Support\SessionKey;
 
 it('renders the organization creation page', function (): void {
@@ -93,4 +94,24 @@ it('sends a user without an organization to the creation page', function (): voi
     $this->actingAs(User::factory()->create())
         ->get(route('organization.edit'))
         ->assertRedirectToRoute('organization.create');
+});
+
+it('refuses to show the settings page without the view permission', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization, 'Member')->create();
+
+    resolve(OrganizationContext::class)->runAs($organization, fn () => $user->syncRoles([]));
+
+    $this->actingAs($user)->get(route('organization.edit'))->assertForbidden();
+});
+
+it('refuses to update the organization without the update permission', function (): void {
+    $organization = Organization::factory()->create(['name' => 'Acme Inc.']);
+    $user = User::factory()->forOrganization($organization, 'Member')->create();
+
+    $this->actingAs($user)
+        ->patch(route('organization.update'), ['name' => 'Renamed', 'slug' => 'renamed'])
+        ->assertForbidden();
+
+    expect($organization->refresh()->name)->toBe('Acme Inc.');
 });

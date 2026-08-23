@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Support\OrganizationContext;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,8 +36,13 @@ final readonly class OrganizationController
         return to_route('dashboard');
     }
 
-    public function edit(): Response
+    public function edit(OrganizationContext $context): Response
     {
+        $organization = $context->get();
+        assert($organization instanceof Organization);
+
+        Gate::authorize('view', $organization);
+
         return Inertia::render('organization/edit');
     }
 
@@ -44,6 +50,8 @@ final readonly class OrganizationController
     {
         $organization = $context->get();
         assert($organization instanceof Organization);
+
+        Gate::authorize('update', $organization);
 
         $action->handle($organization, $request->validated());
 
