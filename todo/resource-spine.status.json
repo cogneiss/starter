@@ -51,7 +51,7 @@
         {
             "id": 8,
             "name": "documentation",
-            "status": "failing",
+            "status": "passing",
             "command": "rg -q 'app:make-resource' FEATURES.md && rg -q 'Convention guards' FEATURES.md"
         },
         {
