@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationInvitationAcceptanceController;
+use App\Http\Controllers\OrganizationInvitationController;
+use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\UserController;
@@ -36,11 +39,34 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('settings/organization', [OrganizationController::class, 'update'])
             ->name('organization.update');
 
+        // Organization Members...
+        Route::get('settings/members', [OrganizationMemberController::class, 'edit'])
+            ->name('organization-member.edit');
+        Route::patch('settings/members/{membership}', [OrganizationMemberController::class, 'update'])
+            ->name('organization-member.update');
+        Route::delete('settings/members/{membership}', [OrganizationMemberController::class, 'destroy'])
+            ->name('organization-member.destroy');
+
+        // Organization Invitations...
+        Route::get('settings/members/invite', [OrganizationInvitationController::class, 'create'])
+            ->name('organization-invitation.create');
+        Route::post('settings/members/invite', [OrganizationInvitationController::class, 'store'])
+            ->name('organization-invitation.store');
+        Route::delete('settings/invitations/{invitation}', [OrganizationInvitationController::class, 'destroy'])
+            ->name('organization-invitation.destroy');
+
         // Organization Switch...
         Route::put('organization-switch', [OrganizationSwitchController::class, 'update'])
             ->name('organization-switch.update');
     });
 });
+
+// Organization Invitation Acceptance...
+Route::get('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'show'])
+    ->name('organization-invitation-acceptance.show');
+Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'update'])
+    ->middleware('throttle:6,1')
+    ->name('organization-invitation-acceptance.update');
 
 Route::middleware('auth')->group(function (): void {
     // User...

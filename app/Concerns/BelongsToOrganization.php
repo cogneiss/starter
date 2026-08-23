@@ -52,11 +52,11 @@ trait BelongsToOrganization
      * work (platform admin listings, impersonation lookups) — say why at the
      * call site.
      *
-     * @return Builder<static>
+     * @return Builder<self>
      */
     public static function withoutOrganizationScope(): Builder
     {
-        return static::query()->withoutGlobalScope('organization');
+        return self::query()->withoutGlobalScope('organization');
     }
 
     /**
