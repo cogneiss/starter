@@ -7,7 +7,7 @@ namespace App\Support;
 /**
  * One permission the application knows about. Names are `<resource>.<verb>`.
  */
-final    readonly    class PermissionDefinition
+final readonly class PermissionDefinition
 {
     public function __construct(
         public string $name,
