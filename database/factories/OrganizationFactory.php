@@ -27,11 +27,4 @@ final class OrganizationFactory extends Factory
             'personal' => false,
         ];
     }
-
-    public function personal(): self
-    {
-        return $this->state(fn (array $attributes): array => [
-            'personal' => true,
-        ]);
-    }
 }

@@ -1,0 +1,25 @@
+# Dead-code detection, deliberately kept out of phpstan.neon so the primary
+# `composer test:types` gate stays exactly what it was.
+#
+# Run with: composer test:dead-code
+includes:
+    - phpstan.neon
+    - phpstan-deadcode-baseline.neon
+    - vendor/shipmonk/dead-code-detector/rules.neon
+
+parameters:
+    tmpDir: /tmp/phpstan-deadcode
+
+    # `tests` is not in phpstan.neon's paths, but the detector needs it: factory
+    # states, policy methods and Data objects are reached from the suite. Without
+    # it every one of them reads as dead.
+    paths:
+        - tests
+
+    # ...but tests are only here so their calls are recorded. They are not part
+    # of the `composer test:types` gate and nothing in them is reported here.
+    ignoreErrors:
+        -
+            message: '#.*#'
+            path: tests/*
+            reportUnmatched: false

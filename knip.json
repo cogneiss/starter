@@ -1,0 +1,21 @@
+{
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "entry": [
+        "resources/js/pages/**/*.tsx",
+        "resources/js/components/ui/**/*.{ts,tsx}"
+    ],
+    "project": ["resources/js/**/*.{ts,tsx}"],
+    "ignore": [
+        "resources/js/components/app-header.tsx",
+        "resources/js/layouts/app/app-header-layout.tsx",
+        "resources/js/layouts/auth/auth-card-layout.tsx",
+        "resources/js/layouts/auth/auth-split-layout.tsx",
+        "resources/js/hooks/use-mobile.tsx"
+    ],
+    "ignoreDependencies": [
+        "@inertiajs/vite",
+        "concurrently",
+        "npm-check-updates",
+        "tailwindcss-animate"
+    ]
+}

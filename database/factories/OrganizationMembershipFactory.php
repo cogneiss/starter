@@ -27,11 +27,4 @@ final class OrganizationMembershipFactory extends Factory
             'joined_at' => now(),
         ];
     }
-
-    public function suspended(): self
-    {
-        return $this->state(fn (array $attributes): array => [
-            'status' => MembershipStatus::Suspended,
-        ]);
-    }
 }

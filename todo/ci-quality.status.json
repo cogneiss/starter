@@ -29,7 +29,7 @@
     {
       "id": 4,
       "name": "dead code and unused deps",
-      "status": "failing",
+      "status": "passing",
       "command": "composer test:dead-code && composer test:deps && composer test:knip"
     },
     {

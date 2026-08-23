@@ -1,0 +1,27 @@
+# Findings the dead-code detector cannot resolve because the call happens
+# through reflection. Every entry carries the reason it is here. Genuine dead
+# code is deleted, not baselined — do not add an entry without a comment.
+parameters:
+    ignoreErrors:
+        # The Laravel container builds these through reflection on the
+        # constructor signature, so no literal `new` appears anywhere.
+        -
+            message: '#^Unused App\\(Actions|Auth\\Drivers|Policies|Support)\\.*::__construct$#'
+            identifier: shipmonk.deadMethod
+            reportUnmatched: false
+
+        # spatie/laravel-data objects are built by the package (from a model, an
+        # array or a request) and read by its serialisers and the TypeScript
+        # transformer. Nothing reads the promoted properties from PHP by design.
+        -
+            message: '#^(Unused App\\Data\\.*::__construct|Property App\\Data\\.*is never read)$#'
+            paths:
+                - app/Data/*
+            reportUnmatched: false
+
+        # Eloquent boots trait hooks by naming convention (`boot<TraitName>`),
+        # discovered with reflection at model boot.
+        -
+            message: '#^Unused App\\Concerns\\BelongsToOrganization::bootBelongsToOrganization$#'
+            identifier: shipmonk.deadMethod
+            reportUnmatched: false

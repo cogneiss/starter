@@ -113,6 +113,9 @@
             "@composer audit --no-interaction",
             "bun audit --prod"
         ],
+        "test:dead-code": "phpstan analyse -c phpstan-deadcode.neon --memory-limit=2G",
+        "test:deps": "composer-unused --no-progress",
+        "test:knip": "bun run knip",
         "test:types": [
             "phpstan --memory-limit=2G",
             "bun run test:types"
