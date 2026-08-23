@@ -7,17 +7,17 @@ touch. Setup instructions live in [README.md](README.md).
 
 ### Authentication
 
-| Feature               | Details                                                                                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Registration          | Name, email, password. Sends a verification email and logs the user in.                                                                                       |
-| Password login        | Email and password, with "remember me" and rate limiting.                                                                                                     |
+| Feature               | Details                                                                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registration          | Name, email, password. Sends a verification email and logs the user in.                                                                                                                                    |
+| Password login        | Email and password, with "remember me" and rate limiting.                                                                                                                                                  |
 | Social login          | Google, GitHub and Microsoft through Socialite. Off by default; an OAuth email that matches an existing verified account links to it instead of creating a second one, and an unverified match is refused. |
-| Magic link            | Request a one-time login link by email. Tokens last 15 minutes, work once, and never reveal whether an address is registered.                                 |
-| Passkeys              | Register and sign in with WebAuthn (Touch ID, Face ID, Windows Hello, hardware keys) via Fortify. Passwordless sign-in from the login page.                   |
-| Two-factor auth       | TOTP with a QR code, confirmation step, and single-use recovery codes. Enabling it requires a password confirmation.                                          |
-| Password reset        | Emailed reset link with the usual token expiry and throttling.                                                                                                |
-| Email verification    | Signed verification links, resend endpoint, and a `verified` guard on the dashboard.                                                                          |
-| Password confirmation | Re-prompts for the password before sensitive settings changes.                                                                                                |
+| Magic link            | Request a one-time login link by email. Tokens last 15 minutes, work once, and never reveal whether an address is registered.                                                                              |
+| Passkeys              | Register and sign in with WebAuthn (Touch ID, Face ID, Windows Hello, hardware keys) via Fortify. Passwordless sign-in from the login page.                                                                |
+| Two-factor auth       | TOTP with a QR code, confirmation step, and single-use recovery codes. Enabling it requires a password confirmation.                                                                                       |
+| Password reset        | Emailed reset link with the usual token expiry and throttling.                                                                                                                                             |
+| Email verification    | Signed verification links, resend endpoint, and a `verified` guard on the dashboard.                                                                                                                       |
+| Password confirmation | Re-prompts for the password before sensitive settings changes.                                                                                                                                             |
 
 Every path respects two-factor: magic links and passkeys hand a 2FA user to the
 challenge screen instead of logging them straight in. An organization can also
@@ -254,15 +254,15 @@ out of the box — clone and run, no services to install. Swap any driver throug
 
 ### Commands
 
-| Command                        | What it does                                                              |
-| ------------------------------ | ------------------------------------------------------------------------- |
-| `composer setup`               | Install, key, migrate, build. One shot from a fresh clone.                |
-| `composer dev`                 | Server, queue worker, log tail, and Vite together.                        |
-| `composer test`                | Lint, type coverage, PHPStan, and the test suite — the same gate CI runs. |
-| `composer lint`                | Rector, Pint, and the frontend formatter, applying fixes.                 |
-| `composer update:requirements` | Bump PHP and JS dependencies to latest.                                   |
-| `php artisan app:sync-permissions` | Write the permission catalog to the database. |
-| `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed. |
+| Command                                    | What it does                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| `composer setup`                           | Install, key, migrate, build. One shot from a fresh clone.                |
+| `composer dev`                             | Server, queue worker, log tail, and Vite together.                        |
+| `composer test`                            | Lint, type coverage, PHPStan, and the test suite — the same gate CI runs. |
+| `composer lint`                            | Rector, Pint, and the frontend formatter, applying fixes.                 |
+| `composer update:requirements`             | Bump PHP and JS dependencies to latest.                                   |
+| `php artisan app:sync-permissions`         | Write the permission catalog to the database.                             |
+| `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed.                           |
 
 CI runs `composer test` on every push and pull request against `main`, with
 Composer, Bun, Playwright, Rector, and PHPStan caches warm.
@@ -277,16 +277,15 @@ on them).
 These were considered for the tenancy and access work and left out on purpose,
 so you can tell a decision from a gap:
 
-| Skipped | Why |
-| --- | --- |
-| Host classifier (apex vs organization root) | Only makes sense if you use subdomains. Add it alongside the subdomain resolver if you turn that on. |
-| Custom domains with on-demand TLS | Depends entirely on the deploy target — Caddy, Laravel Cloud and Vercel all want something different. |
-| Self-serve role builder UI | Most products need three fixed roles. `PermissionCatalog` is the data such a UI would render, so it is there when you want one. |
-| Plan catalog and seat quotas | Billing-shaped; it belongs with whichever billing module you pick. |
-| SAML / OIDC drivers | Heavy dependencies and per-provider debugging. The `AuthDriver` seam is the hook — read the warning in its docblock before writing one. |
-| Access requests and cross-organization invitations | Marketplace-shaped rather than universal. |
-| Device fingerprinting | Privacy-hostile, and in practice it serves marketing attribution rather than authentication. |
+| Skipped                                            | Why                                                                                                                                     |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Host classifier (apex vs organization root)        | Only makes sense if you use subdomains. Add it alongside the subdomain resolver if you turn that on.                                    |
+| Custom domains with on-demand TLS                  | Depends entirely on the deploy target — Caddy, Laravel Cloud and Vercel all want something different.                                   |
+| Self-serve role builder UI                         | Most products need three fixed roles. `PermissionCatalog` is the data such a UI would render, so it is there when you want one.         |
+| Plan catalog and seat quotas                       | Billing-shaped; it belongs with whichever billing module you pick.                                                                      |
+| SAML / OIDC drivers                                | Heavy dependencies and per-provider debugging. The `AuthDriver` seam is the hook — read the warning in its docblock before writing one. |
+| Access requests and cross-organization invitations | Marketplace-shaped rather than universal.                                                                                               |
+| Device fingerprinting                              | Privacy-hostile, and in practice it serves marketing attribution rather than authentication.                                            |
 
 `todo/specs/` holds a draft spec for a theming system — a design note, not
-shipped code. The impersonation spec next to it has shipped and is kept only for
-reference.
+shipped code.
