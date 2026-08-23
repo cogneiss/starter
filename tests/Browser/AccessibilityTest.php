@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -93,6 +94,18 @@ it('is accessible while creating a first organization', function (): void {
     $this->actingAs(User::factory()->create());
 
     assertAccessible('/organizations/create', 'Create an organization - Laravel');
+});
+
+it('is accessible on a pending invitation', function (): void {
+    OrganizationInvitation::factory()->create([
+        'token' => hash('sha256', 'invitation-token'),
+    ]);
+
+    assertAccessible('/invitations/invitation-token', 'Accept invitation - Laravel');
+});
+
+it('is accessible when the invitation is no longer usable', function (): void {
+    assertAccessible('/invitations/token-placeholder', 'Invitation unavailable - Laravel');
 });
 
 it('is accessible while waiting on email verification', function (): void {
