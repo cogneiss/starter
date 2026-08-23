@@ -116,9 +116,9 @@
         "test:dead-code": "phpstan analyse -c phpstan-deadcode.neon --memory-limit=2G",
         "test:deps": "composer-unused --no-progress",
         "test:knip": "bun run knip",
+        "test:fast": "bin/pest-with-failure-summary.sh --parallel --compact --bail",
         "test:types": [
-            "phpstan --memory-limit=2G",
-            "bun run test:types"
+            "bunx concurrently --kill-others-on-fail -n phpstan,tsc \"vendor/bin/phpstan --memory-limit=2G\" \"bun run test:types\""
         ],
         "test": [
             "@test:lint",
