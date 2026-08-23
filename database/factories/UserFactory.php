@@ -28,6 +28,7 @@ final class UserFactory extends Factory
             'email_verified_at' => now(),
             'current_organization_id' => null,
             'is_active' => true,
+            'is_super_admin' => false,
             'password' => 'password',
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
@@ -57,6 +58,13 @@ final class UserFactory extends Factory
                 fn (): User => $user->assignRole($roles[$role]),
             );
         });
+    }
+
+    public function superAdmin(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'is_super_admin' => true,
+        ]);
     }
 
     public function unverified(): self

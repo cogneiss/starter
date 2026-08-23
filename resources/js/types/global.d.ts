@@ -1,4 +1,4 @@
-import type { Auth } from '@/types/auth';
+import type { Auth, Impersonator } from '@/types/auth';
 import type { Organization } from '@/types/organization';
 import type { FlashToast } from '@/types/ui';
 
@@ -12,6 +12,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             organization: Organization | null;
             organizations: Organization[];
+            impersonating: Impersonator | null;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

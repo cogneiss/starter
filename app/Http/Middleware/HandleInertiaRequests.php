@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Enums\MembershipStatus;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\Impersonation;
 use App\Support\OrganizationContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,6 +46,7 @@ final class HandleInertiaRequests extends Middleware
             ],
             'organization' => resolve(OrganizationContext::class)->get()?->only(['id', 'name', 'slug', 'personal']),
             'organizations' => $user instanceof User ? $this->organizationsFor($user) : [],
+            'impersonating' => resolve(Impersonation::class)->impersonator()?->only(['id', 'name']),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

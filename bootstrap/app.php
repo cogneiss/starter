@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\ForbiddenDuringImpersonation;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireOrganization;
@@ -36,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'organization' => RequireOrganization::class,
+            'not-impersonating' => ForbiddenDuringImpersonation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

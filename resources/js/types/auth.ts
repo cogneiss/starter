@@ -10,6 +10,11 @@ export type User = {
     [key: string]: unknown;
 };
 
+export type Impersonator = {
+    id: string;
+    name: string;
+};
+
 export type Auth = {
     user: User;
 };

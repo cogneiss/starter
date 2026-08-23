@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
 use App\Http\Controllers\UserEmailVerificationController;
 use App\Http\Controllers\UserEmailVerificationNotificationController;
+use App\Http\Controllers\UserImpersonationController;
 use App\Http\Controllers\UserMagicLinkController;
 use App\Http\Controllers\UserPasskeyController;
 use App\Http\Controllers\UserPasswordController;
@@ -70,17 +71,23 @@ Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::
 
 Route::middleware('auth')->group(function (): void {
     // User...
-    Route::delete('user', [UserController::class, 'destroy'])->name('user.destroy');
+    Route::delete('user', [UserController::class, 'destroy'])
+        ->middleware('not-impersonating')
+        ->name('user.destroy');
 
     // User Profile...
     Route::redirect('settings', '/settings/profile');
     Route::get('settings/profile', [UserProfileController::class, 'edit'])->name('user-profile.edit');
-    Route::patch('settings/profile', [UserProfileController::class, 'update'])->name('user-profile.update');
+    Route::patch('settings/profile', [UserProfileController::class, 'update'])
+        ->middleware('not-impersonating')
+        ->name('user-profile.update');
 
     // User Password...
-    Route::get('settings/password', [UserPasswordController::class, 'edit'])->name('password.edit');
+    Route::get('settings/password', [UserPasswordController::class, 'edit'])
+        ->middleware('not-impersonating')
+        ->name('password.edit');
     Route::put('settings/password', [UserPasswordController::class, 'update'])
-        ->middleware('throttle:6,1')
+        ->middleware(['throttle:6,1', 'not-impersonating'])
         ->name('password.update');
 
     // Appearance...
@@ -88,11 +95,20 @@ Route::middleware('auth')->group(function (): void {
 
     // User Two-Factor Authentication...
     Route::get('settings/two-factor', [UserTwoFactorAuthenticationController::class, 'show'])
+        ->middleware('not-impersonating')
         ->name('two-factor.show');
 
     // User Passkeys...
     Route::get('settings/passkeys', [UserPasskeyController::class, 'show'])
+        ->middleware('not-impersonating')
         ->name('passkey.show');
+
+    // User Impersonation...
+    Route::post('users/{user}/impersonation', [UserImpersonationController::class, 'store'])
+        ->middleware('not-impersonating')
+        ->name('user-impersonation.store');
+    Route::delete('impersonation', [UserImpersonationController::class, 'destroy'])
+        ->name('user-impersonation.destroy');
 });
 
 Route::middleware('guest')->group(function (): void {

@@ -29,6 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read CarbonInterface|null $email_verified_at
  * @property-read string|null $current_organization_id
  * @property-read bool $is_active
+ * @property-read bool $is_super_admin
  * @property-read string $password
  * @property-read string|null $remember_token
  * @property-read string|null $two_factor_secret
@@ -106,6 +107,7 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'current_organization_id' => 'string',
             'is_active' => 'boolean',
+            'is_super_admin' => 'boolean',
             'password' => 'hashed',
             'remember_token' => 'string',
             'two_factor_secret' => 'string',

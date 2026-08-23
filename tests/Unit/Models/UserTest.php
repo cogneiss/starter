@@ -21,6 +21,7 @@ test('to array', function (): void {
             'updated_at',
             'current_organization_id',
             'is_active',
+            'is_super_admin',
         ]);
 });
 
