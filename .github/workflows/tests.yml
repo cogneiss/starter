@@ -63,15 +63,18 @@ jobs:
       - name: Build Assets
         run: bun run build
 
+      # Tarred rather than uploaded as a file tree: upload-artifact drops the
+      # executable bit and flattens symlinks, which breaks every binary in
+      # vendor/bin and node_modules/.bin. The generated Wayfinder output is in
+      # here too, so no consumer has to rebuild it.
+      - name: Pack Build
+        run: tar -cf build.tar vendor node_modules public/build resources/js/actions resources/js/routes resources/js/wayfinder
+
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: |
-            vendor
-            node_modules
-            public/build
-          include-hidden-files: true
+          path: build.tar
           retention-days: 1
 
   tests:
@@ -104,11 +107,8 @@ jobs:
         with:
           name: build
 
-      # upload-artifact does not preserve the executable bit, so every binary in
-      # the shared build comes back as 0644 and `composer test` dies with
-      # "Permission denied".
-      - name: Restore Executable Bits
-        run: chmod -R +x vendor/bin node_modules/.bin
+      - name: Unpack Build
+        run: tar -xf build.tar && rm build.tar
 
       - name: Copy Environment File
         run: cp .env.example .env
@@ -190,6 +190,9 @@ jobs:
         with:
           name: build
 
+      - name: Unpack Build
+        run: tar -xf build.tar && rm build.tar
+
       - name: Install gitleaks
         run: |
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
@@ -234,11 +237,8 @@ jobs:
         with:
           name: build
 
-      # upload-artifact does not preserve the executable bit, so every binary in
-      # the shared build comes back as 0644 and `composer test` dies with
-      # "Permission denied".
-      - name: Restore Executable Bits
-        run: chmod -R +x vendor/bin node_modules/.bin
+      - name: Unpack Build
+        run: tar -xf build.tar && rm build.tar
 
       - name: Cache PHPStan Dead Code
         uses: actions/cache@v4
@@ -289,11 +289,8 @@ jobs:
         with:
           name: build
 
-      # upload-artifact does not preserve the executable bit, so every binary in
-      # the shared build comes back as 0644 and `composer test` dies with
-      # "Permission denied".
-      - name: Restore Executable Bits
-        run: chmod -R +x vendor/bin node_modules/.bin
+      - name: Unpack Build
+        run: tar -xf build.tar && rm build.tar
 
       - name: Copy Environment File
         run: cp .env.example .env
