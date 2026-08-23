@@ -7,6 +7,7 @@ use App\Enums\MembershipStatus;
 use App\Events\OrganizationCreated;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\Event;
 
 it('creates an organization owned by the user', function (): void {
@@ -48,4 +49,14 @@ it('falls back to a generic slug when the name has none', function (): void {
     $organization = resolve(CreateOrganization::class)->handle(User::factory()->create(), '###');
 
     expect($organization->slug)->toBe('organization');
+});
+
+it('gives the owner the protected role', function (): void {
+    $user = User::factory()->create();
+
+    $organization = resolve(CreateOrganization::class)->handle($user, 'Acme Inc.');
+
+    resolve(OrganizationContext::class)->runAs($organization, function () use ($user): void {
+        expect($user->fresh()?->hasRole('Owner'))->toBeTrue();
+    });
 });

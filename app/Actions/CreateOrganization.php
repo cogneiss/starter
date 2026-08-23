@@ -7,12 +7,19 @@ namespace App\Actions;
 use App\Enums\MembershipStatus;
 use App\Events\OrganizationCreated;
 use App\Models\Organization;
+use App\Models\Role;
 use App\Models\User;
+use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final readonly class CreateOrganization
 {
+    public function __construct(
+        private SeedOrganizationRoles $roles,
+        private OrganizationContext $context,
+    ) {}
+
     /**
      * Create an organization owned by the given user, along with their
      * membership of it, and make it their current organization.
@@ -33,6 +40,15 @@ final readonly class CreateOrganization
             ]);
 
             $user->forceFill(['current_organization_id' => $organization->id])->save();
+
+            $this->context->runAs($organization, function () use ($organization, $user): void {
+                $owner = collect($this->roles->handle($organization))
+                    ->first(fn (Role $role): bool => $role->protected);
+
+                if ($owner instanceof Role) {
+                    $user->assignRole($owner);
+                }
+            });
 
             event(new OrganizationCreated($organization, $user));
 

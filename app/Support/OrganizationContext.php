@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\Organization;
 use Closure;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * The ambient organization for the current request, job or command. Registered
@@ -18,6 +19,8 @@ final class OrganizationContext
     public function set(Organization $organization): void
     {
         $this->organization = $organization;
+
+        $this->syncPermissionsTeam();
     }
 
     public function get(): ?Organization
@@ -38,6 +41,8 @@ final class OrganizationContext
     public function forget(): void
     {
         $this->organization = null;
+
+        $this->syncPermissionsTeam();
     }
 
     /**
@@ -54,11 +59,23 @@ final class OrganizationContext
         $previous = $this->organization;
 
         $this->organization = $organization;
+        $this->syncPermissionsTeam();
 
         try {
             return $callback();
         } finally {
             $this->organization = $previous;
+            $this->syncPermissionsTeam();
         }
+    }
+
+    /**
+     * Roles and permissions are organization-scoped, so spatie's team id has to
+     * follow the bound organization. Keeping it here means every entry point —
+     * middleware, jobs, runAs — gets it without repeating itself.
+     */
+    private function syncPermissionsTeam(): void
+    {
+        resolve(PermissionRegistrar::class)->setPermissionsTeamId($this->organization?->id);
     }
 }

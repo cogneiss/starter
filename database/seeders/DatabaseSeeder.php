@@ -11,6 +11,8 @@ final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(RoleTemplateSeeder::class);
+
         User::factory()->withoutTwoFactor()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
