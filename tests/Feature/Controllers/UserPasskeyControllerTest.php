@@ -40,6 +40,29 @@ it('lists the users passkeys', function (): void {
             ->where('passkeys.0.name', 'MacBook Pro'));
 });
 
+it('returns no passkeys when the feature is disabled', function (): void {
+    config()->set('fortify.features', []);
+
+    $user = User::factory()->create();
+
+    $user->passkeys()->create([
+        'name' => 'MacBook Pro',
+        'credential_id' => 'credential-id-1',
+        'credential' => ['aaguid' => 'unknown'],
+    ]);
+
+    $this->actingAs($user)->session(['auth.password_confirmed_at' => time()]);
+
+    $response = $this->fromRoute('dashboard')
+        ->get(route('passkey.show'));
+
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('user-passkey/show')
+            ->where('canManagePasskeys', false)
+            ->where('passkeys', []));
+});
+
 it('requires password confirmation to view passkeys', function (): void {
     $user = User::factory()->create();
 
