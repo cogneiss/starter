@@ -53,14 +53,14 @@
         {
             "id": 8,
             "name": "postgres nightly",
-            "status": "failing",
-            "command": "gh workflow view nightly.yml"
+            "status": "passing",
+            "command": "composer test:pgsql"
         },
         {
             "id": 9,
             "name": "mutation testing",
-            "status": "failing",
-            "command": "gh workflow view mutation.yml"
+            "status": "passing",
+            "command": "composer test:mutate"
         },
         {
             "id": 10,
