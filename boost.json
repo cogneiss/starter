@@ -18,6 +18,8 @@
         "infer-conventions",
         "fortify-development",
         "laravel-best-practices",
+        "pennant-development",
+        "socialite-development",
         "wayfinder-development",
         "pest-testing",
         "inertia-react-development",

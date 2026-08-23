@@ -142,6 +142,78 @@ Do not run `brain:generate-rules` — it writes a project snapshot into `CLAUDE.
 and friends, which goes stale on the next commit and is re-read every turn.
 `.ai/rules/general.md` is the routing surface instead.
 
+## Organizations
+
+### Choosing a resolver
+
+`ORGANIZATIONS_RESOLVER` decides how a request finds its organization. All three
+implement `App\Auth\Contracts\OrganizationResolver`, so switching is one env
+value and nothing else.
+
+| Value | How it resolves | What changes for you |
+| --- | --- | --- |
+| `session` (default) | The organization the user last switched to, stored on the user as `current_organization_id`. | Nothing. The switcher in the sidebar sets it. |
+| `subdomain` | The first host label — `acme.example.test` resolves the organization with slug `acme`. | You need wildcard DNS and a wildcard certificate, and the switcher has to send users to another host. Sign-up and invitation acceptance still happen on the apex, so route those deliberately. |
+| `single` | The only organization in the database. | Only for apps that will never have a second one. The switcher stays hidden. |
+
+### `ORGANIZATIONS_STRICT`
+
+Leave it `true`. A query against an organization-scoped model with no
+organization bound then throws `OrganizationContextMissing` instead of returning
+every row in the table — a loud failure in a console command beats a silent
+cross-organization leak in a request.
+
+`false` turns that throw into an empty result set. The only good reason to set
+it is migrating an existing database, where old code still queries scoped models
+before the context is wired up. Turn it back on when the migration is done.
+
+### Making yourself a super admin
+
+Impersonation is limited to super admins, and the flag is not exposed in the UI:
+
+```bash
+php artisan tinker --execute 'App\Models\User::query()->where("email", "test@example.com")->update(["is_super_admin" => true]);'
+```
+
+Impersonation also sits behind a feature flag, off by default. For local work:
+
+```dotenv
+FEATURE_IMPERSONATION_ENABLED=true
+```
+
+## Social login
+
+Off until you configure a provider and turn the flag on. Google, GitHub and
+Microsoft ship wired; adding another Socialite provider is a `config/services.php`
+entry plus a `KnownFeatures`-guarded link.
+
+1. Register an OAuth app with the provider and set the callback URL to
+   `https://your-app.test/auth/{provider}/callback` — for example
+   `https://starter.test/auth/google/callback`. The paths are already in
+   `config/services.php`.
+2. Put the credentials in `.env` (never in `.env.example`, never in git):
+
+   ```dotenv
+   GOOGLE_CLIENT_ID=...
+   GOOGLE_CLIENT_SECRET=...
+   ```
+
+3. Enable the feature:
+
+   ```dotenv
+   FEATURE_SOCIAL_LOGIN_ENABLED=true
+   ```
+
+   Per-organization overrides live in the `feature_overrides` table and win over
+   the env default; `php artisan app:expire-feature-overrides` clears the ones
+   that have expired.
+
+An OAuth identity whose email matches an existing **verified** account links to
+that account rather than creating a second one, so a user who signed up with a
+password can start using Google later without losing anything. If the local
+account has not verified its email, linking is refused — anybody can sign up
+with somebody else's address, and auto-linking would hand them the account.
+
 ## Everyday commands
 
 ```bash

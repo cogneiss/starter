@@ -1,5 +1,6 @@
 > **This is Cogneiss' fork** of [nunomaduro/laravel-starter-kit-inertia-react](https://github.com/nunomaduro/laravel-starter-kit-inertia-react).
-> It tracks upstream and adds passkey (WebAuthn) sign-in, magic-link login, and a
+> It tracks upstream and adds passkey (WebAuthn) sign-in, magic-link login,
+> organizations with role-based access control, and a
 > [Base UI](https://base-ui.com) component layer (shadcn `base-nova`) in place of Radix.
 > See [FEATURES.md](FEATURES.md) for the full list.
 
@@ -35,7 +36,9 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Just Better Laravel Defaults**: Thanks to **[Essentials](https://github.com/nunomaduro/essentials)** / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
 - **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
-- **Full Testing Suite**: More than 180 tests with 100% code coverage using Pest
+- **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
+- **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
+- **Full Testing Suite**: 383 tests with 100% code coverage using Pest
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
@@ -56,7 +59,7 @@ Navigate to your project and complete the setup:
 ```bash
 cd example-app
 
-# Setup the project
+# Setup the project (installs, keys, migrates, seeds the role templates, builds)
 composer setup
 
 # Optional: seed a user you can sign in with (test@example.com / password)
@@ -65,6 +68,22 @@ php artisan db:seed
 # Start the development server
 composer dev
 ```
+
+### Environment
+
+`composer setup` copies `.env.example` and everything works out of the box. The
+knobs worth knowing:
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `ORGANIZATIONS_STRICT` | `true` | Query a scoped model with no organization bound and it throws. Set to `false` only while migrating an existing database. |
+| `ORGANIZATIONS_RESOLVER` | `session` | How the current organization is found: `session`, `subdomain`, or `single`. |
+| `GOOGLE_CLIENT_ID` / `_SECRET` | empty | Google social login. |
+| `GITHUB_CLIENT_ID` / `_SECRET` | empty | GitHub social login. |
+| `MICROSOFT_CLIENT_ID` / `_SECRET` | empty | Microsoft social login. |
+
+Social login stays off until you fill in a provider's keys and enable the
+feature flag — see [SETUP.md](SETUP.md).
 
 ### Optional: Browser Testing Setup
 

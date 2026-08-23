@@ -56,6 +56,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force",
+            "@php artisan db:seed --class=RoleTemplateSeeder --force",
             "bun install",
             "bun run build"
         ],
