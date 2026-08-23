@@ -11,17 +11,31 @@ use Illuminate\Support\Facades\Process;
  * the tests it just wrote, in a real process that picks up the new routes,
  * migration and permission. Everything it touched is put back afterwards.
  */
-it('generates a resource whose own tests pass', function (): void {
+it('generates a resource whose own tests pass and whose code needs no formatting', function (): void {
     Process::preventStrayProcesses(false);
 
-    // The generated types are restored from the copy taken here rather than by
-    // regenerating: a subprocess transform has no formatter on its PATH and
-    // would leave the committed file unformatted.
+    // Restored from the copy taken here rather than by regenerating, so a
+    // failure part way through cannot leave the committed files rewritten.
     $touched = ['routes/web.php', 'app/Support/PermissionCatalog.php', 'resources/js/types/generated.d.ts'];
     $original = array_combine($touched, array_map(
         static fn (string $path): string => File::get(base_path($path)),
         $touched,
     ));
+
+    $generated = [
+        'app/Models/Widget.php',
+        'database/factories/WidgetFactory.php',
+        'app/Data/WidgetData.php',
+        'app/Policies/WidgetPolicy.php',
+        'app/Actions/CreateWidget.php',
+        'app/Http/Requests/CreateWidgetRequest.php',
+        'app/Http/Controllers/WidgetController.php',
+        'app/Resources/Definitions/WidgetResource.php',
+        'tests/Feature/Controllers/WidgetControllerTest.php',
+        'tests/Unit/Actions/CreateWidgetTest.php',
+        'tests/Unit/Models/WidgetTest.php',
+        'tests/Unit/Data/WidgetDataTest.php',
+    ];
 
     try {
         $this->artisan('app:make-resource', ['name' => 'Widget', '--force' => true])->assertSuccessful();
@@ -31,24 +45,21 @@ it('generates a resource whose own tests pass', function (): void {
         ]);
 
         expect($result->successful())->toBeTrue($result->output().$result->errorOutput());
+
+        // Generated code goes into a repository whose lint step is a gate, so a
+        // stub that Pint wants to rewrite is a broken stub.
+        $pint = Process::path(base_path())->timeout(600)->run([
+            'vendor/bin/pint', '--test', ...$generated, ...File::glob('database/migrations/*_create_widgets_table.php'),
+        ]);
+
+        expect($pint->successful())->toBeTrue($pint->output().$pint->errorOutput());
     } finally {
         foreach ($original as $path => $contents) {
             File::put(base_path($path), $contents);
         }
 
         File::delete([
-            base_path('app/Models/Widget.php'),
-            base_path('database/factories/WidgetFactory.php'),
-            base_path('app/Data/WidgetData.php'),
-            base_path('app/Policies/WidgetPolicy.php'),
-            base_path('app/Actions/CreateWidget.php'),
-            base_path('app/Http/Requests/CreateWidgetRequest.php'),
-            base_path('app/Http/Controllers/WidgetController.php'),
-            base_path('app/Resources/Definitions/WidgetResource.php'),
-            base_path('tests/Feature/Controllers/WidgetControllerTest.php'),
-            base_path('tests/Unit/Actions/CreateWidgetTest.php'),
-            base_path('tests/Unit/Models/WidgetTest.php'),
-            base_path('tests/Unit/Data/WidgetDataTest.php'),
+            ...array_map(base_path(...), $generated),
             ...File::glob(base_path('database/migrations/*_create_widgets_table.php')),
         ]);
 

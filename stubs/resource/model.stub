@@ -21,10 +21,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class {{ class }} extends Model
 {
+    use BelongsToOrganization;
+
     /** @use HasFactory<{{ class }}Factory> */
     use HasFactory;
 
-    use BelongsToOrganization;
     use HasUuids;
 
     /**
