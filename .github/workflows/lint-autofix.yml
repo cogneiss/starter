@@ -1,0 +1,82 @@
+name: lint-autofix
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  autofix:
+    # SECURITY CONTROL — do not touch. Without this guard a pull request from a
+    # fork runs this workflow with write permission and can push arbitrary code
+    # into the repository. Do not "simplify" it, and do not swap the trigger for
+    # `pull_request_target`.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Cache Bun Dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Cache Rector
+        uses: actions/cache@v4
+        with:
+          path: /tmp/rector
+          key: ${{ runner.os }}-rector-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - name: Create Cache Directories
+        run: mkdir -p /tmp/rector
+
+      - name: Fix PHP Formatting
+        run: vendor/bin/pint --parallel
+
+      - name: Apply Rector
+        run: vendor/bin/rector process --no-progress-bar
+
+      - name: Fix Frontend Formatting
+        run: NODE_OPTIONS='--experimental-strip-types' bunx vp fmt resources/
+
+      # The blocking `test:lint` gate in tests.yml stays as it is. This bot
+      # fixes; that gate still verifies. If the push below ever fails, the gate
+      # is what stops unformatted code landing.
+      - name: Push Fixes
+        uses: autofix-ci/action@v1

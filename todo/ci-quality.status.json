@@ -23,7 +23,7 @@
     {
       "id": 3,
       "name": "autofix bot",
-      "status": "failing",
+      "status": "passing",
       "command": "test -f .github/workflows/lint-autofix.yml && rg -q 'head.repo.full_name' .github/workflows/lint-autofix.yml"
     },
     {
