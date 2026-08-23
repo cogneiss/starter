@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Auth\Drivers\PasswordAuthDriver;
 use App\Models\User;
 
 return [
@@ -20,6 +21,23 @@ return [
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Drivers
+    |--------------------------------------------------------------------------
+    |
+    | The ways a user may prove who they are. The login flow resolves one of
+    | these by key, so a future SSO driver plugs in here instead of changing
+    | the controller.
+    |
+    */
+
+    'default_driver' => env('AUTH_DRIVER', 'password'),
+
+    'drivers' => [
+        'password' => PasswordAuthDriver::class,
     ],
 
     /*

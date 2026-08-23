@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
@@ -25,26 +23,22 @@ final class CreateSessionRequest extends FormRequest
     }
 
     /**
+     * Refuse the attempt and count it against the limiter.
+     *
      * @throws ValidationException
      */
-    public function validateCredentials(): User
+    public function failed(): never
     {
-        $this->ensureIsNotRateLimited();
+        RateLimiter::hit($this->throttleKey());
 
-        /** @var User|null $user */
-        $user = Auth::getProvider()->retrieveByCredentials($this->only('email', 'password'));
+        throw ValidationException::withMessages([
+            'email' => __('auth.failed'),
+        ]);
+    }
 
-        if (! $user || ! Auth::getProvider()->validateCredentials($user, $this->only('password'))) {
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
-            ]);
-        }
-
+    public function succeeded(): void
+    {
         RateLimiter::clear($this->throttleKey());
-
-        return $user;
     }
 
     /**
@@ -62,7 +56,7 @@ final class CreateSessionRequest extends FormRequest
     /**
      * @throws ValidationException
      */
-    private function ensureIsNotRateLimited(): void
+    public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
