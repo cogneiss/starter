@@ -119,6 +119,7 @@
         "test:fast": "bin/pest-with-failure-summary.sh --parallel --compact --bail",
         "test:tia-seed": "XDEBUG_MODE=\"coverage\" pest --tia --fresh -d memory_limit=2G",
         "test:pgsql": "DB_CONNECTION=pgsql DB_DATABASE=testing DB_HOST=127.0.0.1 pest --compact",
+        "test:mutate": "pest --mutate --min=80 --covered-only --path=app --compact -d memory_limit=2G",
         "test:a11y": "pest tests/Browser/AccessibilityTest.php --compact",
         "test:dirty": "pest --parallel --compact --dirty",
         "test:types": [
