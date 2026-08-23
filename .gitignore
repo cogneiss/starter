@@ -45,3 +45,4 @@ nginx.pid
 
 /tests/Browser/Screenshots
 /sbom.json
+.work/
