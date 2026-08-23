@@ -65,8 +65,8 @@
         {
             "id": 10,
             "name": "detach from fork, release-please",
-            "status": "failing",
-            "command": "test -f release-please-config.json && rg -q 'Nuno Maduro' LICENSE"
+            "status": "passing",
+            "command": "test -f release-please-config.json && rg -q \"Nuno Maduro\" LICENSE"
         },
         {
             "id": 11,

@@ -1,23 +1,14 @@
-> **This is Cogneiss' fork** of [nunomaduro/laravel-starter-kit-inertia-react](https://github.com/nunomaduro/laravel-starter-kit-inertia-react).
-> It tracks upstream and adds passkey (WebAuthn) sign-in, magic-link login,
-> organizations with role-based access control, a resource spine with a
+> **Cogneiss Starter Kit.** Originally based on
+> [nunomaduro/laravel-starter-kit-inertia-react](https://github.com/nunomaduro/laravel-starter-kit-inertia-react),
+> now maintained independently. It adds passkey (WebAuthn) sign-in, magic-link
+> login, organizations with role-based access control, a resource spine with an
 > `app:make-resource` scaffolder, and a
 > [Base UI](https://base-ui.com) component layer (shadcn `base-nova`) in place of Radix.
 > See [FEATURES.md](FEATURES.md) for the full list.
 
-Upstream variants:
-
-- Blade version: **[github.com/nunomaduro/laravel-starter-kit](https://github.com/nunomaduro/laravel-starter-kit)**
-- Inertia & Vue version: **[github.com/nunomaduro/laravel-starter-kit-inertia-vue](https://github.com/nunomaduro/laravel-starter-kit-inertia-vue)**
-
-<p align="center">
-    <a href="https://youtu.be/VhzP0XWGTC4" target="_blank">
-        <img src="https://github.com/nunomaduro/laravel-starter-kit/blob/main/art/banner.png" alt="Overview Laravel Starter Kit" style="width:70%;">
-    </a>
-</p>
-
 <p>
     <a href="https://github.com/cogneiss/starter/actions"><img src="https://github.com/cogneiss/starter/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
+    <a href="https://github.com/cogneiss/starter/releases"><img src="https://img.shields.io/github/v/release/cogneiss/starter?sort=semver" alt="Latest Release"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
 </p>
 
@@ -42,6 +33,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
 - **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
 - **Full Testing Suite**: 473 tests with 100% code coverage using Pest
+- **Quality Gates That Block**: Every pull request runs the suite, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; Postgres and mutation runs happen on a schedule
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
@@ -49,7 +41,7 @@ This isn't just another Laravel boilerplate—it's a statement that PHP applicat
 
 > **Requires [PHP 8.5+](https://php.net/releases/) and a code coverage driver like [xdebug](https://xdebug.org/docs/install)**.
 
-This fork is not published to Packagist. Clone it:
+This kit is not published to Packagist. Clone it:
 
 ```bash
 git clone https://github.com/cogneiss/starter.git example-app

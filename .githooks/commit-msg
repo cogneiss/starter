@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+#
+# Conventional commits, enforced. release-please reads these prefixes to build
+# the changelog and decide the next version, so a stray message costs a release
+# note. A regex rather than commitlint: no dependency to install, no config to
+# drift.
+
+message_file="$1"
+subject="$(head -n 1 "$message_file")"
+
+# Merge, revert and fixup commits are written by git itself.
+case "$subject" in
+    "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+
+if printf '%s' "$subject" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'; then
+    exit 0
+fi
+
+cat >&2 <<'EOF'
+Commit message rejected: the subject must be a conventional commit.
+
+    <type>[(scope)][!]: <description>
+
+Accepted types:
+
+    feat      a user-visible capability                 (minor version bump)
+    fix       a user-visible bug fix                    (patch version bump)
+    docs      documentation only
+    style     formatting, no behaviour change
+    refactor  neither a fix nor a feature
+    perf      a performance improvement
+    test      tests only
+    build     build system or dependencies
+    ci        CI configuration
+    chore     anything else
+    revert    reverts an earlier commit
+
+An exclamation mark before the colon marks a breaking change:
+
+    feat(auth)!: drop password login
+
+EOF
+
+exit 1
