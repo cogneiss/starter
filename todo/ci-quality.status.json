@@ -11,8 +11,8 @@
         {
             "id": 1,
             "name": "CI fan-out topology",
-            "status": "failing",
-            "command": "gh run list --limit 1 --json conclusion"
+            "status": "passing",
+            "command": "gh run list -R cogneiss/starter --workflow=tests.yml --branch main --limit 1 --json conclusion"
         },
         {
             "id": 2,
@@ -83,8 +83,12 @@
         {
             "id": 13,
             "name": "full gate green",
-            "status": "failing",
+            "status": "passing",
             "command": "composer test"
         }
-    ]
+    ],
+    "release": {
+        "tag": "v0.2.0",
+        "sbom_asset": "sbom.json"
+    }
 }
