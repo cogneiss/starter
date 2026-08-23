@@ -1,0 +1,64 @@
+{
+    "plan": "resource spine, typed payloads and the scaffolding generator",
+    "created": "2026-08-23",
+    "depends_on": "todo/org-access.status.json phases 1-5 for guard G5",
+    "org_plan_state": "ORG_LANDED",
+    "known_pre_existing_failure": "composer test:unit runs every suite under one coverage report. The Browser suite's worker processes drop the coverage other workers recorded, so the all-suite total lands at 88-91% regardless of the code under test. Measured on a clean tree before this plan started: 88.7%. The honest gate is the same command scoped to the instrumented suites, `pest --parallel --coverage --exactly=100.0 --testsuite=Unit,Feature`, which is at 100.0%. Threshold untouched.",
+    "coverage_command": "herd coverage vendor/bin/pest --parallel --coverage --exactly=100.0 --testsuite=Unit,Feature",
+    "phases": [
+        {
+            "id": 1,
+            "name": "typed payloads with laravel-data",
+            "status": "passing",
+            "command": "php artisan test --compact --filter=Data"
+        },
+        {
+            "id": 2,
+            "name": "resource contract and registry",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Resource"
+        },
+        {
+            "id": 3,
+            "name": "app:make-resource generator",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=MakeResource"
+        },
+        {
+            "id": 4,
+            "name": "convention guards G1/G4/G5",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Convention"
+        },
+        {
+            "id": 5,
+            "name": "semantic value components",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Value"
+        },
+        {
+            "id": 6,
+            "name": "app:doctor",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Doctor"
+        },
+        {
+            "id": 7,
+            "name": "generator quality bar",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Determinism"
+        },
+        {
+            "id": 8,
+            "name": "documentation",
+            "status": "failing",
+            "command": "rg -q 'app:make-resource' FEATURES.md && rg -q 'Convention guards' FEATURES.md"
+        },
+        {
+            "id": 9,
+            "name": "full gate green",
+            "status": "failing",
+            "command": "composer test"
+        }
+    ]
+}

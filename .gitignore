@@ -38,3 +38,7 @@ nginx.pid
 # into every agent session and two of them route to the MCP server this repo
 # does not run; .ai/rules/general.md handles routing instead.
 /.claude/skills/gitnexus/
+
+# Incremental cache for `php artisan typescript:transform`. The generated
+# `resources/js/types/generated.d.ts` is committed; this manifest is not.
+/resources/js/types/typescript-transformer-manifest.json

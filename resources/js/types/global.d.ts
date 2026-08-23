@@ -1,5 +1,5 @@
-import type { Auth, Impersonator } from '@/types/auth';
-import type { Organization } from '@/types/organization';
+import type { Auth } from '@/types/auth';
+import type { Impersonator, Organization } from '@/types/generated';
 import type { FlashToast } from '@/types/ui';
 
 declare module '@inertiajs/core' {

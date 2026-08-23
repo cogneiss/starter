@@ -8,6 +8,8 @@ use App\Actions\ReactivateOrganizationMembership;
 use App\Actions\RemoveOrganizationMembership;
 use App\Actions\SuspendOrganizationMembership;
 use App\Actions\UpdateOrganizationMembershipRole;
+use App\Data\OrganizationInvitationData;
+use App\Data\OrganizationMemberData;
 use App\Enums\MembershipStatus;
 use App\Http\Requests\UpdateOrganizationMembershipRequest;
 use App\Models\Organization;
@@ -78,25 +80,19 @@ final readonly class OrganizationMemberController
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, OrganizationMemberData>
      */
     private function members(Organization $organization): array
     {
         return $organization->memberships()
             ->with('user')
             ->get()
-            ->map(fn (OrganizationMembership $membership): array => [
-                'id' => $membership->id,
-                'name' => $membership->user->name,
-                'email' => $membership->user->email,
-                'status' => $membership->status->value,
-                'role' => $membership->user->getRoleNames()->first(),
-            ])
+            ->map(fn (OrganizationMembership $membership): OrganizationMemberData => OrganizationMemberData::fromModel($membership))
             ->all();
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, OrganizationInvitationData>
      */
     private function invitations(): array
     {
@@ -104,12 +100,7 @@ final readonly class OrganizationMemberController
             ->whereNull('accepted_at')
             ->orderBy('email')
             ->get()
-            ->map(fn (OrganizationInvitation $invitation): array => [
-                'id' => $invitation->id,
-                'email' => $invitation->email,
-                'role' => $invitation->role,
-                'expires_at' => $invitation->expires_at->toDateString(),
-            ])
+            ->map(fn (OrganizationInvitation $invitation): OrganizationInvitationData => OrganizationInvitationData::fromModel($invitation))
             ->all();
     }
 

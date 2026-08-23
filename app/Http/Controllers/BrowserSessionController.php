@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\DeleteOtherBrowserSessions;
+use App\Data\BrowserSessionData;
+use App\Data\LoginHistoryData;
 use App\Http\Requests\DeleteBrowserSessionRequest;
 use App\Models\LoginHistory;
 use App\Models\User;
@@ -20,19 +22,13 @@ final readonly class BrowserSessionController
     public function show(Request $request, #[CurrentUser] User $user): Response
     {
         return Inertia::render('browser-session/show', [
-            'sessions' => BrowserSession::forUser($user, $request->session()->getId()),
+            'sessions' => BrowserSessionData::collect(BrowserSession::forUser($user, $request->session()->getId())),
             'logins' => LoginHistory::query()
                 ->where('user_id', $user->id)
                 ->latest()
                 ->limit(10)
                 ->get()
-                ->map(fn (LoginHistory $login): array => [
-                    'id' => $login->id,
-                    'ip_address' => $login->ip_address,
-                    'device' => BrowserSession::device($login->user_agent),
-                    'successful' => $login->successful,
-                    'created_at_diff' => $login->created_at->diffForHumans(),
-                ])
+                ->map(fn (LoginHistory $login): LoginHistoryData => LoginHistoryData::fromModel($login))
                 ->all(),
         ]);
     }

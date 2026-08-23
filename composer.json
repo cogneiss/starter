@@ -17,7 +17,9 @@
         "laravel/socialite": "^5.30",
         "laravel/wayfinder": "^0.1.21",
         "nunomaduro/essentials": "^1.2.0",
-        "spatie/laravel-permission": "^8.3"
+        "spatie/laravel-data": "^4.23",
+        "spatie/laravel-permission": "^8.3",
+        "spatie/laravel-typescript-transformer": "^3.3"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.5.0",
@@ -92,8 +94,10 @@
         "lint": [
             "rector",
             "pint --parallel",
+            "@typescript:generate",
             "bun run lint"
         ],
+        "typescript:generate": "@php artisan typescript:transform",
         "test:type-coverage": "pest --type-coverage --min=100 --memory-limit=2G",
         "test:lint": [
             "pint --parallel --test",

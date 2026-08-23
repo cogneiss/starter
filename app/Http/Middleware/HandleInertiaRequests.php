@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Data\ImpersonatorData;
+use App\Data\OrganizationData;
+use App\Data\UserData;
 use App\Enums\MembershipStatus;
 use App\Models\Organization;
 use App\Models\User;
@@ -38,15 +41,18 @@ final class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
+        $organization = resolve(OrganizationContext::class)->get();
+        $impersonator = resolve(Impersonation::class)->impersonator();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user,
+                'user' => $user instanceof User ? UserData::fromModel($user) : null,
             ],
-            'organization' => resolve(OrganizationContext::class)->get()?->only(['id', 'name', 'slug', 'personal', 'require_two_factor']),
+            'organization' => $organization instanceof Organization ? OrganizationData::fromModel($organization) : null,
             'organizations' => $user instanceof User ? $this->organizationsFor($user) : [],
-            'impersonating' => resolve(Impersonation::class)->impersonator()?->only(['id', 'name']),
+            'impersonating' => $impersonator instanceof User ? ImpersonatorData::fromModel($impersonator) : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
@@ -54,7 +60,7 @@ final class HandleInertiaRequests extends Middleware
     /**
      * The organizations the user may switch to.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array<int, OrganizationData>
      */
     private function organizationsFor(User $user): array
     {
@@ -62,7 +68,7 @@ final class HandleInertiaRequests extends Middleware
             ->wherePivot('status', MembershipStatus::Active->value)
             ->orderBy('name')
             ->get()
-            ->map(fn (Organization $organization): array => $organization->only(['id', 'name', 'slug', 'personal', 'require_two_factor']))
+            ->map(fn (Organization $organization): OrganizationData => OrganizationData::fromModel($organization))
             ->all();
     }
 }

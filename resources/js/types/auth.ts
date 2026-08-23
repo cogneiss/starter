@@ -1,19 +1,4 @@
-export type User = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    two_factor_enabled?: boolean;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown;
-};
-
-export type Impersonator = {
-    id: string;
-    name: string;
-};
+import type { User } from './generated';
 
 export type Auth = {
     user: User;
@@ -26,28 +11,4 @@ export type TwoFactorSetupData = {
 
 export type TwoFactorSecretKey = {
     secretKey: string;
-};
-
-export type Passkey = {
-    id: number;
-    name: string;
-    authenticator: string | null;
-    created_at_diff: string | undefined;
-    last_used_at_diff: string | undefined;
-};
-
-export type BrowserSession = {
-    id: string;
-    device: string;
-    ip_address: string | null;
-    last_active_diff: string;
-    current: boolean;
-};
-
-export type LoginHistoryEntry = {
-    id: string;
-    device: string;
-    ip_address: string | null;
-    successful: boolean;
-    created_at_diff: string;
 };

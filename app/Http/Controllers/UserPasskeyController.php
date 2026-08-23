@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Data\PasskeyData;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -24,23 +25,25 @@ final readonly class UserPasskeyController implements HasMiddleware
 
     public function show(#[CurrentUser] User $user): Response
     {
+        $canManagePasskeys = Features::canManagePasskeys();
+
         return Inertia::render('user-passkey/show', [
-            'canManagePasskeys' => Features::canManagePasskeys(),
-            'passkeys' => Features::canManagePasskeys()
-                ? $user->passkeys()
-                    ->select(['id', 'name', 'credential', 'created_at', 'last_used_at'])
-                    ->latest()
-                    ->get()
-                    ->map(fn (Passkey $passkey): array => [
-                        'id' => $passkey->id,
-                        'name' => $passkey->name,
-                        'authenticator' => $passkey->authenticator,
-                        'created_at_diff' => $passkey->created_at?->diffForHumans(),
-                        'last_used_at_diff' => $passkey->last_used_at?->diffForHumans(),
-                    ])
-                    ->values()
-                    ->all()
-                : [],
+            'canManagePasskeys' => $canManagePasskeys,
+            'passkeys' => $canManagePasskeys ? $this->passkeys($user) : [],
         ]);
+    }
+
+    /**
+     * @return array<int, PasskeyData>
+     */
+    private function passkeys(User $user): array
+    {
+        return $user->passkeys()
+            ->select(['id', 'name', 'credential', 'created_at', 'last_used_at'])
+            ->latest()
+            ->get()
+            ->map(fn (Passkey $passkey): PasskeyData => PasskeyData::fromModel($passkey))
+            ->values()
+            ->all();
     }
 }
