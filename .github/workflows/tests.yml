@@ -104,6 +104,12 @@ jobs:
         with:
           name: build
 
+      # upload-artifact does not preserve the executable bit, so every binary in
+      # the shared build comes back as 0644 and `composer test` dies with
+      # "Permission denied".
+      - name: Restore Executable Bits
+        run: chmod -R +x vendor/bin node_modules/.bin
+
       - name: Copy Environment File
         run: cp .env.example .env
 
@@ -228,6 +234,12 @@ jobs:
         with:
           name: build
 
+      # upload-artifact does not preserve the executable bit, so every binary in
+      # the shared build comes back as 0644 and `composer test` dies with
+      # "Permission denied".
+      - name: Restore Executable Bits
+        run: chmod -R +x vendor/bin node_modules/.bin
+
       - name: Cache PHPStan Dead Code
         uses: actions/cache@v4
         with:
@@ -276,6 +288,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build
+
+      # upload-artifact does not preserve the executable bit, so every binary in
+      # the shared build comes back as 0644 and `composer test` dies with
+      # "Permission denied".
+      - name: Restore Executable Bits
+        run: chmod -R +x vendor/bin node_modules/.bin
 
       - name: Copy Environment File
         run: cp .env.example .env
