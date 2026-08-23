@@ -12,10 +12,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Every job runs on ubuntu-latest on purpose. The `build` artifact carries
+# node_modules/, whose contents are platform-specific — adding a macOS or
+# Windows job that consumes the artifact would fail in confusing ways.
 jobs:
-  ci:
+  setup:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -48,23 +51,64 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: ${{ runner.os }}-bun-
 
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
-
-      - name: Copy Environment File
-        run: cp .env.example .env
-
-      - name: Generate Application Key
-        run: php artisan key:generate
 
       - name: Install Bun Dependencies
         run: bun install
 
       - name: Build Assets
         run: bun run build
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            vendor
+            node_modules
+            public/build
+          include-hidden-files: true
+          retention-days: 1
+
+  tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: pcov
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
 
       - name: Get Playwright version
         id: playwright-version
@@ -110,4 +154,160 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: browser-screenshots
+          path: tests/Browser/Screenshots
+
+  security:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history: the `git` scan below walks every commit, so a secret
+          # that was committed and later deleted is still caught.
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      - name: Install gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+        env:
+          GITLEAKS_VERSION: 8.30.1
+
+      # --redact is not optional: without it a hit is echoed verbatim into a
+      # public CI log, which is worse than not scanning at all.
+      - name: Scan Working Tree For Secrets
+        run: gitleaks dir . --config .gitleaks.toml --redact --no-banner
+
+      - name: Scan History For Secrets
+        run: gitleaks git . --config .gitleaks.toml --redact --no-banner
+
+      - name: Audit Dependencies
+        run: composer test:audit
+
+  static:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      - name: Cache PHPStan Dead Code
+        uses: actions/cache@v4
+        with:
+          path: /tmp/phpstan-deadcode
+          key: ${{ runner.os }}-phpstan-deadcode-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-deadcode-
+
+      - name: Create Cache Directories
+        run: mkdir -p /tmp/phpstan-deadcode
+
+      - name: Dead Code
+        run: composer test:dead-code
+
+      - name: Unused Composer Packages
+        run: composer test:deps
+
+      - name: Unused Frontend Code
+        run: composer test:knip
+
+  a11y:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(bun pm ls 2>/dev/null | grep playwright | head -1 | sed 's/.*@//')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps
+
+      - name: Install Playwright System Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps
+
+      - name: Accessibility
+        run: composer test:a11y
+
+      - name: Store Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-screenshots
           path: tests/Browser/Screenshots
