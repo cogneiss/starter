@@ -109,10 +109,18 @@ build.
   `bunx shadcn@latest add ...` drops components straight into
   `resources/js/components/ui`.
 - **Laravel Boost** MCP server (including browser log capture at
-  `_boost/browser-logs`) plus per-domain skills in `.claude/skills/` and
-  guidelines in `.ai/`, so AI agents get version-correct docs and this project's
-  conventions.
-- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and `opencode.json` ship configured.
+  `_boost/browser-logs`) plus per-domain skills and guidelines in `.ai/`, so AI
+  agents get version-correct docs and this project's conventions. Seven skills
+  ship (Laravel best practices, Fortify, Inertia+React, Wayfinder, Pest,
+  Tailwind, infer-conventions), mirrored into `.agents/`, `.claude/`,
+  `.cursor/`, `.github/`, and `.junie/`.
+- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.junie/guidelines.md`, and
+  `opencode.json` ship configured. `boost.json` records which agents and skills
+  are installed; `php artisan boost:install --guidelines --skills` regenerates
+  them all. Boost no longer emits `GEMINI.md`, so keep it in sync by hand
+  (`cp AGENTS.md GEMINI.md`) after a Boost update.
+- `.ai/rules/` holds the committed, path-scoped project rules; `.ai/rules/index.md`
+  maps globs to rule files, and Boost's `record-rule` tool adds to it.
 - **Code knowledge graphs** wired into a post-commit hook, so AI agents answer
   structural questions from an index instead of reading dozens of files — see
   below.
@@ -191,3 +199,6 @@ teams and roles, an admin panel, a REST or GraphQL API with token auth,
 localization, and any file upload UI (Laravel's local-disk `storage.local`
 routes exist, nothing is built on them). The kit stops at "a user can sign in
 safely and manage their account".
+
+Draft specs for two of these live in `todo/specs/` — admin impersonation and a
+theming system. They are design notes, not shipped code.

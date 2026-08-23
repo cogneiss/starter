@@ -76,6 +76,27 @@ All four output directories are gitignored — they contain absolute machine pat
 and are cheap to rebuild. (`storage/app/laravel-brain/` is covered by Laravel's
 own `storage/app/.gitignore`.)
 
+## Regenerating the AI guidelines
+
+`boost.json` records which agents and skills are installed. To refresh the
+generated guideline and skill files after a Boost or package upgrade:
+
+```bash
+php artisan boost:install --guidelines --skills --no-interaction
+```
+
+Pass both flags. `--guidelines` on its own drops the "Skills Activation" section
+from `AGENTS.md` and `CLAUDE.md`; adding `--skills` puts it back.
+`php artisan boost:update` also works and preserves that section.
+
+Neither command writes `GEMINI.md`, even though `gemini` is still listed in
+`boost.json` — Boost dropped it from the agents it renders, so it goes stale
+without warning. Re-sync it by hand afterwards:
+
+```bash
+cp AGENTS.md GEMINI.md
+```
+
 ## Wiring the graphs into your AI editor
 
 Nothing to wire. `.ai/rules/general.md` routes AI agents to the CLIs, and every

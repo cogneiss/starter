@@ -35,8 +35,8 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Just Better Laravel Defaults**: Thanks to **[Essentials](https://github.com/nunomaduro/essentials)** / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
 - **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
-- **Full Testing Suite**: More than 150 tests with 100% code coverage using Pest
-- 
+- **Full Testing Suite**: More than 180 tests with 100% code coverage using Pest
+
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
 ## Getting Started
@@ -58,6 +58,9 @@ cd example-app
 
 # Setup the project
 composer setup
+
+# Optional: seed a user you can sign in with (test@example.com / password)
+php artisan db:seed
 
 # Start the development server
 composer dev
@@ -87,13 +90,18 @@ You should see 100% test coverage and all quality checks passing.
 ### Development
 - `composer dev` - Starts Laravel server, queue worker, log monitoring, and Vite+ dev server concurrently
 
+### Frontend
+- `bun run dev` - Vite+ dev server on its own (already included in `composer dev`)
+- `bun run build` - Production build
+- `bun run build:ssr` - Production build plus the SSR bundle
+
 ### Code Quality
 - `composer lint` - Runs Rector (refactoring), Pint (PHP formatting), and Oxfmt (JS/TS formatting)
 - `composer test:lint` - Dry-run mode for CI/CD pipelines
 
 ### Testing
 - `composer test:type-coverage` - Ensures 100% type coverage with Pest
-- `composer test:types` - Runs PHPStan at level 9 (maximum strictness)
+- `composer test:types` - Runs PHPStan (Larastan) at level max, plus `tsc --noEmit`
 - `composer test:unit` - Runs Pest tests with 100% code coverage requirement
 - `composer test` - Runs the complete test suite (type coverage, unit tests, linting, static analysis)
 

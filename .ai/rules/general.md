@@ -1,6 +1,7 @@
 ---
 paths:
   - '**'
+  - '{AGENTS,CLAUDE,GEMINI}.md'
 ---
 
 # General
@@ -29,3 +30,10 @@ Then the language-level graphs:
 Use the gitnexus **CLI**, never its MCP server — an always-on MCP server re-sends its tool schemas on every turn and every subagent spawn; the CLI costs nothing until invoked. This is why `gitnexus analyze` runs with `--skip-agents-md` in the hook: left alone it rewrites `AGENTS.md`/`CLAUDE.md` to point at the MCP tools.
 
 All four output dirs are gitignored and machine-local — never commit them, and never read the raw `graph.json`/`graph.db`/`.gitnexus`/`storage/app/laravel-brain` files into context, always go through the CLI. If a command reports a stale or missing graph, rebuild with `php artisan brain:scan --no-interaction`, `graphify update .`, `code-review-graph update`, `gitnexus analyze . --skip-agents-md`.
+
+## Re-sync GEMINI.md by hand after regenerating Boost guidelines
+Boost no longer renders GEMINI.md, even though `gemini` is still listed in `boost.json`. `boost:update` and `boost:install` refresh AGENTS.md and CLAUDE.md but leave GEMINI.md untouched, so it silently drifts (it had gone stale enough to tell agents to run `npm run build` in a bun project).
+
+After regenerating guidelines, always run: `cp AGENTS.md GEMINI.md`
+
+Also pass both flags when reinstalling: `boost:install --guidelines --skills`. `--guidelines` alone drops the "Skills Activation" section from AGENTS.md and CLAUDE.md.
