@@ -11,10 +11,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse as DriverRedirectResponse;
 
 final readonly class SessionController
 {
-    public function create(Request $request, AuthDriverResolver $drivers): RedirectResponse|Response
+    public function create(Request $request, AuthDriverResolver $drivers): DriverRedirectResponse|Response
     {
         return $drivers->driver()->redirect($request);
     }

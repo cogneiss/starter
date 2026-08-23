@@ -8,6 +8,7 @@ use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
 use App\Http\Controllers\UserEmailVerificationController;
@@ -139,6 +140,13 @@ Route::middleware('guest')->group(function (): void {
     Route::get('magic-link/{token}', [UserMagicLinkController::class, 'update'])
         ->middleware('throttle:6,1')
         ->name('magic-link.update');
+
+    // Social Authentication...
+    Route::get('auth/{provider}/redirect', [SocialAuthController::class, 'show'])
+        ->name('social-auth.show');
+    Route::get('auth/{provider}/callback', [SocialAuthController::class, 'update'])
+        ->middleware('throttle:6,1')
+        ->name('social-auth.update');
 
     // Session...
     Route::get('login', [SessionController::class, 'create'])

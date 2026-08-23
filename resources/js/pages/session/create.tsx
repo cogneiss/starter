@@ -13,17 +13,26 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { create as magicLink } from '@/routes/magic-link';
 import { request } from '@/routes/password';
+import { show as socialLogin } from '@/routes/social-auth';
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    socialProviders?: string[];
+};
+
+const providerLabels: Record<string, string> = {
+    google: 'Google',
+    github: 'GitHub',
+    microsoft: 'Microsoft',
 };
 
 export default function Login({
     status,
     canResetPassword,
     canRegister,
+    socialProviders = [],
 }: Props) {
     return (
         <AuthLayout
@@ -108,6 +117,29 @@ export default function Login({
                                 Log in
                             </Button>
                         </div>
+
+                        {socialProviders.length > 0 && (
+                            <div className="grid gap-2">
+                                <p className="text-center text-sm text-muted-foreground">
+                                    Or continue with
+                                </p>
+                                {socialProviders.map((provider) => (
+                                    <Button
+                                        key={provider}
+                                        variant="outline"
+                                        className="w-full"
+                                        render={
+                                            <a
+                                                href={socialLogin.url(provider)}
+                                            />
+                                        }
+                                        data-test={`social-login-${provider}`}
+                                    >
+                                        {providerLabels[provider] ?? provider}
+                                    </Button>
+                                ))}
+                            </div>
+                        )}
 
                         {canRegister && (
                             <div className="text-center text-sm text-muted-foreground">

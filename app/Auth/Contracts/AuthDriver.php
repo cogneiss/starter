@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Auth\Contracts;
 
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * One way of proving who somebody is. The login flow only ever talks to this
