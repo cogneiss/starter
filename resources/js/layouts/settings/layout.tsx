@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editOrganization } from '@/routes/organization';
 import { show as showPasskeys } from '@/routes/passkey';
 import { edit as editPassword } from '@/routes/password';
 import { show as showTwoFactor } from '@/routes/two-factor';
@@ -31,6 +32,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Passkeys',
         href: showPasskeys(),
+        icon: null,
+    },
+    {
+        title: 'Organization',
+        href: editOrganization(),
         icon: null,
     },
     {

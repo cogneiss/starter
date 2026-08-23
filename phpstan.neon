@@ -17,3 +17,10 @@ parameters:
     level: max
 
     tmpDir: /tmp/phpstan
+
+    ignoreErrors:
+        # The trait is exercised from tests until the first organization-scoped
+        # model lands in app/. Drop this entry then.
+        -
+            identifier: trait.unused
+            path: app/Concerns/BelongsToOrganization.php

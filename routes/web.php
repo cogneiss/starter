@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
@@ -17,8 +19,27 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function (): void {
+Route::middleware(['auth', 'verified', 'organization'])->group(function (): void {
     Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
+});
+
+Route::middleware('auth')->group(function (): void {
+    // Organization...
+    Route::get('organizations/create', [OrganizationController::class, 'create'])
+        ->name('organization.create');
+    Route::post('organizations', [OrganizationController::class, 'store'])
+        ->name('organization.store');
+
+    Route::middleware('organization')->group(function (): void {
+        Route::get('settings/organization', [OrganizationController::class, 'edit'])
+            ->name('organization.edit');
+        Route::patch('settings/organization', [OrganizationController::class, 'update'])
+            ->name('organization.update');
+
+        // Organization Switch...
+        Route::put('organization-switch', [OrganizationSwitchController::class, 'update'])
+            ->name('organization-switch.update');
+    });
 });
 
 Route::middleware('auth')->group(function (): void {

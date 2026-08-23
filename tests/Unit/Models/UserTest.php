@@ -19,6 +19,8 @@ test('to array', function (): void {
             'two_factor_confirmed_at',
             'created_at',
             'updated_at',
+            'current_organization_id',
+            'is_active',
         ]);
 });
 

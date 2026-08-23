@@ -11,6 +11,8 @@ use SensitiveParameter;
 
 final readonly class CreateUser
 {
+    public function __construct(private CreateOrganization $organizations) {}
+
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -21,6 +23,8 @@ final readonly class CreateUser
                 ...$attributes,
                 'password' => $password,
             ]);
+
+            $this->organizations->handle($user, $user->name, personal: true);
 
             event(new Registered($user));
 
