@@ -1,4 +1,6 @@
-name: lint-autofix
+# The name is load-bearing: autofix-ci/action refuses to run in a workflow
+# called anything else, so it can be recognised by name in branch protection.
+name: autofix.ci
 
 on:
   pull_request:
