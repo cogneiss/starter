@@ -319,6 +319,34 @@ run the tests for; `--dirty` then reports fewer tests than it should. Reseeding
 is the fix. `main` publishes a fresh map from the `tia-baseline` workflow as an
 artifact, so `pest --tia --baselined` can fetch one instead of building it.
 
+## Running the suite against Postgres
+
+Dev and CI use SQLite; most forks deploy Postgres. The two disagree on UUID
+primary keys, JSON columns, `ORDER BY` without a tiebreaker, and case-sensitive
+`LIKE`, so the `nightly` workflow reruns the whole suite against `postgres:17`
+every night and opens an issue when it fails.
+
+Locally, Herd ships Postgres. Create the database once and run:
+
+```bash
+herd services:start postgresql
+psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE testing;'
+DB_USERNAME=postgres composer test:pgsql
+```
+
+`composer test:pgsql` only sets `DB_CONNECTION`, `DB_DATABASE` and `DB_HOST`;
+credentials come from your environment because they differ per machine.
+PHPUnit's `<env>` entries in `phpunit.xml` do not overwrite variables that are
+already set, which is what lets the script swap the connection out.
+
+## Mutation testing
+
+`composer test` reports 100% line coverage. Coverage says every line ran;
+mutation says a test actually fails when you break the line. The `mutation`
+workflow runs `composer test:mutate` weekly and posts the score to the run
+summary. It never blocks a pull request — gating on the score teaches people to
+write tests that satisfy the mutator, which is worse than not measuring.
+
 `app:doctor` prints one line per check and, for anything that failed, the exact
 command that fixes it:
 
