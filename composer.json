@@ -117,6 +117,8 @@
         "test:deps": "composer-unused --no-progress",
         "test:knip": "bun run knip",
         "test:fast": "bin/pest-with-failure-summary.sh --parallel --compact --bail",
+        "test:tia-seed": "XDEBUG_MODE=\"coverage\" pest --tia --fresh -d memory_limit=2G",
+        "test:dirty": "pest --parallel --compact --dirty",
         "test:types": [
             "bunx concurrently --kill-others-on-fail -n phpstan,tsc \"vendor/bin/phpstan --memory-limit=2G\" \"bun run test:types\""
         ],

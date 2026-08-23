@@ -284,6 +284,41 @@ composer lint           # rector + pint + frontend lint
 php artisan app:doctor  # is this machine able to run, test and build the app
 ```
 
+## Faster local test loops
+
+```bash
+composer test:fast      # parallel, compact, stops at the first failure
+composer test:dirty     # only the tests covering files you have edited
+composer test:tia-seed  # record the map the two above rely on
+```
+
+`test:fast` reprints the failing test names after the diff output, so a long
+run does not bury them.
+
+### Test impact analysis
+
+Pest records which test touches which source file, then reruns only the tests a
+change can actually break. It is enabled for local runs only — `tests/Pest.php`
+calls `pest()->tia()->locally()` — because CI has no reason to trust a map it
+did not build. **Every CI job runs the full suite.** Nothing here can cause a
+test to be skipped on a pull request.
+
+The map lives in `~/.pest/tia`, outside the repository, so there is nothing to
+gitignore and nothing to commit. It is machine-specific and rewritten on every
+run.
+
+Seed it once with `composer test:tia-seed`. That takes a couple of minutes: it
+runs the whole suite with a coverage driver attached, so on Herd it needs
+`herd coverage composer test:tia-seed`. It runs serially on purpose — a
+parallel seed races `MakeResourceEndToEndTest`, which writes real files into
+`app/` and deletes them again while the arch preset is walking `app/` in
+another worker.
+
+A map goes stale when you check out a branch that touched files you have never
+run the tests for; `--dirty` then reports fewer tests than it should. Reseeding
+is the fix. `main` publishes a fresh map from the `tia-baseline` workflow as an
+artifact, so `pest --tia --baselined` can fetch one instead of building it.
+
 `app:doctor` prints one line per check and, for anything that failed, the exact
 command that fixes it:
 

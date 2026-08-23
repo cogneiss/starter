@@ -41,7 +41,7 @@
     {
       "id": 6,
       "name": "test impact analysis",
-      "status": "failing",
+      "status": "passing",
       "command": "composer test:dirty"
     },
     {

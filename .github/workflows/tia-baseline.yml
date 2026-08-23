@@ -1,0 +1,98 @@
+name: tia-baseline
+
+# Records the test-impact dependency graph on main and publishes it as an
+# artifact, so a fresh clone can `pest --tia --baselined` into a warm map
+# instead of spending minutes seeding one locally.
+#
+# This workflow never gates anything. CI itself always runs the full suite.
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # TIA keys its graph off git history, so a shallow clone records a
+          # map that no branch can match against.
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: pcov
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Build Assets
+        run: bun run build
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(bun pm ls 2>/dev/null | grep playwright | head -1 | sed 's/.*@//')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps
+
+      - name: Install Playwright System Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps
+
+      # Serial on purpose. The resource-generator test writes real files into
+      # `app/` and deletes them again; a parallel worker running the arch
+      # preset walks `app/` at the same time and reflects on a class whose file
+      # has just gone. Recording the graph is not on the critical path, so the
+      # slower, correct run wins.
+      - name: Record Dependency Graph
+        run: composer test:tia-seed
+
+      - name: Resolve Baseline Directory
+        id: baseline
+        run: echo "path=$(vendor/bin/pest --baseline)" >> $GITHUB_OUTPUT
+
+      - name: Upload Baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: tia-baseline
+          path: ${{ steps.baseline.outputs.path }}
+          include-hidden-files: true
+          retention-days: 30
