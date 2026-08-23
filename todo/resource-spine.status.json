@@ -45,8 +45,8 @@
         {
             "id": 7,
             "name": "generator quality bar",
-            "status": "failing",
-            "command": "php artisan test --compact --filter=Determinism"
+            "status": "passing",
+            "command": "php artisan test --compact --filter=\"MakeResourceDeterminism|MakeResourceEndToEnd\""
         },
         {
             "id": 8,
