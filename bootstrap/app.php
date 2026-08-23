@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\EnsureTwoFactorEnabled;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\ForbiddenDuringImpersonation;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\HonorDoNotTrack;
 use App\Http\Middleware\RequireOrganization;
 use App\Http\Middleware\ResolveOrganization;
 use Illuminate\Foundation\Application;
@@ -25,7 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             AuthenticateSession::class,
+            EnsureUserIsActive::class,
             HandleAppearance::class,
+            HonorDoNotTrack::class,
             ResolveOrganization::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
