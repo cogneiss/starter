@@ -13,6 +13,7 @@
         "@laravel/vite-plugin-wayfinder": "^0.1.7",
         "@rolldown/plugin-babel": "^0.2.3",
         "@types/node": "^26.2.0",
+        "knip": "^6.32.2",
         "npm-check-updates": "^23.0.2",
         "playwright": "^1.62.1",
         "shadcn": "^4.19.0",
@@ -43,6 +44,9 @@
         "tailwindcss": "^4.3.3",
         "tailwindcss-animate": "^1.0.7",
         "typescript": "^7.0.2"
+    },
+    "overrides": {
+        "postcss": "^8.5.26"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.62.5",

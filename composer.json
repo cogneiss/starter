@@ -22,8 +22,10 @@
         "spatie/laravel-typescript-transformer": "^3.3"
     },
     "require-dev": {
+        "cyclonedx/cyclonedx-php-composer": "^6.2",
         "driftingly/rector-laravel": "^2.5.0",
         "fakerphp/faker": "^1.24.1",
+        "icanhazstring/composer-unused": "^0.9.6",
         "laramint/laravel-brain": "^2.4",
         "larastan/larastan": "^3.10.0",
         "laravel/boost": "^2.5.5",
@@ -38,7 +40,8 @@
         "pestphp/pest-plugin-laravel": "^5.0.1",
         "pestphp/pest-plugin-type-coverage": "^5.0.2",
         "rector/rector": "^2.6.3",
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "shipmonk/dead-code-detector": "^1.3.3"
     },
     "autoload": {
         "psr-4": {
@@ -106,6 +109,10 @@
             "bun run test:lint"
         ],
         "test:unit": "XDEBUG_MODE=\"coverage\" pest --parallel --coverage --exactly=100.0",
+        "test:audit": [
+            "@composer audit --no-interaction",
+            "bun audit --prod"
+        ],
         "test:types": [
             "phpstan --memory-limit=2G",
             "bun run test:types"
@@ -127,6 +134,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
+            "cyclonedx/cyclonedx-php-composer": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         }
