@@ -10,6 +10,7 @@ use App\Auth\Resolvers\SingleOrganizationResolver;
 use App\Auth\Resolvers\SubdomainOrganizationResolver;
 use App\Enums\KnownFeatures;
 use App\Models\Organization;
+use App\Resources\ResourceRegistry;
 use App\Support\OrganizationContext;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
@@ -28,6 +29,7 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(OrganizationContext::class);
+        $this->app->singleton(ResourceRegistry::class);
 
         $this->app->bind(
             OrganizationResolver::class,
@@ -37,6 +39,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->optimizes(optimize: 'resource:cache', clear: 'resource:clear', key: 'resources');
+
         Feature::resolveScopeUsing(fn (): ?Organization => resolve(OrganizationContext::class)->get());
 
         foreach (KnownFeatures::cases() as $feature) {

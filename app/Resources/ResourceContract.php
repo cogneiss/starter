@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Resources;
+
+use Illuminate\Database\Eloquent\Model;
+use Spatie\LaravelData\Data;
+
+/**
+ * One adapter per user-facing model. The convergence point for everything
+ * generic in the app.
+ *
+ * Deliberately omitted until something consumes them: searchQuery() (Scout),
+ * scopeFilter()/visibleTo()/find() (search authorization), actions()/
+ * actionSchemas() (assistant dispatch). See FEATURES.md "Not included".
+ */
+interface ResourceContract
+{
+    /**
+     * Stable machine key, plural kebab-case: 'organization-members'.
+     */
+    public function key(): string;
+
+    /**
+     * Human label, plural: 'Organization members'.
+     */
+    public function label(): string;
+
+    /**
+     * @return class-string<Model>
+     */
+    public function model(): string;
+
+    /**
+     * @return class-string<Data>
+     */
+    public function dataClass(): string;
+
+    /**
+     * @return class-string|null Policy class, or null when unauthorized access is impossible.
+     */
+    public function policy(): ?string;
+
+    /**
+     * In-app path a record navigates to. Consumed by links, notifications and breadcrumbs.
+     */
+    public function url(Model $record): string;
+}
