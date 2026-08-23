@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }}\Models;
+
+use App\Concerns\BelongsToOrganization;
+use Carbon\CarbonInterface;
+use Database\Factories\{{ class }}Factory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @property-read string $id
+ * @property-read string $organization_id
+ * @property-read string $name
+ * @property-read CarbonInterface $created_at
+ * @property-read CarbonInterface $updated_at
+ * @property-read Organization $organization
+ */
+final class {{ class }} extends Model
+{
+    /** @use HasFactory<{{ class }}Factory> */
+    use HasFactory;
+
+    use BelongsToOrganization;
+    use HasUuids;
+
+    /**
+     * @return array<string, string>
+     */
+    public function casts(): array
+    {
+        return [
+            'id' => 'string',
+            'organization_id' => 'string',
+            'name' => 'string',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
+}

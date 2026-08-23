@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }}\Resources\Definitions;
+
+use App\Data\{{ class }}Data;
+use App\Models\{{ class }};
+use App\Policies\{{ class }}Policy;
+use App\Resources\ResourceContract;
+use Illuminate\Database\Eloquent\Model;
+
+final class {{ class }}Resource implements ResourceContract
+{
+    public function key(): string
+    {
+        return '{{ key }}';
+    }
+
+    public function label(): string
+    {
+        return '{{ label }}';
+    }
+
+    public function model(): string
+    {
+        return {{ class }}::class;
+    }
+
+    public function dataClass(): string
+    {
+        return {{ class }}Data::class;
+    }
+
+    public function policy(): string
+    {
+        return {{ class }}Policy::class;
+    }
+
+    /**
+     * Only the creation screen is generated, so that is where a record points
+     * until you add a show or edit route of your own.
+     */
+    public function url(Model $record): string
+    {
+        return route('{{ kebab }}.create');
+    }
+}

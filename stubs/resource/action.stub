@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }}\Actions;
+
+use App\Models\{{ class }};
+
+final readonly class Create{{ class }}
+{
+    /**
+     * The organization is filled in by BelongsToOrganization from the bound
+     * context, so it is never part of the attributes a caller passes.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function handle(array $attributes): {{ class }}
+    {
+        return {{ class }}::query()->create($attributes);
+    }
+}

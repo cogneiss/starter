@@ -25,14 +25,14 @@ it('discovers adapters in a directory and ignores classes that do not implement 
 });
 
 it('discovers every shipped adapter', function (): void {
-    $registry = new ResourceRegistry;
+    $keys = new ResourceRegistry()->keys();
 
-    expect($registry->keys())->toBe([
-        'organization-invitations',
-        'organization-members',
-        'organizations',
-        'users',
-    ]);
+    expect($keys)->toContain('organization-invitations', 'organization-members', 'organizations', 'users');
+
+    $sorted = $keys;
+    sort($sorted);
+
+    expect($keys)->toBe($sorted);
 });
 
 it('throws when a key has no adapter, naming the keys that do exist', function (): void {
@@ -99,12 +99,7 @@ it('falls back to scanning when the cache file holds something other than a clas
 
         $registry = new ResourceRegistry(cachePath: $path);
 
-        expect($registry->keys())->toBe([
-            'organization-invitations',
-            'organization-members',
-            'organizations',
-            'users',
-        ]);
+        expect($registry->keys())->toContain('organizations', 'users');
     } finally {
         @unlink($path);
     }

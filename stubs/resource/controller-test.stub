@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\Organization;
+use App\Models\User;
+use App\Models\{{ class }};
+use App\Support\OrganizationContext;
+use Inertia\Support\SessionKey;
+
+it('renders the {{ lower }} creation page', function (): void {
+    // The page has not been through Vite yet, and this is about the controller.
+    $this->withoutVite();
+
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization)->create();
+
+    $response = $this->actingAs($user)->get(route('{{ kebab }}.create'));
+
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page->component('{{ kebab }}/create'));
+});
+
+it('may create a {{ lower }}', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization)->create();
+
+    $response = $this->actingAs($user)
+        ->fromRoute('{{ kebab }}.create')
+        ->post(route('{{ kebab }}.store'), ['name' => 'Example']);
+
+    $response->assertRedirectToRoute('dashboard')
+        ->assertSessionHas(SessionKey::FLASH_DATA, [
+            'toast' => [
+                'type' => 'success',
+                'message' => __('{{ title }} created.'),
+            ],
+        ]);
+
+    resolve(OrganizationContext::class)->runAs($organization, function () use ($organization): void {
+        expect({{ class }}::query()->sole()->organization_id)->toBe($organization->id);
+    });
+});
+
+it('requires a name to create a {{ lower }}', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization)->create();
+
+    $this->actingAs($user)
+        ->fromRoute('{{ kebab }}.create')
+        ->post(route('{{ kebab }}.store'), ['name' => ''])
+        ->assertSessionHasErrors('name');
+});
+
+it('refuses a member without the {{ permission }}.create permission', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization, 'Member')->create();
+
+    $this->actingAs($user)->get(route('{{ kebab }}.create'))->assertForbidden();
+});

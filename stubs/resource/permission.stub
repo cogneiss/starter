@@ -1,0 +1,6 @@
+            new PermissionDefinition(
+                '{{ permission }}.create',
+                '{{ label }}',
+                'Create {{ label }}',
+                'Create new {{ lower }} records in the organization.',
+            ),

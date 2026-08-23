@@ -1,0 +1,50 @@
+import { Form, Head } from '@inertiajs/react';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import AppLayout from '@/layouts/app-layout';
+import { store } from '@/routes/{{ kebab }}';
+
+export default function Create() {
+    return (
+        <AppLayout>
+            <Head title="Create {{ lower }}" />
+
+            <Form
+                {...store.form()}
+                disableWhileProcessing
+                className="flex max-w-xl flex-col gap-6 p-4"
+            >
+                {({ processing, errors }) => (
+                    <>
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                                id="name"
+                                type="text"
+                                required
+                                autoFocus
+                                name="name"
+                                placeholder="{{ title }} name"
+                            />
+                            <InputError
+                                message={errors.name}
+                                aria-live="polite"
+                            />
+                        </div>
+
+                        <Button
+                            type="submit"
+                            data-test="create-{{ kebab }}-button"
+                        >
+                            {processing && <Spinner />}
+                            Create {{ lower }}
+                        </Button>
+                    </>
+                )}
+            </Form>
+        </AppLayout>
+    );
+}

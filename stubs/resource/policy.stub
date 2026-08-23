@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }}\Policies;
+
+use App\Models\User;
+use App\Support\OrganizationContext;
+
+/**
+ * Two gates, always: the record has to be in the caller's organization, and the
+ * caller has to hold the permission for the verb. Either one alone leaves a
+ * hole — see .ai/rules/authorization.md.
+ */
+final readonly class {{ class }}Policy
+{
+    public function __construct(private OrganizationContext $context) {}
+
+    public function create(User $user): bool
+    {
+        return $this->context->id() !== null && $user->can('{{ permission }}.create');
+    }
+}

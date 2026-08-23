@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Actions\Create{{ class }};
+use App\Models\Organization;
+use App\Support\OrganizationContext;
+
+it('creates a {{ lower }} in the bound organization', function (): void {
+    $organization = Organization::factory()->create();
+
+    resolve(OrganizationContext::class)->runAs($organization, function () use ($organization): void {
+        ${{ variable }} = resolve(Create{{ class }}::class)->handle(['name' => 'Example']);
+
+        expect(${{ variable }}->name)->toBe('Example')
+            ->and(${{ variable }}->organization_id)->toBe($organization->id);
+    });
+});

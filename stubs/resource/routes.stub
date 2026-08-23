@@ -1,0 +1,8 @@
+
+Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(function (): void {
+    // {{ label }}...
+    Route::get('{{ table }}/create', [{{ class }}Controller::class, 'create'])
+        ->name('{{ kebab }}.create');
+    Route::post('{{ table }}', [{{ class }}Controller::class, 'store'])
+        ->name('{{ kebab }}.store');
+});

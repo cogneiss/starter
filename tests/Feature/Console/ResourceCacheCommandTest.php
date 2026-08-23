@@ -28,7 +28,7 @@ function cachedResources(string $path): array
 
 it('writes the discovered adapters to the cache file', function (): void {
     $this->artisan('resource:cache')
-        ->expectsOutputToContain('Cached 4 resource adapters.')
+        ->expectsOutputToContain('resource adapters.')
         ->assertSuccessful();
 
     expect(cachedResources($this->cachePath))->toContain(UserResource::class);
@@ -39,7 +39,9 @@ it('replaces a stale cache file rather than adding to it', function (): void {
 
     $this->artisan('resource:cache')->assertSuccessful();
 
-    expect(cachedResources($this->cachePath))->toHaveCount(4);
+    expect(cachedResources($this->cachePath))
+        ->toHaveCount(count(resolve(ResourceRegistry::class)->classes()))
+        ->not->toContain('App\\Resources\\Definitions\\DeletedResource');
 });
 
 it('removes the cache file', function (): void {

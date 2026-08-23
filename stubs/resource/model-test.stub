@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\Organization;
+use App\Models\{{ class }};
+use App\Support\OrganizationContext;
+
+it('only ever queries the {{ lower }} of the bound organization', function (): void {
+    $organization = Organization::factory()->create();
+
+    ${{ variable }} = {{ class }}::factory()->create(['organization_id' => $organization->id]);
+    {{ class }}::factory()->create(['organization_id' => Organization::factory()]);
+
+    resolve(OrganizationContext::class)->runAs($organization, function () use (${{ variable }}, $organization): void {
+        expect({{ class }}::query()->pluck('id')->all())->toBe([${{ variable }}->id])
+            ->and(${{ variable }}->organization->id)->toBe($organization->id)
+            ->and(${{ variable }}->created_at)->not->toBeNull();
+    });
+});

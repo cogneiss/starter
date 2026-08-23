@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Data\{{ class }}Data;
+use App\Models\Organization;
+use App\Models\{{ class }};
+
+it('maps a {{ lower }} to its payload', function (): void {
+    ${{ variable }} = {{ class }}::factory()->create([
+        'organization_id' => Organization::factory(),
+        'name' => 'Example',
+    ]);
+
+    $data = {{ class }}Data::fromModel(${{ variable }});
+
+    expect($data->id)->toBe(${{ variable }}->id)
+        ->and($data->name)->toBe('Example');
+});
