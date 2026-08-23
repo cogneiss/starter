@@ -24,6 +24,8 @@ export default function Show({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Passkeys" />
+
+            <h1 className="sr-only">Passkeys</h1>
             <SettingsLayout>
                 <ManagePasskeys
                     canManagePasskeys={canManagePasskeys}

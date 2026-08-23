@@ -44,6 +44,8 @@ export default function TwoFactor({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Two-Factor Authentication" />
+
+            <h1 className="sr-only">Two-factor authentication</h1>
             <SettingsLayout>
                 {canManageTwoFactor && (
                     <div className="space-y-6">

@@ -64,6 +64,7 @@ export default function Show() {
                             {showRecoveryInput ? (
                                 <>
                                     <Input
+                                        aria-label="Recovery code"
                                         name="recovery_code"
                                         type="text"
                                         placeholder="Enter recovery code"
@@ -78,6 +79,7 @@ export default function Show() {
                                 <div className="flex flex-col items-center justify-center space-y-3 text-center">
                                     <div className="flex w-full items-center justify-center">
                                         <InputOTP
+                                            aria-label="Authentication code"
                                             name="code"
                                             maxLength={OTP_MAX_LENGTH}
                                             value={code}

@@ -1,90 +1,90 @@
 {
-  "plan": "CI and quality gates",
-  "created": "2026-08-23",
-  "independent_of": [
-    "todo/org-access.status.json",
-    "todo/resource-spine.status.json"
-  ],
-  "org_plan_state": "ORG_LANDED",
-  "spine_plan_state": "SPINE_LANDED",
-  "phases": [
-    {
-      "id": 1,
-      "name": "CI fan-out topology",
-      "status": "failing",
-      "command": "gh run list --limit 1 --json conclusion"
-    },
-    {
-      "id": 2,
-      "name": "secret and dependency scanning",
-      "status": "passing",
-      "command": "composer test:audit && gitleaks dir . --config .gitleaks.toml --redact --no-banner"
-    },
-    {
-      "id": 3,
-      "name": "autofix bot",
-      "status": "passing",
-      "command": "test -f .github/workflows/lint-autofix.yml && rg -q 'head.repo.full_name' .github/workflows/lint-autofix.yml"
-    },
-    {
-      "id": 4,
-      "name": "dead code and unused deps",
-      "status": "passing",
-      "command": "composer test:dead-code && composer test:deps && composer test:knip"
-    },
-    {
-      "id": 5,
-      "name": "local test loops",
-      "status": "passing",
-      "command": "composer test:fast"
-    },
-    {
-      "id": 6,
-      "name": "test impact analysis",
-      "status": "passing",
-      "command": "composer test:dirty"
-    },
-    {
-      "id": 7,
-      "name": "accessibility suite",
-      "status": "failing",
-      "command": "composer test:a11y"
-    },
-    {
-      "id": 8,
-      "name": "postgres nightly",
-      "status": "failing",
-      "command": "gh workflow view nightly.yml"
-    },
-    {
-      "id": 9,
-      "name": "mutation testing",
-      "status": "failing",
-      "command": "gh workflow view mutation.yml"
-    },
-    {
-      "id": 10,
-      "name": "detach from fork, release-please",
-      "status": "failing",
-      "command": "test -f release-please-config.json && rg -q 'Nuno Maduro' LICENSE"
-    },
-    {
-      "id": 11,
-      "name": "SBOM on release",
-      "status": "failing",
-      "command": "composer sbom && test -s sbom.json && rm sbom.json"
-    },
-    {
-      "id": 12,
-      "name": "documentation",
-      "status": "failing",
-      "command": "rg -q 'CI and quality gates' FEATURES.md && test -f CONTRIBUTING.md && test -f .ai/rules/ci.md"
-    },
-    {
-      "id": 13,
-      "name": "full gate green",
-      "status": "failing",
-      "command": "composer test"
-    }
-  ]
+    "plan": "CI and quality gates",
+    "created": "2026-08-23",
+    "independent_of": [
+        "todo/org-access.status.json",
+        "todo/resource-spine.status.json"
+    ],
+    "org_plan_state": "ORG_LANDED",
+    "spine_plan_state": "SPINE_LANDED",
+    "phases": [
+        {
+            "id": 1,
+            "name": "CI fan-out topology",
+            "status": "failing",
+            "command": "gh run list --limit 1 --json conclusion"
+        },
+        {
+            "id": 2,
+            "name": "secret and dependency scanning",
+            "status": "passing",
+            "command": "composer test:audit && gitleaks dir . --config .gitleaks.toml --redact --no-banner"
+        },
+        {
+            "id": 3,
+            "name": "autofix bot",
+            "status": "passing",
+            "command": "test -f .github/workflows/lint-autofix.yml && rg -q 'head.repo.full_name' .github/workflows/lint-autofix.yml"
+        },
+        {
+            "id": 4,
+            "name": "dead code and unused deps",
+            "status": "passing",
+            "command": "composer test:dead-code && composer test:deps && composer test:knip"
+        },
+        {
+            "id": 5,
+            "name": "local test loops",
+            "status": "passing",
+            "command": "composer test:fast"
+        },
+        {
+            "id": 6,
+            "name": "test impact analysis",
+            "status": "passing",
+            "command": "composer test:dirty"
+        },
+        {
+            "id": 7,
+            "name": "accessibility suite",
+            "status": "passing",
+            "command": "composer test:a11y"
+        },
+        {
+            "id": 8,
+            "name": "postgres nightly",
+            "status": "failing",
+            "command": "gh workflow view nightly.yml"
+        },
+        {
+            "id": 9,
+            "name": "mutation testing",
+            "status": "failing",
+            "command": "gh workflow view mutation.yml"
+        },
+        {
+            "id": 10,
+            "name": "detach from fork, release-please",
+            "status": "failing",
+            "command": "test -f release-please-config.json && rg -q 'Nuno Maduro' LICENSE"
+        },
+        {
+            "id": 11,
+            "name": "SBOM on release",
+            "status": "failing",
+            "command": "composer sbom && test -s sbom.json && rm sbom.json"
+        },
+        {
+            "id": 12,
+            "name": "documentation",
+            "status": "failing",
+            "command": "rg -q 'CI and quality gates' FEATURES.md && test -f CONTRIBUTING.md && test -f .ai/rules/ci.md"
+        },
+        {
+            "id": 13,
+            "name": "full gate green",
+            "status": "failing",
+            "command": "composer test"
+        }
+    ]
 }
