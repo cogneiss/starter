@@ -77,8 +77,8 @@
         {
             "id": 12,
             "name": "documentation",
-            "status": "failing",
-            "command": "rg -q 'CI and quality gates' FEATURES.md && test -f CONTRIBUTING.md && test -f .ai/rules/ci.md"
+            "status": "passing",
+            "command": "grep -q \"493 tests\" FEATURES.md README.md && test -f CONTRIBUTING.md && test -f .ai/rules/ci.md"
         },
         {
             "id": 13,

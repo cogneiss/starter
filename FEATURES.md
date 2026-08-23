@@ -204,7 +204,7 @@ Each failure message names the exact command that fixes it.
 
 ### Testing
 
-- Pest 5 with 473 tests covering every controller, action, rule, and middleware.
+- Pest 5 with 493 tests covering every controller, action, rule, and middleware.
 - Coverage gate at `--exactly=100.0` — not a minimum, an exact match, so dead
   code fails the build too.
 - Architecture presets (php, strict, laravel, security) catch `dd()` leftovers,
@@ -213,9 +213,47 @@ Each failure message names the exact command that fixes it.
   uploaded on CI failure.
 - Tests run in parallel, with frozen time, faked sleep, and stray HTTP and
   process calls blocked by default.
+- Every page the kit ships is run through axe-core at the strictest level
+  (`assertNoAccessibilityIssues(level: 3)`, so minor and best-practice
+  violations fail too) — a starter kit's accessibility defects are inherited by
+  every application built on it.
 - Test Impact Analysis enabled locally — only the tests your change touches run.
+  It is deliberately local only (`pest()->tia()->locally()`): CI has no reason
+  to trust a map it did not build, so every CI job runs the full suite.
+- The whole suite reruns against `postgres:17` nightly, because dev and CI use
+  SQLite while most forks deploy Postgres, and the two disagree on UUID keys,
+  JSON columns, unordered `ORDER BY` and case-sensitive `LIKE`. A failure opens
+  an issue.
+- Mutation testing weekly. Coverage says a line ran; the mutation score says a
+  test actually failed when that line was broken. It reports, it never blocks —
+  gating on the score teaches people to write tests that satisfy the mutator.
 - `UserFactory` ships `unverified()` and `withoutTwoFactor()` states, and
   `db:seed` creates `test@example.com` / `password` for local sign-in.
+
+### CI and quality gates
+
+One `setup` job installs Composer and Bun dependencies, builds the frontend and
+uploads the build as an artifact. Everything after it downloads that artifact
+and runs in parallel: `tests` (the full `composer test` gate), `security`
+(gitleaks, `composer audit`, `bun audit`), `static` (dead code, unused Composer
+packages, knip) and `a11y` (the axe-core browser suite). A second job costs a
+job slot, not a second install.
+
+| Runs                          | What                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------- |
+| Blocking, on every PR         | `composer test`, gitleaks, dependency audits, dead code, unused deps, knip, accessibility |
+| Scheduled, reports only       | Postgres nightly, mutation score weekly, TIA baseline, SBOM on release                    |
+| On a push to a branch in-repo | the autofix bot — formats and commits back, skipped on forks                              |
+
+The split is deliberate: **a gate that blocks a pull request must be fast,
+deterministic and about the diff; everything else runs on a schedule and
+reports.** Blocking gates people cannot predict get routed around — branch
+protection gets loosened, or the team learns which rerun makes red go away.
+Mutation testing, the Postgres run and the SBOM are scheduled for that reason,
+not because they matter less.
+
+Never lower a threshold to make a gate pass. Baseline the finding with its
+reason, or fix the code.
 
 ### Tooling
 
@@ -242,6 +280,19 @@ Each failure message names the exact command that fixes it.
 - **Code knowledge graphs** wired into a post-commit hook, so AI agents answer
   structural questions from an index instead of reading dozens of files — see
   below.
+- **gitleaks** scans every pull request, and the full history on a schedule, so
+  a key committed once does not sit in the log unnoticed.
+- **`composer audit`** and **`bun audit`** fail the build on a known
+  vulnerability in a dependency, both halves of the stack.
+- **Dead-code detection** (`composer test:dead-code`), **`composer-unused`**
+  (`composer test:deps`) and **knip** (`composer test:knip`) keep unreachable
+  PHP, unused Composer packages and orphaned frontend files from accumulating.
+  Each records its accepted findings in one place — `phpstan-deadcode-baseline.neon`,
+  `composer-unused.php`, `knip.json` — with a comment saying why, rather than
+  being silenced by loosening the tool.
+- **An autofix bot** — `lint-autofix.yml` runs the formatters on a branch push
+  and commits the result back, so formatting never costs a review round. It is
+  hard-skipped on forks; that guard is a security control, do not touch it.
 - **Pail** for readable log tailing during development.
 - `php artisan make:action` scaffolds an action; Essentials also ships its own
   Rector and Pint commands.
@@ -313,11 +364,35 @@ out of the box — clone and run, no services to install. Swap any driver throug
 
 ### Commands
 
+Blocking gates — these run on every pull request, and all of them have to be
+green:
+
+| Command                   | What it does                                                           |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `composer test`           | Lint, type coverage, PHPStan, and the test suite at `--exactly=100.0`. |
+| `composer test:a11y`      | axe-core at level 3 over every page the kit ships.                     |
+| `composer test:audit`     | `composer audit` plus `bun audit`.                                     |
+| `composer test:dead-code` | PHPStan's dead-code rules over `app/`.                                 |
+| `composer test:deps`      | `composer-unused` — Composer packages nothing requires.                |
+| `composer test:knip`      | knip — unused frontend files, exports and dependencies.                |
+
+Scheduled — these report, they never block:
+
+| Command                | What it does                                                      |
+| ---------------------- | ----------------------------------------------------------------- |
+| `composer test:pgsql`  | The whole suite against Postgres instead of SQLite. Runs nightly. |
+| `composer test:mutate` | Mutation score over `app/`. Runs weekly.                          |
+| `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.          |
+
+Local loops:
+
 | Command                                    | What it does                                                                  |
 | ------------------------------------------ | ----------------------------------------------------------------------------- |
 | `composer setup`                           | Install, key, migrate, build. One shot from a fresh clone.                    |
 | `composer dev`                             | Server, queue worker, log tail, and Vite together.                            |
-| `composer test`                            | Lint, type coverage, PHPStan, and the test suite — the same gate CI runs.     |
+| `composer test:fast`                       | Parallel, compact, stops at the first failure. The one to run while working.  |
+| `composer test:dirty`                      | Only the tests covering files you have edited.                                |
+| `composer test:tia-seed`                   | Record the impact map `test:dirty` reads. Needs a coverage driver.            |
 | `composer lint`                            | Rector, Pint, and the frontend formatter, applying fixes.                     |
 | `composer update:requirements`             | Bump PHP and JS dependencies to latest.                                       |
 | `composer typescript:generate`             | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
@@ -327,8 +402,26 @@ out of the box — clone and run, no services to install. Swap any driver throug
 | `php artisan app:sync-permissions`         | Write the permission catalog to the database.                                 |
 | `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed.                               |
 
-CI runs `composer test` on every push and pull request against `main`, with
-Composer, Bun, Playwright, Rector, and PHPStan caches warm.
+CI runs all of the blocking gates on every push and pull request against `main`,
+with Composer, Bun, Playwright, Rector, and PHPStan caches warm.
+
+## Releases
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org)
+(`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `ci:`, `chore:`, and `!` or a
+`BREAKING CHANGE:` footer for a breaking change). The `.githooks/commit-msg`
+hook, wired up by `composer install`, rejects anything else before it reaches a
+branch.
+
+`release-please` reads those prefixes on every push to `main` and keeps a
+release pull request open with the next version and the generated `CHANGELOG.md`
+entry. Merging it tags the release. `feat:` bumps the minor, `fix:` the patch, a
+breaking change the major — while the version is below 1.0.0 a breaking change
+bumps the minor instead.
+
+Each published release gets a CycloneDX SBOM (`sbom.json`) built from the lock
+file and uploaded as a release asset, so a consumer can answer "does this ship
+the vulnerable version of X" without cloning the repo.
 
 ## Not included
 
@@ -349,6 +442,15 @@ so you can tell a decision from a gap:
 | SAML / OIDC drivers                                | Heavy dependencies and per-provider debugging. The `AuthDriver` seam is the hook — read the warning in its docblock before writing one. |
 | Access requests and cross-organization invitations | Marketplace-shaped rather than universal.                                                                                               |
 | Device fingerprinting                              | Privacy-hostile, and in practice it serves marketing attribution rather than authentication.                                            |
+
+The same applies to the CI work — these were considered and left out:
+
+| Skipped                          | Why                                                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Test sharding across runners     | The suite runs in parallel in a couple of minutes. Sharding buys nothing until it does not.                               |
+| Lighthouse / performance budgets | Scores swing with the runner, so the gate would be flaky and get ignored. axe-core covers the part that is deterministic. |
+| `composer-require-checker`       | Overlaps `composer-unused` from the other direction and is noisy against a framework that resolves a lot at runtime.      |
+| envy (`.env` drift)              | One `.env.example` and `app:doctor` already catch a missing key, and the check fires on every unrelated config change.    |
 
 The resource spine was cut back for the same reason — the pattern pays off with
 several consumers reading one adapter, and this kit has none yet:

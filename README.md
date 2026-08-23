@@ -32,7 +32,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
 - **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
 - **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
-- **Full Testing Suite**: 473 tests with 100% code coverage using Pest
+- **Full Testing Suite**: 493 tests with 100% code coverage using Pest
 - **Quality Gates That Block**: Every pull request runs the suite, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; Postgres and mutation runs happen on a schedule
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
@@ -64,6 +64,10 @@ php artisan db:seed
 composer dev
 ```
 
+While you are working, `composer test:fast` is the quick loop — parallel,
+compact, stops at the first failure. `composer test` is the gate that has to
+pass before you push; it is the same one CI runs.
+
 If anything misbehaves, run `php artisan app:doctor` — it checks PHP, extensions,
 the coverage driver, `.env`, the database, migrations, bun, the Vite manifest and
 the generated TypeScript, and prints the command that fixes whatever failed.
@@ -73,13 +77,13 @@ the generated TypeScript, and prints the command that fixes whatever failed.
 `composer setup` copies `.env.example` and everything works out of the box. The
 knobs worth knowing:
 
-| Variable | Default | What it does |
-| --- | --- | --- |
-| `ORGANIZATIONS_STRICT` | `true` | Query a scoped model with no organization bound and it throws. Set to `false` only while migrating an existing database. |
-| `ORGANIZATIONS_RESOLVER` | `session` | How the current organization is found: `session`, `subdomain`, or `single`. |
-| `GOOGLE_CLIENT_ID` / `_SECRET` | empty | Google social login. |
-| `GITHUB_CLIENT_ID` / `_SECRET` | empty | GitHub social login. |
-| `MICROSOFT_CLIENT_ID` / `_SECRET` | empty | Microsoft social login. |
+| Variable                          | Default   | What it does                                                                                                             |
+| --------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `ORGANIZATIONS_STRICT`            | `true`    | Query a scoped model with no organization bound and it throws. Set to `false` only while migrating an existing database. |
+| `ORGANIZATIONS_RESOLVER`          | `session` | How the current organization is found: `session`, `subdomain`, or `single`.                                              |
+| `GOOGLE_CLIENT_ID` / `_SECRET`    | empty     | Google social login.                                                                                                     |
+| `GITHUB_CLIENT_ID` / `_SECRET`    | empty     | GitHub social login.                                                                                                     |
+| `MICROSOFT_CLIENT_ID` / `_SECRET` | empty     | Microsoft social login.                                                                                                  |
 
 Social login stays off until you fill in a provider's keys and enable the
 feature flag — see [SETUP.md](SETUP.md).
@@ -106,29 +110,39 @@ You should see 100% test coverage and all quality checks passing.
 ## Available Tooling
 
 ### Development
+
 - `composer dev` - Starts Laravel server, queue worker, log monitoring, and Vite+ dev server concurrently
 
 ### Frontend
+
 - `bun run dev` - Vite+ dev server on its own (already included in `composer dev`)
 - `bun run build` - Production build
 - `bun run build:ssr` - Production build plus the SSR bundle
 
 ### Code Quality
+
 - `composer lint` - Runs Rector (refactoring), Pint (PHP formatting), and Oxfmt (JS/TS formatting)
 - `composer test:lint` - Dry-run mode for CI/CD pipelines
 
 ### Testing
+
 - `composer test:type-coverage` - Ensures 100% type coverage with Pest
 - `composer test:types` - Runs PHPStan (Larastan) at level max, plus `tsc --noEmit`
 - `composer test:unit` - Runs Pest tests with 100% code coverage requirement
 - `composer test` - Runs the complete test suite (type coverage, unit tests, linting, static analysis)
+- `composer test:fast` / `composer test:dirty` - Quick local loops; see [SETUP.md](SETUP.md)
+- `composer test:a11y` - axe-core over every page the kit ships
+- `composer test:audit`, `composer test:dead-code`, `composer test:deps`, `composer test:knip` - The other blocking CI gates
+- `composer test:pgsql`, `composer test:mutate` - The scheduled runs, on demand
 
 ### Code knowledge graphs
+
 - `php artisan brain:scan` - Rescans the Laravel graph (routes, models, events, jobs). Runs automatically after every commit
 - `php artisan brain:export-context --route=/settings/profile` - Budgeted AI context for one request path
 - Three more graph tools (graphify, code-review-graph, gitnexus) are optional — see [SETUP.md](SETUP.md)
 
 ### Maintenance
+
 - `composer update:requirements` - Updates all PHP and Bun dependencies to latest versions
 
 ### Staying in sync with upstream

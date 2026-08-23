@@ -295,6 +295,10 @@ composer test:tia-seed  # record the map the two above rely on
 `test:fast` reprints the failing test names after the diff output, so a long
 run does not bury them.
 
+Which one when: `test:fast` while you are working, `test:dirty` after a focused
+change to one area, and `composer test` before you push — that last one is the
+gate CI runs, and it is the only one that proves anything.
+
 ### Test impact analysis
 
 Pest records which test touches which source file, then reruns only the tests a
@@ -346,6 +350,57 @@ mutation says a test actually fails when you break the line. The `mutation`
 workflow runs `composer test:mutate` weekly and posts the score to the run
 summary. It never blocks a pull request — gating on the score teaches people to
 write tests that satisfy the mutator, which is worse than not measuring.
+
+## When a gate fails
+
+Every blocking gate has a way to record an accepted finding. None of them has a
+knob you turn down. **Never lower a threshold to make a gate pass** — not
+`--exactly=100.0`, not a mutation `--min`. Baseline it with a reason, or fix the
+code.
+
+| Gate                      | Failure means                                     | Do this                                                                                                 |
+| ------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `composer test`           | A test failed, or coverage is not exactly 100%.   | Write the test. Coverage under 100% is missing tests; over is impossible.                               |
+| `composer test:a11y`      | axe found a violation on a shipped page.          | Fix the page. A starter kit's a11y defects are inherited by everything built on it.                     |
+| `composer test:dead-code` | PHPStan found code nothing reaches.               | Delete it. If it is a framework entry point, add it to `phpstan-deadcode-baseline.neon` with a comment. |
+| `composer test:deps`      | A Composer package nothing requires.              | Remove it, or add it to `composer-unused.php` with the reason it is loaded at runtime.                  |
+| `composer test:knip`      | An unused frontend file, export or dependency.    | Delete it, or add it to `knip.json`'s `ignore` with a comment.                                          |
+| `composer test:audit`     | A dependency has a known vulnerability.           | Update it. If no fix exists, pin and record it — do not skip the job.                                   |
+| gitleaks                  | Something that looks like a credential is staged. | Rotate the key first, then remove it. A rotated key is the only safe fix.                               |
+
+A baseline entry without a reason is the thing this is trying to prevent. Write
+why it is there, so the next person can tell an accepted finding from a
+forgotten one.
+
+## Commit messages and releases
+
+`composer install` wires up `.githooks/commit-msg`, which rejects a subject that
+is not a conventional commit:
+
+```
+feat(auth): add passkey sign-in
+fix: stop the invite mailer double-sending
+docs: document the CI topology
+feat(auth)!: drop password login        # breaking change
+```
+
+Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
+`build`, `ci`, `chore`, `revert`. The scope is optional. Merge, revert, fixup
+and squash subjects pass through untouched. The rejection message prints the
+same table, so you do not need this page open.
+
+The prefixes are not decoration — release-please reads them. On every push to
+`main` it keeps a release pull request open with the next version number and the
+`CHANGELOG.md` entry it generated from the commits since the last tag. Merging
+that pull request is how a release is cut: it tags the version, publishes the
+GitHub release, and a follow-up job builds the CycloneDX SBOM and attaches
+`sbom.json` to it. `feat:` bumps the minor, `fix:` the patch, and a breaking
+change bumps the minor while the version is below 1.0.0.
+
+Nothing is released by pushing. If the release pull request is not merged, no
+tag exists.
+
+## Checking the machine
 
 `app:doctor` prints one line per check and, for anything that failed, the exact
 command that fixes it:
