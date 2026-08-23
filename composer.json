@@ -13,6 +13,7 @@
         "inertiajs/inertia-laravel": "v3.0.6",
         "laravel/fortify": "^1.38.0",
         "laravel/framework": "^13.26.1",
+        "laravel/pennant": "^1.26",
         "laravel/wayfinder": "^0.1.21",
         "nunomaduro/essentials": "^1.2.0",
         "spatie/laravel-permission": "^8.3"
