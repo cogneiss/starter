@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\Process;
 it('generates a resource whose own tests pass', function (): void {
     Process::preventStrayProcesses(false);
 
-    $touched = ['routes/web.php', 'app/Support/PermissionCatalog.php'];
+    // The generated types are restored from the copy taken here rather than by
+    // regenerating: a subprocess transform has no formatter on its PATH and
+    // would leave the committed file unformatted.
+    $touched = ['routes/web.php', 'app/Support/PermissionCatalog.php', 'resources/js/types/generated.d.ts'];
     $original = array_combine($touched, array_map(
         static fn (string $path): string => File::get(base_path($path)),
         $touched,
@@ -52,6 +55,5 @@ it('generates a resource whose own tests pass', function (): void {
         File::deleteDirectory(base_path('resources/js/pages/widget'));
 
         Process::path(base_path())->run([PHP_BINARY, 'artisan', 'wayfinder:generate', '--with-form']);
-        Process::path(base_path())->run([PHP_BINARY, 'artisan', 'typescript:transform']);
     }
 })->group('slow');
