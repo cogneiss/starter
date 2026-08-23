@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use App\Concerns\BelongsToOrganization;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
-use Symfony\Component\Finder\Finder;
 
 /**
  * Policy methods that deliberately skip one of the two gates. Add a
@@ -14,28 +12,6 @@ use Symfony\Component\Finder\Finder;
 $exceptions = [
     //
 ];
-
-/**
- * @return list<class-string>
- */
-function classesIn(string $directory, string $namespace): array
-{
-    $classes = [];
-
-    foreach (Finder::create()->files()->in($directory)->name('*.php') as $file) {
-        /** @var class-string $class */
-        $class = $namespace.'\\'.Str::of($file->getRelativePathname())
-            ->beforeLast('.php')
-            ->replace(DIRECTORY_SEPARATOR, '\\')
-            ->value();
-
-        $classes[] = $class;
-    }
-
-    sort($classes);
-
-    return $classes;
-}
 
 it('gives every organization-scoped model a policy', function (): void {
     $models = classesIn(app_path('Models'), 'App\Models');

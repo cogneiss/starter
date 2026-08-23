@@ -218,11 +218,12 @@ final class MakeResourceCommand extends Command
             'vendor/bin/pint', '--quiet', 'routes/web.php', 'app/Support/PermissionCatalog.php', ...$php,
         ]);
 
-        Process::path($base)->env(['NODE_OPTIONS' => '--experimental-strip-types'])->run([
-            'node_modules/.bin/vp', 'fmt', 'resources/js/pages',
-        ]);
-
         Process::path($base)->run([PHP_BINARY, 'artisan', 'wayfinder:generate', '--with-form']);
         Process::path($base)->run([PHP_BINARY, 'artisan', 'typescript:transform']);
+
+        // Last, so it also picks up what the two generators just wrote.
+        Process::path($base)->env(['NODE_OPTIONS' => '--experimental-strip-types'])->run([
+            'node_modules/.bin/vp', 'fmt', 'resources/js/pages', 'resources/js/types',
+        ]);
     }
 }
