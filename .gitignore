@@ -42,3 +42,5 @@ nginx.pid
 # Incremental cache for `php artisan typescript:transform`. The generated
 # `resources/js/types/generated.d.ts` is committed; this manifest is not.
 /resources/js/types/typescript-transformer-manifest.json
+
+/tests/Browser/Screenshots

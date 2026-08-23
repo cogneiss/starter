@@ -180,3 +180,11 @@ Route::middleware('auth')->group(function (): void {
     Route::post('logout', [SessionController::class, 'destroy'])
         ->name('logout');
 });
+
+// Value gallery... every value component with a value and with nothing. It is a
+// reference page and the browser test's subject, never part of production.
+if (! app()->environment('production')) {
+    Route::get('_value-gallery', fn () => Inertia::render('value-gallery', [
+        'now' => now()->toIso8601String(),
+    ]))->name('value-gallery');
+}

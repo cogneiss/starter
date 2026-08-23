@@ -33,8 +33,8 @@
         {
             "id": 5,
             "name": "semantic value components",
-            "status": "failing",
-            "command": "php artisan test --compact --filter=Value"
+            "status": "passing",
+            "command": "php artisan test --compact tests/Browser/ValueComponentTest.php"
         },
         {
             "id": 6,
