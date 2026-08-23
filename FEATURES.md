@@ -79,6 +79,15 @@ build.
 - Tailwind v4, responsive down to mobile, collapsible sidebar with persisted
   state.
 - Password fields have a show/hide toggle with a proper `aria-label`.
+- Semantic value components in `resources/js/components/value` for the values
+  every app renders the same way and formats differently on every page: `Money`,
+  `Percent`, `DateValue`, `RelativeTime`, `BooleanPill`, `StatusBadge`,
+  `EmailValue`, `UrlValue`, `PhoneValue`, `TagList`, `CodeValue`, `LongText`, and
+  the `EmptyValue` the rest fall back to. Hand any of them `null` and you get one
+  em-dash with a screen-reader label, never `NaN`, `null` or `Invalid Date`.
+  Formatting goes through the platform's `Intl` APIs, so currency, number and
+  date rendering follow the locale instead of a hand-rolled helper. `/_value-gallery`
+  renders all of them, with a value and without, outside production.
 - Breadcrumbs, flash toasts (Sonner, flashed from the server with
   `Inertia::flash('toast', ...)`), loading spinners on every submit, and inline
   field errors.
@@ -98,6 +107,17 @@ build.
 - **Cruddy by design** — controllers stay at `create`/`store`/`edit`/`update`/
   `show`/`destroy`, one resource each. An architecture test forbids controllers
   from being used anywhere but routes.
+- **Resource spine** — one adapter per user-facing model in
+  `app/Resources/Definitions`, auto-discovered by `ResourceRegistry` (cached with
+  `php artisan resource:cache`). Six methods, no more: `key()` and `label()` name
+  the resource, `model()` and `dataClass()` say which Eloquent model and which
+  Data class it maps to, `policy()` points at its policy, and `url(Model)` builds
+  the link to a record from Wayfinder helpers. `url()` is the one that earns its
+  keep: it stops `switch (result.type)` branching from ever appearing on the
+  frontend. The `searchQuery()`, `visibleTo()`, `actions()` and API-exposure
+  methods the pattern usually carries are deliberately absent — they exist to
+  serve a search index, an assistant layer and a REST surface, none of which this
+  kit ships. The registry is the seam they would attach to.
 - **Form requests** for every write, with a reusable `ValidEmail` rule.
 - **UUID primary keys** on users, hidden sensitive attributes, and typed
   `@property-read` docblocks on the model.
@@ -156,10 +176,35 @@ build.
 - TypeScript checked with `tsc --noEmit`, plus type-aware linting in Vite+.
 - **Wayfinder** generates typed TS functions from PHP routes and controllers, so
   a renamed route breaks the frontend build instead of production.
+- **Typed payloads**, not just typed routes. Every Inertia payload is a
+  `spatie/laravel-data` class in `app/Data` carrying `#[TypeScript]`;
+  `spatie/laravel-typescript-transformer` turns those into TS interfaces. Pages
+  import the generated type, so a renamed or removed field breaks `tsc` instead
+  of rendering `undefined`. Run `composer typescript:generate` after touching
+  `app/Data`. `resources/js/types/generated.d.ts` is committed on purpose — CI,
+  the editor and a fresh clone all see the types without a build step, and a
+  stale file shows up as a diff in review (`app:doctor` checks for exactly that).
+
+### Convention guards
+
+Three architecture tests in `tests/Unit/Conventions/ConventionTest.php` that
+fail the build when a new file skips a convention:
+
+- **G1** — every model in `app/Models` has a factory.
+- **G4** — every class in `app/Data` carries `#[TypeScript]`, and so does every
+  `dataClass()` a registered adapter returns. Without it a Data class silently
+  never reaches the frontend types.
+- **G5** — every model has a resource adapter. A new model fails CI until you run
+  `app:make-resource` or write down why it is exempt.
+
+Exceptions live in `config/conventions.php`, keyed by class with a **reason
+string** as the value rather than a flat list, so a reviewer can see why one
+exists and a stale one is obvious. Add the exception; never weaken the guard.
+Each failure message names the exact command that fixes it.
 
 ### Testing
 
-- Pest 5 with 383 tests covering every controller, action, rule, and middleware.
+- Pest 5 with 473 tests covering every controller, action, rule, and middleware.
 - Coverage gate at `--exactly=100.0` — not a minimum, an exact match, so dead
   code fails the build too.
 - Architecture presets (php, strict, laravel, security) catch `dd()` leftovers,
@@ -200,6 +245,20 @@ build.
 - **Pail** for readable log tailing during development.
 - `php artisan make:action` scaffolds an action; Essentials also ships its own
   Rector and Pint commands.
+- **`php artisan app:make-resource <Name>`** scaffolds a whole resource from
+  `stubs/resource/*.stub`: model, migration, factory, Data class, policy, action,
+  form request, controller (`create`/`store` only), resource adapter, the Inertia
+  create page, the route line, the permission entry, and four tests — model,
+  action, controller and Data. It generates less than a full CRUD set on purpose,
+  because everything it does generate passes `composer test` unedited, coverage
+  gate included. `--dry-run`, `--force` and `--no-migration` are there when you
+  need them.
+- **`php artisan app:doctor`** answers the onboarding questions in one command:
+  PHP version against `composer.json`, required extensions, a coverage driver,
+  `.env` and `APP_KEY`, database reachability, pending migrations, `bun`,
+  `node_modules`, the Vite manifest, stale generated TypeScript, and writable
+  `storage`/`bootstrap/cache`. Every failure prints the command that fixes it.
+  `--json` for scripts; exit code 1 if anything failed.
 
 ### Code knowledge graphs
 
@@ -254,15 +313,19 @@ out of the box — clone and run, no services to install. Swap any driver throug
 
 ### Commands
 
-| Command                                    | What it does                                                              |
-| ------------------------------------------ | ------------------------------------------------------------------------- |
-| `composer setup`                           | Install, key, migrate, build. One shot from a fresh clone.                |
-| `composer dev`                             | Server, queue worker, log tail, and Vite together.                        |
-| `composer test`                            | Lint, type coverage, PHPStan, and the test suite — the same gate CI runs. |
-| `composer lint`                            | Rector, Pint, and the frontend formatter, applying fixes.                 |
-| `composer update:requirements`             | Bump PHP and JS dependencies to latest.                                   |
-| `php artisan app:sync-permissions`         | Write the permission catalog to the database.                             |
-| `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed.                           |
+| Command                                    | What it does                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| `composer setup`                           | Install, key, migrate, build. One shot from a fresh clone.                    |
+| `composer dev`                             | Server, queue worker, log tail, and Vite together.                            |
+| `composer test`                            | Lint, type coverage, PHPStan, and the test suite — the same gate CI runs.     |
+| `composer lint`                            | Rector, Pint, and the frontend formatter, applying fixes.                     |
+| `composer update:requirements`             | Bump PHP and JS dependencies to latest.                                       |
+| `composer typescript:generate`             | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
+| `php artisan app:make-resource <Name>`     | Scaffold a model and everything around it, tests included.                    |
+| `php artisan app:doctor`                   | Check that this machine can run, test and build the app.                      |
+| `php artisan resource:cache`               | Cache the resource registry for production (`resource:clear` undoes it).      |
+| `php artisan app:sync-permissions`         | Write the permission catalog to the database.                                 |
+| `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed.                               |
 
 CI runs `composer test` on every push and pull request against `main`, with
 Composer, Bun, Playwright, Rector, and PHPStan caches warm.
@@ -286,6 +349,21 @@ so you can tell a decision from a gap:
 | SAML / OIDC drivers                                | Heavy dependencies and per-provider debugging. The `AuthDriver` seam is the hook — read the warning in its docblock before writing one. |
 | Access requests and cross-organization invitations | Marketplace-shaped rather than universal.                                                                                               |
 | Device fingerprinting                              | Privacy-hostile, and in practice it serves marketing attribution rather than authentication.                                            |
+
+The resource spine was cut back for the same reason — the pattern pays off with
+several consumers reading one adapter, and this kit has none yet:
+
+| Skipped                                                 | Why                                                                                                                                                                                 |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `searchQuery()`, Scout, a generic `/search`, ⌘K palette | Scout forces a driver decision (Meilisearch, Typesense, database) a starter should not make for you, and search across one model is `where name like`. `url()` keeps the seam open. |
+| `visibleTo()` / `scopeFilter()` / `find()`              | These exist to make search results safe. Policies already answer that question, and duplicating the rule in an adapter is two places to get it wrong. They come back with Scout.    |
+| `actions()` / `actionSchemas()`                         | Only useful to an AI assistant layer that is not here. `app/Actions` is already the seam one would build on.                                                                        |
+| `ApiExposable` / `ApiWritable` REST surface             | Drags in Sanctum, an ability catalog, versioning and pagination conventions. The "no token-auth API" line above is the decision; the registry is the seam that module hangs off.    |
+| Resource loom (spec generator, archetypes, codemods)    | A real package, but it assumes a tenant kit, a resource kit and a branding kit underneath. Adopting it means inheriting four packages.                                              |
+| AI presentation manifest and drafter                    | Only meaningful once the loom generator is in.                                                                                                                                      |
+| Cheatsheet parity CI                                    | Machinery for a package that is not here.                                                                                                                                           |
+| Motion layer (`useLoomMotion`, `<CountUp>`)             | Cut deliberately. The value components render, they do not animate.                                                                                                                 |
+| Guard G6 (precognition on form routes)                  | Precognition is not used in this kit yet. Add the guard alongside the feature.                                                                                                      |
 
 `todo/specs/` holds a draft spec for a theming system — a design note, not
 shipped code.

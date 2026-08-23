@@ -1,6 +1,7 @@
 > **This is Cogneiss' fork** of [nunomaduro/laravel-starter-kit-inertia-react](https://github.com/nunomaduro/laravel-starter-kit-inertia-react).
 > It tracks upstream and adds passkey (WebAuthn) sign-in, magic-link login,
-> organizations with role-based access control, and a
+> organizations with role-based access control, a resource spine with a
+> `app:make-resource` scaffolder, and a
 > [Base UI](https://base-ui.com) component layer (shadcn `base-nova`) in place of Radix.
 > See [FEATURES.md](FEATURES.md) for the full list.
 
@@ -29,6 +30,8 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Fully Actions-Oriented Architecture**: Every operation is encapsulated in a single-action class
 - **Cruddy by Design**: Standardized CRUD operations for all controllers, actions, and Inertia & React pages
 - **100% Type Coverage**: Every method, property, and parameter is explicitly typed
+- **Typed Payloads, Not Just Typed Routes**: Wayfinder types your routes; `laravel-data` plus `#[TypeScript]` types every Inertia payload, so a renamed field breaks `tsc` instead of rendering `undefined`
+- **One Command Per New Model**: `php artisan app:make-resource Project` writes the model, migration, Data class, policy, action, request, controller, adapter, page and tests — all of it passing `composer test` unedited
 - **Zero Tolerance for Code Smells**: Rector, PHPStan, OxLint, and Oxfmt at maximum strictness catch issues before they become bugs
 - **Immutable-First Architecture**: Data structures favor immutability to prevent unexpected mutations
 - **Fail-Fast Philosophy**: Errors are caught at compile-time, not runtime
@@ -38,7 +41,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
 - **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
 - **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
-- **Full Testing Suite**: 383 tests with 100% code coverage using Pest
+- **Full Testing Suite**: 473 tests with 100% code coverage using Pest
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
@@ -68,6 +71,10 @@ php artisan db:seed
 # Start the development server
 composer dev
 ```
+
+If anything misbehaves, run `php artisan app:doctor` — it checks PHP, extensions,
+the coverage driver, `.env`, the database, migrations, bun, the Vite manifest and
+the generated TypeScript, and prints the command that fixes whatever failed.
 
 ### Environment
 

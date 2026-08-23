@@ -54,12 +54,12 @@ Nothing else to do. To verify: `git config core.hooksPath` should print
 After every commit, `.githooks/post-commit` refreshes four graphs so they stay in
 sync with the code:
 
-| Command | Output | Log (under `~/.cache/`) |
-| --- | --- | --- |
-| `graphify` incremental rebuild | `graphify-out/` | `graphify-rebuild.log` |
-| `code-review-graph update` | `.code-review-graph/graph.db` | `code-review-graph-rebuild.log` |
-| `gitnexus analyze . --skip-agents-md` | `.gitnexus/` | `gitnexus-rebuild.log` |
-| `php artisan brain:scan` | `storage/app/laravel-brain/` | — (foreground) |
+| Command                               | Output                        | Log (under `~/.cache/`)         |
+| ------------------------------------- | ----------------------------- | ------------------------------- |
+| `graphify` incremental rebuild        | `graphify-out/`               | `graphify-rebuild.log`          |
+| `code-review-graph update`            | `.code-review-graph/graph.db` | `code-review-graph-rebuild.log` |
+| `gitnexus analyze . --skip-agents-md` | `.gitnexus/`                  | `gitnexus-rebuild.log`          |
+| `php artisan brain:scan`              | `storage/app/laravel-brain/`  | — (foreground)                  |
 
 The first three run detached, so `git commit` returns immediately. `brain:scan`
 runs in the foreground because it needs the app booted, but it finishes in under
@@ -150,11 +150,11 @@ and friends, which goes stale on the next commit and is re-read every turn.
 implement `App\Auth\Contracts\OrganizationResolver`, so switching is one env
 value and nothing else.
 
-| Value | How it resolves | What changes for you |
-| --- | --- | --- |
-| `session` (default) | The organization the user last switched to, stored on the user as `current_organization_id`. | Nothing. The switcher in the sidebar sets it. |
-| `subdomain` | The first host label — `acme.example.test` resolves the organization with slug `acme`. | You need wildcard DNS and a wildcard certificate, and the switcher has to send users to another host. Sign-up and invitation acceptance still happen on the apex, so route those deliberately. |
-| `single` | The only organization in the database. | Only for apps that will never have a second one. The switcher stays hidden. |
+| Value               | How it resolves                                                                              | What changes for you                                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `session` (default) | The organization the user last switched to, stored on the user as `current_organization_id`. | Nothing. The switcher in the sidebar sets it.                                                                                                                                                  |
+| `subdomain`         | The first host label — `acme.example.test` resolves the organization with slug `acme`.       | You need wildcard DNS and a wildcard certificate, and the switcher has to send users to another host. Sign-up and invitation acceptance still happen on the apex, so route those deliberately. |
+| `single`            | The only organization in the database.                                                       | Only for apps that will never have a second one. The switcher stays hidden.                                                                                                                    |
 
 ### `ORGANIZATIONS_STRICT`
 
@@ -193,20 +193,20 @@ entry plus a `KnownFeatures`-guarded link.
    `config/services.php`.
 2. Put the credentials in `.env` (never in `.env.example`, never in git):
 
-   ```dotenv
-   GOOGLE_CLIENT_ID=...
-   GOOGLE_CLIENT_SECRET=...
-   ```
+    ```dotenv
+    GOOGLE_CLIENT_ID=...
+    GOOGLE_CLIENT_SECRET=...
+    ```
 
 3. Enable the feature:
 
-   ```dotenv
-   FEATURE_SOCIAL_LOGIN_ENABLED=true
-   ```
+    ```dotenv
+    FEATURE_SOCIAL_LOGIN_ENABLED=true
+    ```
 
-   Per-organization overrides live in the `feature_overrides` table and win over
-   the env default; `php artisan app:expire-feature-overrides` clears the ones
-   that have expired.
+    Per-organization overrides live in the `feature_overrides` table and win over
+    the env default; `php artisan app:expire-feature-overrides` clears the ones
+    that have expired.
 
 An OAuth identity whose email matches an existing **verified** account links to
 that account rather than creating a second one, so a user who signed up with a
@@ -214,10 +214,87 @@ password can start using Google later without losing anything. If the local
 account has not verified its email, linking is refused — anybody can sign up
 with somebody else's address, and auto-linking would hand them the account.
 
+## Adding a model
+
+Run the generator. Do not hand-write the files — there are ten of them across as
+many conventions, plus a 100% coverage gate, and the guards below expect exactly
+what the generator emits.
+
+```bash
+php artisan app:make-resource Project
+```
+
+That writes the model, migration, factory, Data class, policy, action, form
+request, controller (`create`/`store`), resource adapter, the create page, four
+tests, the route line and the permission entry. It passes `composer test` as
+generated, before you have touched anything. Then:
+
+1. Add your columns to `database/migrations/*_create_projects_table.php` and run
+   `php artisan migrate`.
+2. Add the matching fields to `app/Data/ProjectData.php` and to the factory.
+3. Run `composer typescript:generate` and commit
+   `resources/js/types/generated.d.ts` with the rest of the change.
+4. Check the route the generator appended to `routes/web.php` sits in the
+   middleware group you want.
+
+`--dry-run` lists what it would write and touches nothing. `--force` overwrites
+existing files. `--no-migration` skips the migration for a model whose table
+already exists.
+
+### Generated TypeScript
+
+`resources/js/types/generated.d.ts` is committed on purpose: CI, your editor and
+a fresh clone all get the payload types without running a build step, and a stale
+file shows up as a diff in review rather than as `undefined` in the browser.
+Regenerate it whenever you add, rename or remove a field on anything in
+`app/Data` — `composer lint` does it for you, and `php artisan app:doctor` fails
+if the committed copy no longer matches the PHP.
+
+### When a convention guard fails
+
+The guards live in `tests/Unit/Conventions/ConventionTest.php` and each failure
+message names the fix.
+
+| Guard | Fires when                                            | Fix                                                                |
+| ----- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| G1    | A model in `app/Models` has no factory                | Write the factory, or allowlist under `models_without_factory`     |
+| G4    | A class in `app/Data` is missing `#[TypeScript]`      | Add the attribute — without it the type never reaches the frontend |
+| G5    | A model has no adapter in `app/Resources/Definitions` | `php artisan app:make-resource <Name>`, or allowlist it            |
+
+Allowlisting is legitimate — an append-only audit table has no adapter because
+nothing ever links to a row. Do it properly, in `config/conventions.php`, keyed
+by class with a real sentence as the value:
+
+```php
+'non_resource_models' => [
+    LoginHistory::class => 'Append-only audit table, read through UserData, never linked.',
+],
+```
+
+Never edit a guard to make it pass, and never lower the coverage threshold. The
+reason string is the whole point: a reviewer can tell a decision from an escape
+hatch, and a stale exception reads as stale.
+
 ## Everyday commands
 
 ```bash
-composer dev    # server + queue + logs + vite
-composer test   # lint, type coverage, static analysis, unit tests
-composer lint   # rector + pint + frontend lint
+composer dev            # server + queue + logs + vite
+composer test           # lint, type coverage, static analysis, unit tests
+composer lint           # rector + pint + frontend lint
+php artisan app:doctor  # is this machine able to run, test and build the app
 ```
+
+`app:doctor` prints one line per check and, for anything that failed, the exact
+command that fixes it:
+
+```
+  PHP 8.5.0 ............................. PASS
+  Coverage driver ....................... FAIL
+  ⇂ Coverage driver: composer test:unit needs one. Run it through Herd: herd coverage composer test:unit
+```
+
+Exit code is 1 if any check failed, so it drops straight into a script; `--json`
+gives the same results as machine-readable output. One check has a side effect
+worth knowing about: "Generated TypeScript" regenerates the file and then asks
+git whether anything moved, so a stale file is rewritten in place for you and the
+fix line tells you to commit it.
