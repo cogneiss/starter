@@ -71,7 +71,7 @@
         {
             "id": 11,
             "name": "SBOM on release",
-            "status": "failing",
+            "status": "passing",
             "command": "composer sbom && test -s sbom.json && rm sbom.json"
         },
         {

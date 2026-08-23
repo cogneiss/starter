@@ -44,3 +44,4 @@ nginx.pid
 /resources/js/types/typescript-transformer-manifest.json
 
 /tests/Browser/Screenshots
+/sbom.json

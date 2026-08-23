@@ -24,3 +24,33 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # A released product ships a dependency inventory. Generated on release
+      # rather than on every push, and attached to the release instead of
+      # committed: the file changes on every `composer update`, and the release
+      # already carries the version it belongs to.
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        if: ${{ steps.release.outputs.release_created }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Generate SBOM
+        if: ${{ steps.release.outputs.release_created }}
+        run: composer sbom
+
+      - name: Attach SBOM To The Release
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ steps.release.outputs.tag_name }}" sbom.json --clobber
