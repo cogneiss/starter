@@ -14,7 +14,7 @@ it('labels a user agent', function (?string $agent, string $device): void {
     ['Mozilla/5.0 (Android 14; Mobile) Gecko/120.0 Firefox/120.0', 'Firefox on Android'],
     ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36', 'Chrome on macOS'],
     ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1', 'Safari on iOS'],
-    ['Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1', 'Safari on iPadOS'],
+    ['Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1', 'Safari on iOS'],
     [null, 'Unknown browser on unknown platform'],
 ]);
 
