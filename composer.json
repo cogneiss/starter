@@ -60,7 +60,8 @@
             "@php artisan migrate --force",
             "@php artisan db:seed --class=RoleTemplateSeeder --force",
             "bun install",
-            "bun run build"
+            "bun run build",
+            "@php -r \"echo PHP_EOL, 'Setup done. If anything misbehaves, run: php artisan app:doctor', PHP_EOL;\""
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
