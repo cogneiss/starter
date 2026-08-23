@@ -3,6 +3,7 @@ export type Organization = {
     name: string;
     slug: string;
     personal: boolean;
+    require_two_factor: boolean;
 };
 
 export type OrganizationMember = {

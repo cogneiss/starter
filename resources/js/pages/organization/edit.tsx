@@ -3,6 +3,7 @@ import OrganizationController from '@/actions/App/Http/Controllers/OrganizationC
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -74,6 +75,41 @@ export default function Edit() {
                                     <InputError
                                         className="mt-2"
                                         message={errors.slug}
+                                    />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="hidden"
+                                            name="require_two_factor"
+                                            value="0"
+                                        />
+
+                                        <Checkbox
+                                            id="require_two_factor"
+                                            name="require_two_factor"
+                                            value="1"
+                                            defaultChecked={
+                                                organization?.require_two_factor
+                                            }
+                                            data-test="require-two-factor-checkbox"
+                                        />
+
+                                        <Label htmlFor="require_two_factor">
+                                            Require two-factor authentication
+                                        </Label>
+                                    </div>
+
+                                    <p className="text-sm text-muted-foreground">
+                                        Members without two-factor
+                                        authentication are sent to set it up
+                                        before they can use the app.
+                                    </p>
+
+                                    <InputError
+                                        className="mt-2"
+                                        message={errors.require_two_factor}
                                     />
                                 </div>
 

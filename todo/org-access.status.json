@@ -53,7 +53,7 @@
         {
             "id": 9,
             "name": "per-organization forced 2FA",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=TwoFactor"
         },
         {

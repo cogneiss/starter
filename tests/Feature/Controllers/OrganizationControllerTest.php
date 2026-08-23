@@ -61,6 +61,7 @@ it('may update the organization', function (): void {
         ->patch(route('organization.update'), [
             'name' => 'Renamed Inc.',
             'slug' => 'renamed-inc',
+            'require_two_factor' => false,
         ]);
 
     $response->assertRedirectToRoute('organization.edit')
@@ -86,6 +87,7 @@ it('rejects a slug already taken by another organization', function (): void {
         ->patch(route('organization.update'), [
             'name' => 'Acme',
             'slug' => 'taken',
+            'require_two_factor' => false,
         ])
         ->assertSessionHasErrors('slug');
 });
@@ -110,8 +112,24 @@ it('refuses to update the organization without the update permission', function 
     $user = User::factory()->forOrganization($organization, 'Member')->create();
 
     $this->actingAs($user)
-        ->patch(route('organization.update'), ['name' => 'Renamed', 'slug' => 'renamed'])
+        ->patch(route('organization.update'), ['name' => 'Renamed', 'slug' => 'renamed', 'require_two_factor' => false])
         ->assertForbidden();
 
     expect($organization->refresh()->name)->toBe('Acme Inc.');
+});
+
+it('may require two-factor authentication for the organization', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization)->create();
+
+    $this->actingAs($user)
+        ->fromRoute('organization.edit')
+        ->patch(route('organization.update'), [
+            'name' => $organization->name,
+            'slug' => $organization->slug,
+            'require_two_factor' => true,
+        ])
+        ->assertRedirectToRoute('organization.edit');
+
+    expect($organization->refresh()->require_two_factor)->toBeTrue();
 });

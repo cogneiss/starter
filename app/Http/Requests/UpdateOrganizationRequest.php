@@ -30,6 +30,8 @@ final class UpdateOrganizationRequest extends FormRequest
                 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/',
                 Rule::unique(Organization::class)->ignore($organization->id),
             ],
+
+            'require_two_factor' => ['required', 'boolean'],
         ];
     }
 }

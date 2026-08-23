@@ -24,11 +24,11 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
-Route::middleware(['auth', 'verified', 'organization'])->group(function (): void {
+Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(function (): void {
     Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'two-factor'])->group(function (): void {
     // Organization...
     Route::get('organizations/create', [OrganizationController::class, 'create'])
         ->name('organization.create');
@@ -70,7 +70,7 @@ Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::
     ->middleware('throttle:6,1')
     ->name('organization-invitation-acceptance.update');
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'two-factor'])->group(function (): void {
     // User...
     Route::delete('user', [UserController::class, 'destroy'])
         ->middleware('not-impersonating')

@@ -44,7 +44,7 @@ final class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
             ],
-            'organization' => resolve(OrganizationContext::class)->get()?->only(['id', 'name', 'slug', 'personal']),
+            'organization' => resolve(OrganizationContext::class)->get()?->only(['id', 'name', 'slug', 'personal', 'require_two_factor']),
             'organizations' => $user instanceof User ? $this->organizationsFor($user) : [],
             'impersonating' => resolve(Impersonation::class)->impersonator()?->only(['id', 'name']),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
@@ -62,7 +62,7 @@ final class HandleInertiaRequests extends Middleware
             ->wherePivot('status', MembershipStatus::Active->value)
             ->orderBy('name')
             ->get()
-            ->map(fn (Organization $organization): array => $organization->only(['id', 'name', 'slug', 'personal']))
+            ->map(fn (Organization $organization): array => $organization->only(['id', 'name', 'slug', 'personal', 'require_two_factor']))
             ->all();
     }
 }
