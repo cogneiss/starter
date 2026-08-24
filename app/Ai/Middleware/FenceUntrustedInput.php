@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Ai\Middleware;
 
+use App\Support\UntrustedContent;
 use Closure;
 use Laravel\Ai\Prompts\AgentPrompt;
 
 /**
- * Phase 5 fills this in: fence retrieved and user-supplied content so a model cannot read it as instructions.
+ * Everything a member types is data, not instruction. The body is fenced here,
+ * once, rather than at each call site, so an agent added later cannot forget.
  *
- * The slot exists from phase 3 so that the pipeline order in
- * App\Ai\Agents\Concerns\HasDefaultMiddleware is fixed before any of the
- * behaviour lands on top of it.
+ * Retrieved documents are fenced where they are retrieved — the tool knows what
+ * it fetched and can label it; this slot only ever sees the prompt body.
  */
 final class FenceUntrustedInput
 {
     public function handle(AgentPrompt $prompt, Closure $next): mixed
     {
-        return $next($prompt);
+        return $next($prompt->revise(
+            UntrustedContent::fence($prompt->prompt, 'member request'),
+        ));
     }
 }

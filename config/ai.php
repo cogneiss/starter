@@ -96,6 +96,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Guardrails
+    |--------------------------------------------------------------------------
+    |
+    | Comma separated, both empty by default. `egress` is the exact list of
+    | hosts App\Support\AiEgress lets an agent reach — membership, not a domain
+    | pattern, and an empty list means an agent reaches nothing at all.
+    | `denied_topics` are substrings App\Ai\Middleware\FilterTopics refuses a
+    | prompt for before it costs anything.
+    |
+    */
+
+    'guardrails' => [
+        'egress' => array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('AI_EGRESS_ALLOWLIST', '')),
+        ))),
+        'denied_topics' => array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('AI_DENIED_TOPICS', '')),
+        ))),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Model Pricing
     |--------------------------------------------------------------------------
     |
