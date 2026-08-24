@@ -7,7 +7,6 @@ namespace App\Ai\Agents;
 use App\Ai\Agents\Concerns\HasDefaultMiddleware;
 use App\Ai\Concerns\OrganizationScopedAgent;
 use App\Ai\Contracts\OrganizationScoped;
-use App\Enums\AiBlockType;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasMiddleware;
 use Laravel\Ai\Promptable;
@@ -28,16 +27,15 @@ final class BlockComposer implements Agent, HasMiddleware, OrganizationScoped
 
     public function instructions(): string
     {
-        $types = implode(', ', array_map(
-            fn (AiBlockType $type): string => $type->value,
-            AiBlockType::cases(),
-        ));
-
-        return <<<PROMPT
+        // Nothing is interpolated here on purpose: instructions() is the one
+        // string the model is told to trust, and the convention guard in
+        // tests/Unit/Conventions/InjectionConventionTest.php keeps it literal.
+        return <<<'PROMPT'
         You answer with user interface blocks, never with prose and never with HTML.
 
         Emit one JSON object per line and nothing else — no code fences, no
-        commentary, no blank lines. Each object has a "type" of one of: {$types}.
+        commentary, no blank lines. Each object has a "type" of one of: text, markdown, table,
+        list, metric, form, confirm.
 
         text:     {"type":"text","text":"..."}
         markdown: {"type":"markdown","markdown":"..."}
