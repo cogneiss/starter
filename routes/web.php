@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
@@ -118,6 +119,10 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
         ->name('user-impersonation.store');
     Route::delete('impersonation', [UserImpersonationController::class, 'destroy'])
         ->name('user-impersonation.destroy');
+
+    // AI Confirmations...
+    Route::post('ai/confirm/{token}', [AiConfirmController::class, 'store'])
+        ->name('ai-confirm.store');
 });
 
 Route::middleware('guest')->group(function (): void {

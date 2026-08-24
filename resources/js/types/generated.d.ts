@@ -1,4 +1,10 @@
 export type AiAuditStatus = 'ok' | 'blocked' | 'failed';
+export type AiConfirmToken = {
+id: string,
+action: string,
+summary: string,
+expires_at: string,
+};
 export type BrowserSession = {
 id: string,
 device: string,
@@ -9,6 +15,10 @@ current: boolean,
 export type Impersonator = {
 id: string,
 name: string,
+};
+export type InviteMember = {
+email: string,
+role: string,
 };
 export type KnownFeatures = 'impersonation-enabled' | 'social-login-enabled';
 export type LoginHistoryEntry = {

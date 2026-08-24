@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Ai\Actions\InviteMember;
 use Laravel\Ai\Enums\Lab;
 
 return [
@@ -116,6 +117,28 @@ return [
             trim(...),
             explode(',', (string) env('AI_DENIED_TOPICS', '')),
         ))),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Confirmable Actions
+    |--------------------------------------------------------------------------
+    |
+    | Agents never write. They propose one of the `ai.actions` keys below, and
+    | the person is shown a confirmation that expires after `ttl` minutes and is
+    | good for one use. The map is the allowlist: a class name coming out of a
+    | model is never resolved, so the worst an injected prompt can do is name a
+    | key that is already permitted, to a person who is already permitted to
+    | run it.
+    |
+    */
+
+    'confirm' => [
+        'ttl' => env('AI_CONFIRM_TTL', 15),
+    ],
+
+    'actions' => [
+        'invite-member' => InviteMember::class,
     ],
 
     /*
