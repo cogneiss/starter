@@ -10,6 +10,8 @@ code_refs:
     - app/Console/Commands/ResourceCacheCommand.php
     - app/Console/Commands/ResourceClearCommand.php
     - app/Console/Commands/WikiLintCommand.php
+    - app/Console/Commands/WikiAuditCommand.php
+    - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
 updated: 2026-08-24
@@ -17,7 +19,7 @@ updated: 2026-08-24
 
 # Console commands
 
-Seven first-party commands. Each one either answers a question a newcomer would
+Eight first-party commands. Each one either answers a question a newcomer would
 otherwise ask a human, or maintains something that would otherwise drift.
 
 | Command                                    | Class                           | Does                                         |
@@ -29,6 +31,7 @@ otherwise ask a human, or maintains something that would otherwise drift.
 | `php artisan resource:cache`               | `ResourceCacheCommand`          | cache the resource registry for production   |
 | `php artisan resource:clear`               | `ResourceClearCommand`          | undo the cache                               |
 | `php artisan wiki:lint`                    | `WikiLintCommand`               | fail the build when a wiki page has rotted   |
+| `php artisan wiki:audit`                   | `WikiAuditCommand`              | write the `/document` worklist, never blocks |
 
 `routes/console.php` holds the schedule for the ones that run unattended.
 
@@ -43,6 +46,15 @@ code is 1 if anything failed.
 
 It exists because the alternative is a README section that goes stale and a
 newcomer who cannot tell a missing extension from a broken checkout.
+
+Third-party credentials are listed separately, under `optional` in the JSON and
+as `off — …` lines in the table: social login, the mail transport, the s3 disk
+and the Slack token. None of them move the exit code. A blank
+`GOOGLE_CLIENT_ID` means social login is off, not that the machine is broken,
+and printing it as FAIL next to a missing `APP_KEY` is how people learn to skim
+past this command. `tests/Feature/ZeroKeyBootTest.php` is the other half of that
+claim: it blanks every credential through the config layer and asserts each page
+the kit ships still answers 200.
 
 ## wiki:lint
 

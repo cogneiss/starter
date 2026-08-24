@@ -143,6 +143,31 @@ it('fails when the generated TypeScript is stale', function (): void {
     expect($checks['Generated TypeScript']['ok'])->toBeFalse();
 });
 
+it('reports a missing third-party credential as off rather than failed', function (): void {
+    config()->set('services.google.client_id', '');
+    config()->set('services.github.client_id', '');
+    config()->set('services.microsoft.client_id', '');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $optional = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'])
+        ->keyBy('name');
+
+    expect($optional['Social login']['set'])->toBeFalse()
+        ->and($optional['Social login']['disables'])->toBe('the provider buttons stay hidden');
+});
+
+it('reports a configured third-party credential as set', function (): void {
+    config()->set('services.google.client_id', 'a-client-id');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $optional = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'])
+        ->keyBy('name');
+
+    expect($optional['Social login']['set'])->toBeTrue();
+});
+
 it('points at /document when documentation work is outstanding', function (): void {
     withAudit(
         json_encode(['stale' => [['page' => 'a'], ['page' => 'b']], 'undocumented' => [['path' => 'c']], 'orphaned' => []]),

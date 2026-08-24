@@ -46,8 +46,8 @@ final class DoctorCommand extends Command
         $failed = array_values(array_filter($checks, static fn (array $check): bool => ! $check['ok']));
 
         $this->option('json')
-            ? $this->renderJson($checks, $failed)
-            : $this->renderLines($checks, $failed);
+            ? $this->renderJson($checks, $failed, $this->optional())
+            : $this->renderLines($checks, $failed, $this->optional());
 
         return $failed === [] ? self::SUCCESS : self::FAILURE;
     }
@@ -228,6 +228,51 @@ final class DoctorCommand extends Command
     }
 
     /**
+     * Third-party credentials. Missing is not a failure: the kit is designed to
+     * run with none of them, so a blank GOOGLE_CLIENT_ID is a feature that is
+     * off, not a broken machine. Reporting it as FAIL next to a missing APP_KEY
+     * is how people learn to ignore this command.
+     *
+     * @return list<array{name: string, set: bool, disables: string}>
+     */
+    private function optional(): array
+    {
+        return [
+            $this->credential('Social login', 'the provider buttons stay hidden', [
+                'services.google.client_id',
+                'services.github.client_id',
+                'services.microsoft.client_id',
+            ]),
+            // Judged by the transport rather than by a key, because each one
+            // takes different credentials and two of them take none at all.
+            [
+                'name' => 'Mail transport',
+                'set' => ! in_array(config('mail.default'), ['log', 'array'], true),
+                'disables' => 'mail is written to the log, not sent',
+            ],
+            $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
+            $this->credential('Slack notifications', 'Slack notifications are dropped', [
+                'services.slack.notifications.bot_user_oauth_token',
+            ]),
+        ];
+    }
+
+    /**
+     * @param  list<string>  $keys
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function credential(string $name, string $disables, array $keys): array
+    {
+        $set = array_any($keys, static function (string $key): bool {
+            $value = config($key);
+
+            return is_string($value) && $value !== '';
+        });
+
+        return ['name' => $name, 'set' => $set, 'disables' => $disables];
+    }
+
+    /**
      * @return array{name: string, ok: bool, fix: string}
      */
     private function check(string $name, bool $ok, string $fix): array
@@ -238,12 +283,14 @@ final class DoctorCommand extends Command
     /**
      * @param  list<array{name: string, ok: bool, fix: string}>  $checks
      * @param  list<array{name: string, ok: bool, fix: string}>  $failed
+     * @param  list<array{name: string, set: bool, disables: string}>  $optional
      */
-    private function renderJson(array $checks, array $failed): void
+    private function renderJson(array $checks, array $failed, array $optional): void
     {
         $this->output->writeln(json_encode([
             'ok' => $failed === [],
             'checks' => $checks,
+            'optional' => $optional,
         ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
     }
 
@@ -280,8 +327,9 @@ final class DoctorCommand extends Command
     /**
      * @param  list<array{name: string, ok: bool, fix: string}>  $checks
      * @param  list<array{name: string, ok: bool, fix: string}>  $failed
+     * @param  list<array{name: string, set: bool, disables: string}>  $optional
      */
-    private function renderLines(array $checks, array $failed): void
+    private function renderLines(array $checks, array $failed, array $optional): void
     {
         $this->newLine();
 
@@ -289,6 +337,13 @@ final class DoctorCommand extends Command
             $this->components->twoColumnDetail(
                 $check['name'],
                 $check['ok'] ? '<fg=green>PASS</>' : '<fg=red>FAIL</>',
+            );
+        }
+
+        foreach ($optional as $credential) {
+            $this->components->twoColumnDetail(
+                $credential['name'],
+                $credential['set'] ? '<fg=green>SET</>' : sprintf('<fg=gray>off — %s</>', $credential['disables']),
             );
         }
 

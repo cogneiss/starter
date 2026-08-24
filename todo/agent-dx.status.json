@@ -22,7 +22,7 @@
         {
             "id": 3,
             "name": "documentation automation",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan wiki:audit && test -f wiki/_meta/audit.json && test -f .claude/commands/document.md"
         },
         {
