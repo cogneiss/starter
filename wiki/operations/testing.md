@@ -39,7 +39,7 @@ When a test genuinely needs a subprocess, it constructs the Symfony process
 directly rather than going through the facade the ban covers, and says why in a
 comment.
 
-Scoped models need an organization bound: use `OrganizationContext::runAs()`
+Scoped models need an organization bound: use `resolve(OrganizationContext::class)->runAs()`
 ([[domains/multi-tenancy]]). Use factory states before hand-building a model —
 `UserFactory` ships `unverified()` and `withoutTwoFactor()`, and `db:seed` creates
 `test@example.com` / `password` for local sign-in.

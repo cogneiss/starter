@@ -14,15 +14,36 @@ usually an agent that has never opened these files.
 
 Three documentation layers exist, and they do different jobs. Do not merge them:
 
-| Layer             | Lives in            | Job                                                                      |
-| ----------------- | ------------------- | ------------------------------------------------------------------------ |
-| Path-scoped rules | `.ai/rules/*.md`    | Short, imperative, loaded automatically when a matching file is touched. |
-| Wiki pages        | `wiki/**`           | The long version: how a thing works, why it is shaped that way.          |
-| Skill packs       | `.claude/skills/*/` | Decision procedures for one domain, loaded on demand.                    |
+| Layer             | Lives in                                          | Job                                                                      |
+| ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| Path-scoped rules | `.ai/rules/*.md`                                  | Short, imperative, loaded automatically when a matching file is touched. |
+| Wiki pages        | `wiki/**`                                         | The long version: how a thing works, why it is shaped that way.          |
+| Skill packs       | `.ai/skills/*/`, published to `.claude/skills/*/` | Decision procedures for one domain, loaded on demand.                    |
 
 A rule says "do this". A wiki page says "here is the whole thing, and here is the
 file that proves it". Every claim on a page names a file. Where a page is unsure,
 it says the behaviour is not documented rather than guessing.
+
+## Which layer does a new piece of guidance belong in
+
+Answer in this order, and put it in exactly one place:
+
+1. **Is it a constraint that must hold every time a matching file is touched?**
+   A rule. `.ai/rules/`, terse and imperative, with a `paths:` glob and a row in
+   `.ai/rules/index.md`. Rules are loaded automatically, so they stay short —
+   anything long enough to skim is too long to be a rule.
+2. **Is it a procedure for a task — "when you are doing X, do Y, in this order"?**
+   A skill. `.ai/skills/<name>/SKILL.md`, authored here and published into the
+   agent directories by `php artisan boost:install --skills`. Three ship:
+   `resource-spine`, `org-access`, `testing-gates`. A skill is read while
+   working, so it names exact commands and file paths and states the failure it
+   prevents. About 150 lines is the ceiling.
+3. **Is it the reasoning — why the thing is shaped this way, what was rejected?**
+   A wiki page. It is the only layer with room for the alternatives that lost.
+
+The layers cite each other rather than repeat: a rule can say "see the wiki
+page", and every skill ends with the pages behind it. Duplicated guidance drifts,
+and the copy that drifts is always the one being read.
 
 Pages carry frontmatter, and `php artisan wiki:lint` fails the build when a page
 rots. The rules it enforces are written down in [`_meta/lint.md`](_meta/lint.md).

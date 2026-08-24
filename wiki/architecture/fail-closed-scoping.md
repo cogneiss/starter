@@ -36,7 +36,7 @@ organization.
   `.ai/rules/app.md` it carries a comment saying why. A hand-written
   `where('organization_id', ...)` is not an escape hatch, it is a second
   implementation of the scope that will disagree with the first one.
-- `OrganizationContext::runAs()` — binds an organization for the duration of a
+- `runAs()` on the `OrganizationContext` singleton — binds an organization for the duration of a
   closure. This is how tests and queued jobs establish a tenant. It restores the
   previous context afterwards, so nesting is safe.
 

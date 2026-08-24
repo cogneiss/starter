@@ -16,8 +16,13 @@ Every policy method checks two things: a relationship to the record, and a named
 permission.
 
 ```php
-return $user->belongsToOrganization($organization) && $user->can('organizations.update');
+return $this->context->id() === $organization->id && $user->can('organization.update');
 ```
+
+`app/Policies/OrganizationPolicy.php` injects `OrganizationContext` to do it. The
+test reads the method body, so the organization check has to be visible there as
+`$this->context->id()` or `organization_id` — a helper that hides it fails the
+convention even when the logic is right.
 
 `tests/Unit/AuthorizationConventionTest.php` enforces it, so a policy method that
 checks one gate fails the suite rather than shipping.
@@ -29,7 +34,7 @@ permission answers "does their role include this verb". They fail differently:
 
 - Relationship only — every member of an organization can do everything to it.
   Roles become decoration.
-- Permission only — a user with `organizations.update` can update _any_
+- Permission only — a user with `organization.update` can update _any_
   organization, because a permission is a role-level fact and knows nothing about
   which record is in front of it. Under `spatie/laravel-permission` with
   organization-scoped teams the blast radius is smaller, but "the right verb in

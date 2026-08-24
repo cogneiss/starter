@@ -17,15 +17,20 @@ updated: 2026-08-24
 
 Three layers, each with a different job.
 
-| Layer               | Holds                                                      | Read by                        |
-| ------------------- | ---------------------------------------------------------- | ------------------------------ |
-| `.ai/rules/*.md`    | Path-scoped constraints — short, imperative, always loaded | every agent, on every edit     |
-| `wiki/**`           | Explanations — why the code is shaped this way, with proof | on demand, when a page matches |
-| `.claude/skills/*/` | Decision procedures for one domain                         | when the domain is entered     |
+| Layer            | Holds                                                      | Read by                        |
+| ---------------- | ---------------------------------------------------------- | ------------------------------ |
+| `.ai/rules/*.md` | Path-scoped constraints — short, imperative, always loaded | every agent, on every edit     |
+| `wiki/**`        | Explanations — why the code is shaped this way, with proof | on demand, when a page matches |
+| `.ai/skills/*/`  | Decision procedures for one domain                         | when the domain is entered     |
 
 Rules say what you may not do. The wiki says why. Skills say how to work through
 a specific kind of change. A fact belongs in exactly one of them
 ([[index]]).
+
+Skills are authored in `.ai/skills/<name>/SKILL.md` and published into
+`.claude/skills/*/` alongside the vendor packs by
+`php artisan boost:install --skills`. Edit the source, not the published copy.
+Three are first-party: `resource-spine`, `org-access`, `testing-gates`.
 
 ## Generated files
 

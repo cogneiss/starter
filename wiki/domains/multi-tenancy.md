@@ -56,7 +56,7 @@ worked.
 Bind explicitly:
 
 ```php
-OrganizationContext::runAs($organization, function () {
+resolve(OrganizationContext::class)->runAs($organization, function (): void {
     // scoped queries in here see $organization
 });
 ```

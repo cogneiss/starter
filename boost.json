@@ -23,6 +23,9 @@
         "wayfinder-development",
         "pest-testing",
         "inertia-react-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "org-access",
+        "resource-spine",
+        "testing-gates"
     ]
 }
