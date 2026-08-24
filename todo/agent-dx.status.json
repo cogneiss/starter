@@ -1,0 +1,59 @@
+{
+    "plan": "agent and AI-native developer experience",
+    "created": "2026-08-24",
+    "follows": [
+        "todo/org-access.status.json",
+        "todo/resource-spine.status.json",
+        "todo/ci-quality.status.json"
+    ],
+    "phases": [
+        {
+            "id": 1,
+            "name": "guideline single source and drift gate",
+            "status": "passing",
+            "command": "php artisan test --compact --filter=GuidelinesAreCurrent"
+        },
+        {
+            "id": 2,
+            "name": "wiki seeded and linted",
+            "status": "failing",
+            "command": "composer test:wiki"
+        },
+        {
+            "id": 3,
+            "name": "documentation automation",
+            "status": "failing",
+            "command": "php artisan wiki:audit && test -f wiki/_meta/audit.json && test -f .claude/commands/document.md"
+        },
+        {
+            "id": 4,
+            "name": "zero-key boot guard",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=ZeroKeyBoot"
+        },
+        {
+            "id": 5,
+            "name": "command parity gate",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=CommandsAreDocumented"
+        },
+        {
+            "id": 6,
+            "name": "first-party skill packs",
+            "status": "failing",
+            "command": "test -d .ai/skills/resource-spine && test -d .ai/skills/org-access && test -d .ai/skills/testing-gates"
+        },
+        {
+            "id": 7,
+            "name": "documentation",
+            "status": "failing",
+            "command": "rg -q 'Agent and AI-native' FEATURES.md && test -f .ai/rules/docs.md && rg -q 'wiki' README.md"
+        },
+        {
+            "id": 8,
+            "name": "full gate green",
+            "status": "failing",
+            "command": "composer test"
+        }
+    ]
+}

@@ -81,7 +81,9 @@
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan clear",
-            "@update:requirements"
+            "@update:requirements",
+            "@php artisan boost:install --guidelines --skills --no-interaction",
+            "@php -r \"copy('AGENTS.md', 'GEMINI.md');\""
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
