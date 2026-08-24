@@ -50,6 +50,7 @@ All of these run on every pull request and all of them have to be green:
 | `composer test:dead-code` | Code nothing reaches                                                    |
 | `composer test:deps`      | Composer packages nothing requires                                      |
 | `composer test:knip`      | Unused frontend files, exports and dependencies                         |
+| `composer test:wiki`      | Wiki pages that cite a moved file, or that have gone stale              |
 | gitleaks                  | Anything that looks like a credential                                   |
 
 Run `composer test` before you push. `composer test:fast` is the quick loop
@@ -65,6 +66,21 @@ add a branch, add the test that takes it.
 
 Accessibility is a gate too. If you add a page, add it to
 `tests/Browser/AccessibilityTest.php` with its own distinct title.
+
+## Documentation
+
+New code wants a wiki page, or a paragraph in an existing one. `php artisan
+wiki:audit` lists application files no page mentions and `/document` writes the
+prose from the code. This half is reported, never enforced: blocking on "this
+new file has no page" buys one-line pages written to clear a gate.
+
+Changing code an existing page cites **is** enforced. `composer test:wiki` fails
+when a file named in a page's `code_refs` has changed since the page was last
+updated, so the page belongs in the same pull request as the change, not a
+follow-up. A refactor touching ten cited files turns ten pages red at once —
+run `/document` as part of the refactor rather than at the end of it. Bumping a
+page's `updated:` date without rereading the page clears the gate and leaves the
+wrong claim in place; that is the one way to defeat this check, so do not.
 
 ## If a gate fails
 

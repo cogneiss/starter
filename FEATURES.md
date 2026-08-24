@@ -346,6 +346,56 @@ of the four run as an MCP server on purpose: an always-on MCP server re-sends it
 tool schemas every conversation turn whether you use it or not, which is the
 opposite of the point. Setup details are in [SETUP.md](SETUP.md).
 
+### Agent and AI-native DX
+
+Five pieces, each aimed at the same problem: an agent opening this repo for the
+first time has no idea what is load-bearing, and the usual answer — a long
+`CLAUDE.md` nobody maintains — goes stale in a week.
+
+**One source for the agent guidelines.** `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
+`.cursor/rules/laravel-boost.mdc` and `.junie/guidelines.md` are all generated
+from `.ai/guidelines/*.blade.php` by `php artisan boost:install --guidelines
+--skills`, which runs on every `composer update`.
+`tests/Feature/Docs/GuidelinesAreCurrentTest.php` fails when a generated file
+drifts from its source, so the five files agree with each other by construction
+instead of by discipline. Edit the Blade source; never the outputs.
+
+**A wiki with a blocking lint.** `wiki/**` holds the long explanations that do
+not fit in a terse rule — how a thing works, why it is shaped that way, what was
+rejected. Every page carries frontmatter listing the files it describes in
+`code_refs`, and `php artisan wiki:lint` (`composer test:wiki`) fails the build
+on five conditions, the sharp one being staleness: change a file a page cites
+without updating the page and CI goes red. That makes documentation drift a test
+failure rather than a good intention.
+
+**A documentation worklist.** `php artisan wiki:audit` writes
+`wiki/_meta/audit.json`: pages gone stale, application files no page mentions,
+pages whose refs have all been deleted. `.githooks/post-commit` refreshes it
+after every commit and `php artisan app:doctor` prints the counts. The
+`/document` slash command (`.claude/commands/document.md`) reads that worklist,
+rereads the code and rewrites the pages. No language model runs in CI: the
+pipeline produces the worklist, a developer's machine writes the prose, so there
+is no API key in the build and no per-push cost.
+
+**Three first-party skill packs.** `.ai/skills/resource-spine`,
+`.ai/skills/org-access` and `.ai/skills/testing-gates` are procedures — do X,
+then Y, in this order — loaded only when the domain is entered, and published
+into `.claude/`, `.agents/`, `.cursor/`, `.junie/` and `.github/` by the same
+`boost:install` run. They cover the three places an agent reliably gets this kit
+wrong: skipping the resource generator, writing a query with no organization
+bound, and reaching for the wrong test command. The layering rule is in
+[`wiki/index.md`](wiki/index.md) — rules are normative and terse, skills are
+procedure, the wiki carries the reasoning, and a fact lives in exactly one of
+them.
+
+**Zero-key boot.** `tests/Feature/ZeroKeyBootTest.php` blanks every optional
+third-party credential through the config layer and requests every page the
+router knows about, guest and authenticated. A fresh clone with an empty `.env`
+boots and renders; social login being off is a feature switched off, not a
+stack trace. `app:doctor` reports the same split — required-and-missing is an
+error, an absent credential is a feature listed as off and never changes the
+exit code.
+
 ### Better defaults
 
 Courtesy of [Essentials](https://github.com/nunomaduro/essentials), on by
@@ -456,6 +506,14 @@ The same applies to the CI work — these were considered and left out:
 | Lighthouse / performance budgets | Scores swing with the runner, so the gate would be flaky and get ignored. axe-core covers the part that is deterministic. |
 | `composer-require-checker`       | Overlaps `composer-unused` from the other direction and is noisy against a framework that resolves a lot at runtime.      |
 | envy (`.env` drift)              | One `.env.example` and `app:doctor` already catch a missing key, and the check fires on every unrelated config change.    |
+
+The agent and documentation work left these out:
+
+| Skipped                                   | Why                                                                                                                                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bin/setup`, Sail, a devcontainer         | A third way to start the app that has to be kept in step with the other two. `composer setup` handles a fresh clone and `php artisan dev` runs the daily loop; both are already tested by `app:doctor`. |
+| A Scout-indexed, searchable wiki          | Forces the search-driver decision the resource spine deliberately does not make, for a corpus of a few dozen files that `rg` reads in milliseconds.                                                     |
+| A language model anywhere in the pipeline | `/document` runs on a developer's machine. Putting it in CI means an API key in the build, a cost on every push, and a non-deterministic gate.                                                          |
 
 The resource spine was cut back for the same reason — the pattern pays off with
 several consumers reading one adapter, and this kit has none yet:

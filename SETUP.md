@@ -39,6 +39,18 @@ backend talks over the OpenAI-compatible endpoint and errors out without it.
 A run may report that some files "produced no nodes"; the model occasionally
 omits them. Just run `graphify .` again — it retries only the missed files.
 
+## Two ways to start work
+
+| Situation                   | Run                                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh clone, once           | `composer setup` — install, `.env`, key, migrate, seed the role templates, `bun install`, build.                                |
+| Every day after that        | `php artisan dev` (or `composer dev`) — server, queue worker, log tail and Vite together, killed as a group when you stop them. |
+| Something behaves strangely | `php artisan app:doctor` — checks this machine can run, test and build the app.                                                 |
+
+There is no `bin/setup`, no Sail and no devcontainer, on purpose. Each would be a
+third way to start the app that has to be kept in step with the two above, and
+`app:doctor` already answers the question they exist to answer. Do not add one.
+
 ## Git hooks
 
 `composer install` runs the `hooks:install` script, which points git at the
@@ -96,6 +108,48 @@ without warning. Re-sync it by hand afterwards:
 ```bash
 cp AGENTS.md GEMINI.md
 ```
+
+## The documentation loop
+
+`wiki/**` holds the long-form documentation, and each page lists the files it
+describes in its `code_refs` frontmatter. Two commands act on that:
+
+| Command                  | Blocks | Does                                                                               |
+| ------------------------ | ------ | ---------------------------------------------------------------------------------- |
+| `php artisan wiki:lint`  | Yes    | Five rules, run in CI as `composer test:wiki`. Documented in `wiki/_meta/lint.md`. |
+| `php artisan wiki:audit` | No     | Rewrites `wiki/_meta/audit.json`, the worklist of pages that need work.            |
+
+The loop is: commit as usual, `.githooks/post-commit` refreshes the audit, and
+`php artisan app:doctor` prints the counts. When it reports stale or
+undocumented pages, run `/document` — it reads the worklist, rereads the code
+and rewrites the pages.
+
+**`wiki:lint` blocks on stale pages: change a file that a page names in
+`code_refs` without updating that page and CI is red until you fix it — run
+`/document`.** Staleness is judged from git, comparing when the page was last
+updated against when its cited files last changed. That means bumping a page's
+`updated:` date without reading the page also clears the gate, and leaves a wrong
+claim in the wiki with a green build over it. Do not do that; it is the one way
+this gate can be defeated silently.
+
+Pages are superseded, never deleted: a page that no longer applies gets
+`status: superseded` and the page replacing it lists the old one in `supersedes`,
+so the reasoning stays readable.
+
+### Which layer does new guidance go in
+
+Three layers, and a fact belongs to exactly one of them:
+
+| Layer                | Holds                                                                  | Add here when                                               |
+| -------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `.ai/rules/*.md`     | Terse, imperative constraints, loaded whenever a matching file is open | it must hold every time a file matching the glob is touched |
+| `.ai/skills/<name>/` | Procedures — do X, then Y, in this order — loaded on demand            | it is how to carry out a task in one domain                 |
+| `wiki/**`            | Reasoning, alternatives, what was rejected                             | it explains why, and is too long to be a rule               |
+
+Skills are authored in `.ai/skills/<name>/SKILL.md` and published into the agent
+directories by the `boost:install` run above; edit the source, never the
+published copy. New rule files need a row in `.ai/rules/index.md`. The full
+version of this split is in [`wiki/index.md`](wiki/index.md).
 
 ## Wiring the graphs into your AI editor
 

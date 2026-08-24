@@ -40,13 +40,13 @@
         {
             "id": 6,
             "name": "first-party skill packs",
-            "status": "failing",
+            "status": "passing",
             "command": "test -d .ai/skills/resource-spine && test -d .ai/skills/org-access && test -d .ai/skills/testing-gates"
         },
         {
             "id": 7,
             "name": "documentation",
-            "status": "failing",
+            "status": "passing",
             "command": "rg -q 'Agent and AI-native' FEATURES.md && test -f .ai/rules/docs.md && rg -q 'wiki' README.md"
         },
         {

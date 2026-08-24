@@ -68,7 +68,7 @@ function declaredInWebRoutes(RoutingRoute $route): bool
     $action = $route->getAction('uses');
 
     if ($action instanceof Closure) {
-        return (new ReflectionFunction($action))->getFileName() === base_path('routes/web.php');
+        return new ReflectionFunction($action)->getFileName() === base_path('routes/web.php');
     }
 
     return is_string($action) && str_starts_with($action, 'App\\Http\\Controllers\\');
