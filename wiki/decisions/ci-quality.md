@@ -3,7 +3,6 @@ title: Decision log — CI and quality gates
 status: current
 supersedes: []
 code_refs:
-    - todo/ci-quality.status.json
 updated: 2026-08-24
 ---
 

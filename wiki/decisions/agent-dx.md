@@ -3,7 +3,6 @@ title: Decision log — agent developer experience
 status: current
 supersedes: []
 code_refs:
-    - todo/agent-dx.status.json
 updated: 2026-08-24
 ---
 
@@ -36,6 +35,11 @@ not an explanation.
   unrelated work — and a blocking gate that goes red for unrelated reasons gets
   disabled. Rule 1 rejects directory refs for that reason, and the stale
   comparison is at date granularity so a same-day commit is not drift.
+- **Status files stay out of `code_refs`.** Measuring the last thirty commits,
+  the only pages that went red for a reason a reader would call wrong were the
+  two decision logs citing their own `todo/*.status.json`: three commits that
+  did nothing but tick a phase off. The refs were dropped rather than the rule
+  loosened.
 - **Pages are superseded, never deleted.** A wrong page becomes
   `status: superseded` pointing at its replacement, so a link into it still lands
   somewhere true.
