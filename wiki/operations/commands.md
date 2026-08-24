@@ -48,6 +48,7 @@ all of them. The split that matters is blocking versus reporting
 | `composer typescript:generate`             | Rewrite the generated TypeScript declarations             |
 | `php artisan app:make-resource <Name>`     | Scaffold a model and everything around it, tests included |
 | `php artisan app:doctor`                   | Check this machine can run, test and build the app        |
+| `php artisan wiki:audit`                   | Rewrite `wiki/_meta/audit.json`, the `/document` worklist |
 | `php artisan resource:cache`               | Cache the resource registry for production                |
 | `php artisan app:sync-permissions`         | Write the permission catalog to the database              |
 | `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed            |

@@ -4,7 +4,10 @@ status: current
 supersedes: []
 code_refs:
     - app/Console/Commands/WikiLintCommand.php
+    - app/Console/Commands/WikiAuditCommand.php
     - app/Support/WikiPage.php
+    - app/Support/GitLog.php
+    - .claude/commands/document.md
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
 updated: 2026-08-24
@@ -49,6 +52,26 @@ regenerate.
 rules. `wiki/_meta/lint.md` documents each rule and how to fix it, including the
 failure mode to watch: a stale page can be silenced by bumping `updated:` alone,
 which clears the gate and hides the drift.
+
+## The documentation loop
+
+`php artisan wiki:audit` writes `wiki/_meta/audit.json`: a worklist of stale
+pages, application files no page lists in `code_refs`, and pages whose refs have
+all been deleted. `.githooks/post-commit` refreshes it after every commit and
+`app:doctor` prints the counts, so the work surfaces without being looked for.
+The file is generated and git-ignored — regenerate it, never edit it.
+
+`/document` (`.claude/commands/document.md`) is the other half: it reads the
+worklist, rereads the code, and rewrites the pages. No language model runs in
+CI, so there is no key in the pipeline and no per-push cost. CI produces the
+worklist; a developer's machine writes the prose.
+
+The split between the two commands is deliberate:
+
+| Command      | Blocks | Because                                                                                                                                     |
+| ------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wiki:lint`  | Yes    | A page that contradicts the code is a wrong claim, the same class of failure as a failing test                                              |
+| `wiki:audit` | No     | Blocking "this new file has no page" buys one-line pages written to clear the gate, and unlike staleness there is no wrong claim to correct |
 
 ## When documentation changes
 

@@ -268,6 +268,52 @@ jobs:
       - name: Wiki Rot
         run: composer test:wiki
 
+  # Reports, never blocks. `wiki:lint` in the `static` job is the gate: a page
+  # that contradicts the code is a correctness failure. Undocumented files and
+  # orphaned pages are posted as a summary instead, because blocking "this new
+  # file has no page" only buys one-line pages written to clear the gate.
+  docs:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # Full history: the worklist is computed from `git log` per code_ref.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      - name: Unpack Build
+        run: tar -xf build.tar && rm build.tar
+
+      - name: Documentation Worklist
+        run: |
+          php artisan wiki:audit
+          php -r '
+            $audit = json_decode(file_get_contents("wiki/_meta/audit.json"), true);
+            printf(
+              "## Documentation worklist%s%s| | count |%s| --- | --- |%s| Stale pages | %d |%s| Undocumented files | %d |%s| Orphaned pages | %d |%s%sRun `/document` to work it.%s",
+              PHP_EOL, PHP_EOL, PHP_EOL, PHP_EOL,
+              count($audit["stale"]), PHP_EOL,
+              count($audit["undocumented"]), PHP_EOL,
+              count($audit["orphaned"]), PHP_EOL,
+              PHP_EOL, PHP_EOL,
+            );
+          ' >> "$GITHUB_STEP_SUMMARY"
+
   a11y:
     needs: setup
     runs-on: ubuntu-latest

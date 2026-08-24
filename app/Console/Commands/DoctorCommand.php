@@ -248,6 +248,36 @@ final class DoctorCommand extends Command
     }
 
     /**
+     * The documentation worklist, if `wiki:audit` has ever run here. Not a
+     * check: undocumented files do not stop this machine from building the
+     * application, and turning that into a FAIL line is how a real signal gets
+     * ignored.
+     */
+    private function wikiWorklist(): ?string
+    {
+        $path = base_path('wiki/_meta/audit.json');
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $audit = json_decode((string) file_get_contents($path), true);
+
+        $stale = is_array($audit) && is_array($audit['stale'] ?? null) ? count($audit['stale']) : 0;
+        $undocumented = is_array($audit) && is_array($audit['undocumented'] ?? null) ? count($audit['undocumented']) : 0;
+
+        if ($stale === 0 && $undocumented === 0) {
+            return null;
+        }
+
+        return sprintf(
+            'wiki: %d pages stale, %d files undocumented — run /document',
+            $stale,
+            $undocumented,
+        );
+    }
+
+    /**
      * @param  list<array{name: string, ok: bool, fix: string}>  $checks
      * @param  list<array{name: string, ok: bool, fix: string}>  $failed
      */
@@ -264,6 +294,12 @@ final class DoctorCommand extends Command
 
         foreach ($failed as $check) {
             $this->components->bulletList([sprintf('%s: %s', $check['name'], $check['fix'])]);
+        }
+
+        $worklist = $this->wikiWorklist();
+
+        if ($worklist !== null) {
+            $this->components->bulletList([$worklist]);
         }
 
         $failed === []

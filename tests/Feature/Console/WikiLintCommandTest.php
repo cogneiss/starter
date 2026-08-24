@@ -3,30 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
-
-/**
- * One fixture wiki per failure mode. Each writes pages into a scratch directory
- * and lints that instead of `wiki/`, so a fixture can be as broken as it likes.
- */
-function wikiFixture(string $name): string
-{
-    $root = storage_path('framework/testing/wiki-'.$name);
-
-    File::deleteDirectory($root);
-    File::ensureDirectoryExists($root);
-
-    return $root;
-}
-
-function wikiPage(string $root, string $slug, string $frontmatter, string $body = ''): void
-{
-    $path = $root.'/'.$slug.'.md';
-
-    File::ensureDirectoryExists(dirname($path));
-    File::put($path, "---\n".$frontmatter."\n---\n\n".$body."\n");
-}
 
 /**
  * No commit for anything, so the stale rule stands down and the other rules can

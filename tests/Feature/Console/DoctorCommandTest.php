@@ -19,6 +19,25 @@ function fakeHealthyShell(): void
     ]);
 }
 
+/**
+ * Swap in a documentation worklist for the duration of one assertion. The real
+ * file is generated and git-ignored, but it belongs to whoever ran `wiki:audit`
+ * last, so it goes back exactly as it was.
+ */
+function withAudit(?string $json, Closure $assert): void
+{
+    $path = base_path('wiki/_meta/audit.json');
+    $original = is_file($path) ? (string) file_get_contents($path) : null;
+
+    try {
+        $json === null ? unlink($path) : file_put_contents($path, $json);
+
+        $assert();
+    } finally {
+        $original === null ? unlink($path) : file_put_contents($path, $original);
+    }
+}
+
 beforeEach(function (): void {
     fakeHealthyShell();
 });
@@ -122,4 +141,42 @@ it('fails when the generated TypeScript is stale', function (): void {
         ->keyBy('name');
 
     expect($checks['Generated TypeScript']['ok'])->toBeFalse();
+});
+
+it('points at /document when documentation work is outstanding', function (): void {
+    withAudit(
+        json_encode(['stale' => [['page' => 'a'], ['page' => 'b']], 'undocumented' => [['path' => 'c']], 'orphaned' => []]),
+        function (): void {
+            Artisan::call('app:doctor');
+
+            expect(Artisan::output())->toContain('2 pages stale, 1 files undocumented');
+        },
+    );
+});
+
+it('says nothing about documentation when there is none to do', function (): void {
+    withAudit(
+        json_encode(['stale' => [], 'undocumented' => [], 'orphaned' => []]),
+        function (): void {
+            Artisan::call('app:doctor');
+
+            expect(Artisan::output())->not->toContain('run /document');
+        },
+    );
+});
+
+it('says nothing about documentation when the worklist has never been generated', function (): void {
+    withAudit(null, function (): void {
+        Artisan::call('app:doctor');
+
+        expect(Artisan::output())->not->toContain('run /document');
+    });
+});
+
+it('treats an unreadable worklist as no work rather than crashing', function (): void {
+    withAudit('not json', function (): void {
+        Artisan::call('app:doctor');
+
+        expect(Artisan::output())->not->toContain('run /document');
+    });
 });

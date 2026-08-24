@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Support\GitLog;
 use App\Support\WikiPage;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Process;
 
 /**
  * The rot lint for `wiki/`. Documentation that is not gated drifts, and a wiki
@@ -193,7 +193,7 @@ final class WikiLintCommand extends Command
         $failures = [];
 
         foreach ($page->codeRefs() as $ref) {
-            $commit = $this->lastCommitTouching($ref);
+            $commit = GitLog::lastCommitTouching($ref);
 
             if ($commit === null || $commit['date'] <= $updated) {
                 continue;
@@ -211,24 +211,6 @@ final class WikiLintCommand extends Command
         }
 
         return $failures;
-    }
-
-    /**
-     * @return array{hash: string, date: string}|null
-     */
-    private function lastCommitTouching(string $ref): ?array
-    {
-        $log = Process::path(base_path())->run([
-            'git', 'log', '-1', '--date=short', '--format=%h %ad', '--', $ref,
-        ]);
-
-        $parts = explode(' ', mb_trim($log->output()));
-
-        if (! $log->successful() || count($parts) !== 2) {
-            return null;
-        }
-
-        return ['hash' => $parts[0], 'date' => $parts[1]];
     }
 
     /**

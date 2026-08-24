@@ -247,3 +247,12 @@ if [ -f artisan ] && [ -d vendor/laramint/laravel-brain ]; then
     echo "[laravel-brain] rescanning"
     php artisan brain:scan --no-interaction --quiet >/dev/null 2>&1 || true
 fi
+
+# --- wiki:audit: refresh the documentation worklist --------------------------
+# Keeps wiki/_meta/audit.json warm so `/document` has something to read. It
+# rewrites one JSON file in well under a second. Deliberately does NOT launch
+# Claude Code: an LLM writing files behind a `git commit` costs money the
+# committer did not agree to and lands unreviewed prose.
+if [ -f artisan ]; then
+    php artisan wiki:audit --quiet >/dev/null 2>&1 || true
+fi
