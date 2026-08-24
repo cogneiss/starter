@@ -375,6 +375,7 @@ green:
 | `composer test:dead-code` | PHPStan's dead-code rules over `app/`.                                 |
 | `composer test:deps`      | `composer-unused` — Composer packages nothing requires.                |
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies.                |
+| `composer test:wiki`      | `php artisan wiki:lint` — the wiki rules, all five blocking.           |
 
 Scheduled — these report, they never block:
 
@@ -398,9 +399,13 @@ Local loops:
 | `composer typescript:generate`             | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
 | `php artisan app:make-resource <Name>`     | Scaffold a model and everything around it, tests included.                    |
 | `php artisan app:doctor`                   | Check that this machine can run, test and build the app.                      |
-| `php artisan resource:cache`               | Cache the resource registry for production (`resource:clear` undoes it).      |
+| `php artisan resource:cache`               | Cache the resource registry for production.                                   |
+| `php artisan resource:clear`               | Undo `resource:cache`.                                                        |
 | `php artisan app:sync-permissions`         | Write the permission catalog to the database.                                 |
 | `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed.                               |
+| `php artisan wiki:lint`                    | The five wiki rules. What `composer test:wiki` runs.                          |
+| `php artisan wiki:audit`                   | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
+| `bun run knip:fix`                         | Apply knip's removals instead of only reporting them.                         |
 
 CI runs all of the blocking gates on every push and pull request against `main`,
 with Composer, Bun, Playwright, Rector, and PHPStan caches warm.

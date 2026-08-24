@@ -28,13 +28,13 @@
         {
             "id": 4,
             "name": "zero-key boot guard",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=ZeroKeyBoot"
         },
         {
             "id": 5,
             "name": "command parity gate",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=CommandsAreDocumented"
         },
         {

@@ -5,14 +5,18 @@ supersedes: []
 code_refs:
     - composer.json
     - package.json
+    - tests/Feature/Docs/CommandsAreDocumentedTest.php
 updated: 2026-08-24
 ---
 
 # Commands
 
 Every command lives in `composer.json` or `package.json`, and `FEATURES.md` lists
-all of them. The split that matters is blocking versus reporting
-([[architecture/fast-blocking-gates]]).
+all of them. That last claim is a test, not a promise:
+`tests/Feature/Docs/CommandsAreDocumentedTest.php` reads the `scripts` keys of
+both manifests and every command class under `app/Console/Commands/`, and fails
+naming anything `FEATURES.md` does not mention. The split that matters is
+blocking versus reporting ([[architecture/fast-blocking-gates]]).
 
 ## Blocking — green on every pull request
 
