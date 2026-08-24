@@ -118,6 +118,7 @@
         "test:dead-code": "phpstan analyse -c phpstan-deadcode.neon --memory-limit=2G",
         "test:deps": "composer-unused --no-progress",
         "test:knip": "bun run knip",
+        "test:wiki": "@php artisan wiki:lint",
         "test:fast": "bin/pest-with-failure-summary.sh --parallel --compact --bail",
         "test:tia-seed": "XDEBUG_MODE=\"coverage\" pest --tia --fresh -d memory_limit=2G",
         "sbom": "@composer CycloneDX:make-sbom --output-format=JSON --output-file=sbom.json",

@@ -16,7 +16,7 @@
         {
             "id": 2,
             "name": "wiki seeded and linted",
-            "status": "failing",
+            "status": "passing",
             "command": "composer test:wiki"
         },
         {

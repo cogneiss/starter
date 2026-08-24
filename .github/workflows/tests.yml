@@ -218,8 +218,14 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      # Full history, not a shallow clone: wiki:lint compares a page's updated:
+      # date against the last commit touching each code_ref, and `git log` on a
+      # depth-1 checkout finds nothing, so the stale-page rule would pass
+      # silently instead of failing.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -258,6 +264,9 @@ jobs:
 
       - name: Unused Frontend Code
         run: composer test:knip
+
+      - name: Wiki Rot
+        run: composer test:wiki
 
   a11y:
     needs: setup
