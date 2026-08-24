@@ -1,105 +1,105 @@
 {
-  "plan": "AI product layer on laravel/ai",
-  "created": "2026-08-24",
-  "depends_on": "todo/resource-spine.status.json (registry), todo/agent-dx.status.json (wiki gate)",
-  "database": "pgsql",
-  "coverage_command": "herd coverage vendor/bin/pest --parallel --coverage --exactly=100.0 --testsuite=Unit,Feature",
-  "phases": [
-    {
-      "id": 1,
-      "name": "postgres 17 + pgvector primary",
-      "status": "passing",
-      "command": "composer test:sqlite && php artisan app:doctor"
-    },
-    {
-      "id": 2,
-      "name": "sdk install, zero-key fake",
-      "status": "passing",
-      "command": "php artisan test --compact tests/Feature/Ai/AiBootTest.php"
-    },
-    {
-      "id": 3,
-      "name": "agent kernel and tier router",
-      "status": "passing",
-      "command": "php artisan test --compact --filter=AiKernel"
-    },
-    {
-      "id": 4,
-      "name": "quota, audit log, ledger",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=\"AiQuota|AiAudit|AiCredit\""
-    },
-    {
-      "id": 5,
-      "name": "injection defense and egress",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=\"Injection|Egress|ToolAuthorization\""
-    },
-    {
-      "id": 6,
-      "name": "registry tools",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=ResourceTool"
-    },
-    {
-      "id": 7,
-      "name": "propose to confirm tokens",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=ConfirmToken"
-    },
-    {
-      "id": 8,
-      "name": "typed streaming block union",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=AiBlock"
-    },
-    {
-      "id": 9,
-      "name": "org-scoped rag on pgvector",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=Retrieval"
-    },
-    {
-      "id": 10,
-      "name": "assistant memory",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=AssistantMemory"
-    },
-    {
-      "id": 11,
-      "name": "mcp server over the registry",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=McpServer"
-    },
-    {
-      "id": 12,
-      "name": "invitation and briefing verticals",
-      "status": "failing",
-      "command": "php artisan test --compact --filter=\"InvitationDrafter|DashboardBriefing\""
-    },
-    {
-      "id": 13,
-      "name": "fakes and scheduled evals",
-      "status": "failing",
-      "command": "rg -q 'preventStrayPrompts' tests/Pest.php && test -f .github/workflows/evals.yml"
-    },
-    {
-      "id": 14,
-      "name": "usage observability",
-      "status": "failing",
-      "command": "php artisan ai:usage --json"
-    },
-    {
-      "id": 15,
-      "name": "documentation",
-      "status": "failing",
-      "command": "php artisan wiki:lint && rg -q 'AI layer' README.md && rg -q 'pgvector' SETUP.md"
-    },
-    {
-      "id": 16,
-      "name": "full gate green",
-      "status": "failing",
-      "command": "composer test"
-    }
-  ]
+    "plan": "AI product layer on laravel/ai",
+    "created": "2026-08-24",
+    "depends_on": "todo/resource-spine.status.json (registry), todo/agent-dx.status.json (wiki gate)",
+    "database": "pgsql",
+    "coverage_command": "herd coverage vendor/bin/pest --parallel --coverage --exactly=100.0 --testsuite=Unit,Feature",
+    "phases": [
+        {
+            "id": 1,
+            "name": "postgres 17 + pgvector primary",
+            "status": "passing",
+            "command": "composer test:sqlite && php artisan app:doctor"
+        },
+        {
+            "id": 2,
+            "name": "sdk install, zero-key fake",
+            "status": "passing",
+            "command": "php artisan test --compact tests/Feature/Ai/AiBootTest.php"
+        },
+        {
+            "id": 3,
+            "name": "agent kernel and tier router",
+            "status": "passing",
+            "command": "php artisan test --compact --filter=AiKernel"
+        },
+        {
+            "id": 4,
+            "name": "quota, audit log, ledger",
+            "status": "passing",
+            "command": "php artisan test --compact --filter=\"AiQuota|AiAudit|AiCredit\""
+        },
+        {
+            "id": 5,
+            "name": "injection defense and egress",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"Injection|Egress|ToolAuthorization\""
+        },
+        {
+            "id": 6,
+            "name": "registry tools",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=ResourceTool"
+        },
+        {
+            "id": 7,
+            "name": "propose to confirm tokens",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=ConfirmToken"
+        },
+        {
+            "id": 8,
+            "name": "typed streaming block union",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=AiBlock"
+        },
+        {
+            "id": 9,
+            "name": "org-scoped rag on pgvector",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Retrieval"
+        },
+        {
+            "id": 10,
+            "name": "assistant memory",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=AssistantMemory"
+        },
+        {
+            "id": 11,
+            "name": "mcp server over the registry",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=McpServer"
+        },
+        {
+            "id": 12,
+            "name": "invitation and briefing verticals",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"InvitationDrafter|DashboardBriefing\""
+        },
+        {
+            "id": 13,
+            "name": "fakes and scheduled evals",
+            "status": "failing",
+            "command": "rg -q 'preventStrayPrompts' tests/Pest.php && test -f .github/workflows/evals.yml"
+        },
+        {
+            "id": 14,
+            "name": "usage observability",
+            "status": "failing",
+            "command": "php artisan ai:usage --json"
+        },
+        {
+            "id": 15,
+            "name": "documentation",
+            "status": "failing",
+            "command": "php artisan wiki:lint && rg -q 'AI layer' README.md && rg -q 'pgvector' SETUP.md"
+        },
+        {
+            "id": 16,
+            "name": "full gate green",
+            "status": "failing",
+            "command": "composer test"
+        }
+    ]
 }

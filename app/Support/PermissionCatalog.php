@@ -65,6 +65,18 @@ final class PermissionCatalog
                 'See the roles available in the organization and their permissions.',
             ),
             new PermissionDefinition(
+                'ai.view',
+                'AI',
+                'View AI usage',
+                'See what the organization spent on AI and which requests were refused.',
+            ),
+            new PermissionDefinition(
+                'ai.grant',
+                'AI',
+                'Grant AI credit',
+                'Add AI credit to the organization.',
+            ),
+            new PermissionDefinition(
                 'roles.manage',
                 'Roles',
                 'Manage roles',

@@ -79,6 +79,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Quotas and Budget
+    |--------------------------------------------------------------------------
+    |
+    | Counted against ai_audit_logs and the credit ledger by App\Support\AiQuota
+    | and enforced by App\Ai\Middleware\EnforceQuota before a prompt reaches a
+    | provider. The budget is integer micros: 50_000_000 is fifty dollars.
+    |
+    */
+
+    'quotas' => [
+        'user_requests_per_hour' => env('AI_QUOTA_USER_HOUR', 60),
+        'org_requests_per_day' => env('AI_QUOTA_ORG_DAY', 2000),
+        'org_budget_micros_per_month' => env('AI_BUDGET_ORG_MONTH', 50_000_000),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Pricing
+    |--------------------------------------------------------------------------
+    |
+    | Micros per million tokens, per provider and model — 1_000_000 is one
+    | dollar per million. A model that is not listed costs zero and is recorded
+    | as such: App\Support\AiPricing never guesses a price into the ledger.
+    |
+    */
+
+    'pricing' => [
+        'anthropic' => [
+            'claude-haiku-4-5-20251001' => ['input' => 1_000_000, 'output' => 5_000_000],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Caching
     |--------------------------------------------------------------------------
     |

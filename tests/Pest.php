@@ -35,7 +35,26 @@ expect()->extend('toBeOne', fn () => $this->toBe(1));
  */
 function withWikiWorklistLock(Closure $work): void
 {
-    $handle = fopen(sys_get_temp_dir().'/starter-wiki-worklist.lock', 'c');
+    withRepositoryLock('wiki-worklist', $work);
+}
+
+/**
+ * Serialises the tests that mutate this checkout's own source tree. The resource
+ * generator writes real routes, a real permission and a real migration before
+ * putting them back, and any test that reads the working tree meanwhile sees a
+ * half-generated application rather than the committed one.
+ */
+function withCheckoutLock(Closure $work): void
+{
+    withRepositoryLock('checkout', $work);
+}
+
+/**
+ * One named advisory lock, held for the duration of the given work.
+ */
+function withRepositoryLock(string $name, Closure $work): void
+{
+    $handle = fopen(sys_get_temp_dir().'/starter-'.$name.'.lock', 'c');
 
     flock($handle, LOCK_EX);
 

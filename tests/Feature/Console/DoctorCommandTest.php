@@ -6,6 +6,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 
 /**
  * A healthy machine: bun answers, the types are already current.
@@ -45,26 +46,30 @@ beforeEach(function (): void {
 });
 
 it('passes every check on a working machine', function (): void {
-    $this->artisan('app:doctor')
-        ->assertExitCode(0)
-        ->expectsOutputToContain('This machine is ready.');
+    withCheckoutLock(function (): void {
+        test()->artisan('app:doctor')
+            ->assertExitCode(0)
+            ->expectsOutputToContain('This machine is ready.');
+    });
 })->skip(
     ! extension_loaded('xdebug') && ! extension_loaded('pcov'),
     'The coverage driver check fails without one loaded, which is the point of it.',
 );
 
 it('emits valid JSON', function (): void {
-    Artisan::call('app:doctor', ['--json' => true]);
+    withCheckoutLock(function (): void {
+        Artisan::call('app:doctor', ['--json' => true]);
 
-    $decoded = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+        $decoded = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($decoded['checks'])->toHaveCount(13)
-        ->and($decoded['checks'][0])->toHaveKeys(['name', 'ok', 'fix']);
+        expect($decoded['checks'])->toHaveCount(13)
+            ->and($decoded['checks'][0])->toHaveKeys(['name', 'ok', 'fix']);
 
-    // Everything but the coverage driver, which depends on how PHP was invoked.
-    $others = collect($decoded['checks'])->reject(fn (array $check): bool => $check['name'] === 'Coverage driver');
+        // Everything but the coverage driver, which depends on how PHP was invoked.
+        $others = collect($decoded['checks'])->reject(fn (array $check): bool => $check['name'] === 'Coverage driver');
 
-    expect($others->every(fn (array $check): bool => $check['ok']))->toBeTrue();
+        expect($others->every(fn (array $check): bool => $check['ok']))->toBeTrue();
+    });
 });
 
 it('fails when the files a checkout needs are missing', function (): void {
@@ -238,7 +243,11 @@ it('never fails a check over a missing AI provider key', function (): void {
 });
 
 it('reports the AI providers by name and the gateway, never a key value', function (): void {
-    config()->set('ai.providers.anthropic.key', 'sk-ant-a-real-looking-secret');
+    // Built rather than written out, so the repository never carries a string
+    // shaped like a provider key, and asserted whole rather than by prefix.
+    $key = Str::random(48);
+
+    config()->set('ai.providers.anthropic.key', $key);
 
     Artisan::call('app:doctor', ['--json' => true]);
 
@@ -246,5 +255,6 @@ it('reports the AI providers by name and the gateway, never a key value', functi
 
     expect($output)->toContain('AI providers: anthropic')
         ->and($output)->toContain('AI live gateway (default tier: cheap)')
-        ->and($output)->not->toContain('sk-ant');
+        ->and($output)->not->toContain($key)
+        ->and($output)->not->toContain(mb_substr($key, 0, 6));
 });

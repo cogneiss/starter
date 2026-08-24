@@ -1,3 +1,4 @@
+export type AiAuditStatus = 'ok' | 'blocked' | 'failed';
 export type BrowserSession = {
 id: string,
 device: string,
