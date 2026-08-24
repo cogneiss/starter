@@ -162,6 +162,28 @@ it('reports whether the database has pgvector installed', function (): void {
         ->and($optional['pgvector extension']['disables'])->toBe('vector search is unavailable');
 });
 
+it('says which half of rag retrieval is missing, and reports it on when neither is', function (): void {
+    config()->set('ai.providers.openai.key', '');
+    config()->set('ai.default_for_embeddings', 'openai');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $off = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'])
+        ->keyBy('name')['AI retrieval (RAG)'];
+
+    expect($off['set'])->toBeFalse()
+        ->and($off['disables'])->toContain('no embedding provider is configured');
+
+    config()->set('ai.providers.openai.key', 'fake-key-for-tests');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $on = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'])
+        ->keyBy('name')['AI retrieval (RAG)'];
+
+    expect($on['set'])->toBeTrue();
+})->group('pgvector');
+
 it('reports a missing third-party credential as off rather than failed', function (): void {
     config()->set('services.google.client_id', '');
     config()->set('services.github.client_id', '');
@@ -239,7 +261,7 @@ it('never fails a check over a missing AI provider key', function (): void {
     $reported = array_column(array_filter($report['optional'], static fn (array $entry): bool => str_starts_with($entry['name'], 'AI ')), 'set');
 
     expect($failed)->not->toContain('AI providers')
-        ->and($reported)->toBe([false, false]);
+        ->and($reported)->toBe([false, false, false]);
 });
 
 it('reports the AI providers by name and the gateway, never a key value', function (): void {

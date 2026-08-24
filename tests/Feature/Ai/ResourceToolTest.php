@@ -147,6 +147,19 @@ it('proves ProposeAction mutates nothing but the confirm token it hands back', f
         ->and($token->organization_id)->toBe($organization->id);
 });
 
+it('refuses an invalid payload before any confirm token exists', function (): void {
+    [$owner, $organization] = toolOwner();
+
+    $before = AiConfirmToken::withoutOrganizationScope()->count();
+
+    expect(fn (): array => resolve(OrganizationContext::class)->runAs($organization, fn (): array => toolResult(
+        resolve(ProposeAction::class, ['user' => $owner, 'organization' => $organization]),
+        ['action' => 'invite-member', 'fields' => ['email' => 'not-an-email', 'role' => 'member']],
+    )))->toThrow(Illuminate\Validation\ValidationException::class);
+
+    expect(AiConfirmToken::withoutOrganizationScope()->count())->toBe($before);
+});
+
 it('keeps every tool but the named ProposeAction free of writes — arch', function (): void {
     $files = glob(app_path('Ai/Tools').'/*.php') ?: [];
 

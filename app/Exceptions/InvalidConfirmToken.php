@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 use RuntimeException;
 
 /**
@@ -45,5 +48,19 @@ final class InvalidConfirmToken extends RuntimeException
     public static function unmappedAction(string $action): self
     {
         return new self("The action [{$action}] is not one an agent may propose.");
+    }
+
+    /**
+     * A refused confirmation is an ordinary answer to a person who clicked a
+     * stale button — a replay or an expiry is expected, not a server fault.
+     */
+    public function render(Request $request): RedirectResponse
+    {
+        Inertia::flash('toast', [
+            'type' => 'error',
+            'message' => $this->getMessage(),
+        ]);
+
+        return back();
     }
 }

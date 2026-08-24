@@ -457,6 +457,7 @@ Local loops:
 | `php artisan wiki:lint`                    | The five wiki rules. What `composer test:wiki` runs.                          |
 | `php artisan wiki:audit`                   | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
 | `bun run knip:fix`                         | Apply knip's removals instead of only reporting them.                         |
+| `bun run types`                            | Type-check the front end with `tsc --noEmit`, no build.                       |
 
 CI runs all of the blocking gates on every push and pull request against `main`,
 with Composer, Bun, Playwright, Rector, and PHPStan caches warm.

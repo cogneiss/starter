@@ -58,11 +58,14 @@ it('refuses a recipient with no account at all', function (): void {
 
 it('refuses a recipient when no organization is bound', function (): void {
     $membership = OrganizationMembership::factory()->create();
+    $membership->user->forceFill(['email' => 'member@allowed.test'])->save();
 
     config()->set('ai.guardrails.egress', ['allowed.test']);
 
     resolve(OrganizationContext::class)->forget();
 
+    // The host passes, so the refusal can only come from the membership check
+    // finding no organization bound to the context.
     expect(fn () => AiEgress::assertAllowed($membership->user->email))
         ->toThrow(BlockedEgressException::class);
 });

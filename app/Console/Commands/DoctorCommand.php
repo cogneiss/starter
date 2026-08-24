@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Support\AiAvailability;
+use App\Support\AiRetrieval;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -283,12 +284,30 @@ final class DoctorCommand extends Command
                 'set' => $this->hasVectorExtension(),
                 'disables' => 'vector search is unavailable',
             ],
+            $this->retrieval(),
             $this->aiProviders(),
             $this->aiGateway(),
             $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',
             ]),
+        ];
+    }
+
+    /**
+     * Whether retrieval (RAG) can run here, and which half is missing when it
+     * cannot. Not a check: an application without retrieval answers without it.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function retrieval(): array
+    {
+        $reason = AiRetrieval::unavailableReason();
+
+        return [
+            'name' => 'AI retrieval (RAG)',
+            'set' => $reason === null,
+            'disables' => sprintf('agents answer without retrieval — %s', $reason ?? 'nothing'),
         ];
     }
 

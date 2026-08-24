@@ -85,7 +85,7 @@ final readonly class BlockCollection implements Arrayable
      */
     private static function classFor(AiBlockType $type): string
     {
-        return match ($type) {
+        $class = match ($type) {
             AiBlockType::Text => TextBlock::class,
             AiBlockType::Markdown => MarkdownBlock::class,
             AiBlockType::Table => TableBlock::class,
@@ -94,5 +94,7 @@ final readonly class BlockCollection implements Arrayable
             AiBlockType::Form => FormBlock::class,
             AiBlockType::Confirm => ConfirmBlock::class,
         };
+
+        return $class;
     }
 }

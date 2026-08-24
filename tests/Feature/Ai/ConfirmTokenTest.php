@@ -233,6 +233,56 @@ it('shows a pending confirmation only to the person it was raised for', function
     expect($owner->can('viewAny', AiConfirmToken::class))->toBeFalse();
 });
 
+it('refuses the same token posted twice over HTTP, inviting once', function (): void {
+    [, $owner, $token] = pendingConfirmToken('replayed@example.com');
+
+    $post = fn (): Illuminate\Testing\TestResponse => $this->actingAs($owner)
+        ->from(route('dashboard'))
+        ->post(route('ai-confirm.store', ['token' => $token->id]));
+
+    $post()->assertRedirect();
+
+    // The second post is the replay: same token, same user, moments later. It
+    // is refused as an ordinary answer, not a server fault.
+    $replayed = $post()->assertRedirect();
+
+    expect($replayed->getSession()->get(Inertia\Support\SessionKey::FLASH_DATA)['toast'])
+        ->toBe(['type' => 'error', 'message' => 'That confirmation has already been used.']);
+
+    expect(OrganizationInvitation::withoutOrganizationScope()
+        ->where('email', 'replayed@example.com')
+        ->count())->toBe(1);
+});
+
+it('describes a pending confirmation to the client without its payload', function (): void {
+    [$organization, , $token] = pendingConfirmToken();
+
+    $data = resolve(OrganizationContext::class)->runAs(
+        $organization,
+        fn (): App\Data\AiConfirmTokenData => App\Data\AiConfirmTokenData::from($token),
+    );
+
+    expect($data->id)->toBe($token->id)
+        ->and($data->action)->toBe('invite-member')
+        ->and($data->summary)->toBe($token->summary)
+        ->and($data->expires_at)->toBe($token->expires_at->toIso8601String())
+        ->and($data->toArray())->not->toHaveKey('payload');
+});
+
+it('refuses to invite when no organization is bound to the context', function (): void {
+    $organization = Organization::factory()->create();
+    $owner = User::factory()->forOrganization($organization)->create();
+
+    resolve(OrganizationContext::class)->forget();
+
+    expect(fn (): OrganizationInvitation => resolve(InviteMember::class)->confirm(
+        $owner,
+        App\Data\InviteMemberData::from(['email' => 'nobody@example.com', 'role' => 'Member']),
+    ))->toThrow(RuntimeException::class, 'needs an organization bound');
+
+    expect(OrganizationInvitation::withoutOrganizationScope()->count())->toBe(0);
+});
+
 it('runs the action on the happy path through HTTP, exactly once', function (): void {
     [, $owner, $token] = pendingConfirmToken();
 

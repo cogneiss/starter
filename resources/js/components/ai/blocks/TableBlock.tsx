@@ -1,5 +1,7 @@
 import type { AiBlock } from '@/types/ai-blocks';
 
+const head = 'border-b px-2 py-1 font-medium';
+
 export function TableBlock({
     block,
 }: {
@@ -10,11 +12,7 @@ export function TableBlock({
             <thead>
                 <tr>
                     {block.columns.map((column) => (
-                        <th
-                            key={column}
-                            scope="col"
-                            className="border-b px-2 py-1 font-medium"
-                        >
+                        <th key={column} scope="col" className={head}>
                             {column}
                         </th>
                     ))}
