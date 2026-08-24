@@ -1,0 +1,28 @@
+{
+    "plan": "known issues carried out of the agent-dx plan",
+    "created": "2026-08-24",
+    "follows": ["todo/agent-dx.status.json"],
+    "phases": [
+        {
+            "id": 1,
+            "name": "31 application files have no wiki page listing them in code_refs",
+            "status": "failing",
+            "note": "Individual actions, form requests and two controllers. Their areas are documented at page level, and wiki:audit reports this without blocking, on purpose: blocking it buys one-line pages written to clear a gate. Work the list with /document when a file's behaviour is worth explaining.",
+            "command": "php artisan wiki:audit"
+        },
+        {
+            "id": 2,
+            "name": "local coverage run measures a subset because TIA narrows it",
+            "status": "failing",
+            "note": "pest()->tia()->locally() in tests/Pest.php restricts the run to affected files, so --coverage --exactly=100.0 reports 99.1 % locally and passes in CI, where TIA is off. Either teach composer test:unit to pass --no-tia when coverage is requested, or drop the coverage flags from the local script.",
+            "command": "herd coverage vendor/bin/pest --no-tia --compact --parallel --coverage --exactly=100.0"
+        },
+        {
+            "id": 3,
+            "name": "app:doctor reports the coverage driver as FAIL under Herd",
+            "status": "failing",
+            "note": "Xdebug is not loaded by default, so the check fails on a machine where nothing is wrong. Its fix line already names `herd coverage composer test:unit`; the check could detect Herd and report the wrapper instead of a failure.",
+            "command": "php artisan app:doctor"
+        }
+    ]
+}
