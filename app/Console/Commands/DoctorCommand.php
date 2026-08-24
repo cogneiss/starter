@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Support\AiAvailability;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -282,10 +283,41 @@ final class DoctorCommand extends Command
                 'set' => $this->hasVectorExtension(),
                 'disables' => 'vector search is unavailable',
             ],
+            $this->aiProviders(),
+            $this->aiGateway(),
             $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',
             ]),
+        ];
+    }
+
+    /**
+     * Which AI providers hold a key. Names only — printing a key, or even the
+     * first few characters of one, is how they end up in a pasted terminal log.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function aiProviders(): array
+    {
+        $providers = AiAvailability::providers();
+
+        return [
+            'name' => $providers === [] ? 'AI providers' : sprintf('AI providers: %s', implode(', ', $providers)),
+            'set' => $providers !== [],
+            'disables' => 'no provider is configured',
+        ];
+    }
+
+    /**
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function aiGateway(): array
+    {
+        return [
+            'name' => sprintf('AI live gateway (default tier: %s)', AiAvailability::defaultTier()),
+            'set' => ! AiAvailability::faked(),
+            'disables' => 'every agent answers from the fake gateway',
         ];
     }
 

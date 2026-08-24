@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.5.0",
         "inertiajs/inertia-laravel": "v3.0.6",
+        "laravel/ai": "^0.11.0",
         "laravel/fortify": "^1.38.0",
         "laravel/framework": "^13.26.1",
         "laravel/pennant": "^1.26",
@@ -61,6 +62,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force",
+            "@php artisan ai:install --no-interaction",
             "@php artisan db:seed --class=RoleTemplateSeeder --force",
             "bun install",
             "bun run build",

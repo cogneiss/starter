@@ -219,3 +219,32 @@ it('treats an unreadable worklist as no work rather than crashing', function ():
         expect(Artisan::output())->not->toContain('run /document');
     });
 });
+
+/**
+ * Zero keys is a reported state, never a failed check — a machine without an AI
+ * account still runs, tests and builds the application.
+ */
+it('never fails a check over a missing AI provider key', function (): void {
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    /** @var array{checks: list<array{name: string, ok: bool}>, optional: list<array{name: string, set: bool}>} $report */
+    $report = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+    $failed = array_column(array_filter($report['checks'], static fn (array $check): bool => ! $check['ok']), 'name');
+    $reported = array_column(array_filter($report['optional'], static fn (array $entry): bool => str_starts_with($entry['name'], 'AI ')), 'set');
+
+    expect($failed)->not->toContain('AI providers')
+        ->and($reported)->toBe([false, false]);
+});
+
+it('reports the AI providers by name and the gateway, never a key value', function (): void {
+    config()->set('ai.providers.anthropic.key', 'sk-ant-a-real-looking-secret');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $output = Artisan::output();
+
+    expect($output)->toContain('AI providers: anthropic')
+        ->and($output)->toContain('AI live gateway (default tier: cheap)')
+        ->and($output)->not->toContain('sk-ant');
+});

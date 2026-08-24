@@ -449,6 +449,7 @@ Local loops:
 | `composer typescript:generate`             | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
 | `php artisan app:make-resource <Name>`     | Scaffold a model and everything around it, tests included.                    |
 | `php artisan app:doctor`                   | Check that this machine can run, test and build the app.                      |
+| `php artisan ai:install`                   | Install the `vector` extension. A no-op away from PostgreSQL.                 |
 | `php artisan resource:cache`               | Cache the resource registry for production.                                   |
 | `php artisan resource:clear`               | Undo `resource:cache`.                                                        |
 | `php artisan app:sync-permissions`         | Write the permission catalog to the database.                                 |
