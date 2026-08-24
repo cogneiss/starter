@@ -31,6 +31,7 @@ final class DoctorCommand extends Command
         $checks = [
             $this->php($files),
             $this->extensions(),
+            $this->postgresDriver(),
             $this->coverageDriver(),
             $this->environmentFile($files),
             $this->applicationKey(),
@@ -87,6 +88,22 @@ final class DoctorCommand extends Command
     }
 
     /**
+     * PostgreSQL is the primary database because pgvector lives there. SQLite is
+     * still supported for everything except vector search, so this only fails on
+     * a checkout that is actually pointed at pgsql.
+     *
+     * @return array{name: string, ok: bool, fix: string}
+     */
+    private function postgresDriver(): array
+    {
+        return $this->check(
+            'pdo_pgsql extension',
+            extension_loaded('pdo_pgsql') || $this->driver() !== 'pgsql',
+            'Enable pdo_pgsql in php.ini, or switch to the sqlite fallback documented in .env.example',
+        );
+    }
+
+    /**
      * @return array{name: string, ok: bool, fix: string}
      */
     private function coverageDriver(): array
@@ -134,10 +151,18 @@ final class DoctorCommand extends Command
         }, false, report: false);
 
         return $this->check(
-            'Database connection',
+            sprintf('Database connection (%s)', $this->driver()),
             $reachable,
-            'Check DB_* in .env. On the default sqlite driver: touch database/database.sqlite',
+            'Check DB_* in .env. On the sqlite fallback: touch database/database.sqlite',
         );
+    }
+
+    /**
+     * The configured driver, which is readable without opening a connection.
+     */
+    private function driver(): string
+    {
+        return rescue(static fn (): string => DB::connection()->getDriverName(), 'unknown', report: false);
     }
 
     /**
@@ -250,11 +275,32 @@ final class DoctorCommand extends Command
                 'set' => ! in_array(config('mail.default'), ['log', 'array'], true),
                 'disables' => 'mail is written to the log, not sent',
             ],
+            // Reported here rather than as a check: a machine without it builds,
+            // tests and serves everything but vector search.
+            [
+                'name' => 'pgvector extension',
+                'set' => $this->hasVectorExtension(),
+                'disables' => 'vector search is unavailable',
+            ],
             $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',
             ]),
         ];
+    }
+
+    /**
+     * Whether `vector` is installed on the connected database. `ai:install`
+     * creates it; a sqlite checkout never has it.
+     */
+    private function hasVectorExtension(): bool
+    {
+        return rescue(
+            fn (): bool => $this->driver() === 'pgsql'
+                && DB::selectOne("select 1 from pg_extension where extname = 'vector'") !== null,
+            false,
+            report: false,
+        );
     }
 
     /**

@@ -429,11 +429,11 @@ green:
 
 Scheduled — these report, they never block:
 
-| Command                | What it does                                                      |
-| ---------------------- | ----------------------------------------------------------------- |
-| `composer test:pgsql`  | The whole suite against Postgres instead of SQLite. Runs nightly. |
-| `composer test:mutate` | Mutation score over `app/`. Runs weekly.                          |
-| `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.          |
+| Command                | What it does                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `composer test:sqlite` | The whole suite against SQLite instead of PostgreSQL, minus the vector-search tests. Runs nightly. |
+| `composer test:mutate` | Mutation score over `app/`. Runs weekly.                                                           |
+| `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.                                           |
 
 Local loops:
 

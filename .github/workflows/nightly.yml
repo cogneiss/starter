@@ -11,33 +11,19 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-# Dev and CI run SQLite; forks deploy Postgres. UUID primary keys, JSON
-# columns, `ORDER BY` without a tiebreaker and case-sensitive `LIKE` are where
-# the two disagree. This is nightly rather than per-PR because it doubles the
-# suite runtime to catch a class of bug that appears rarely.
+# Dev and CI run PostgreSQL; SQLite is the documented fallback for everything
+# except vector search. UUID primary keys, JSON columns, `ORDER BY` without a
+# tiebreaker and case-sensitive `LIKE` are where the two disagree. This is
+# nightly rather than per-PR because it doubles the suite runtime to catch a
+# class of bug that appears rarely.
 jobs:
-  pgsql:
+  sqlite:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     permissions:
       contents: read
       issues: write
-
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: testing
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout
@@ -49,7 +35,6 @@ jobs:
           php-version: 8.5
           tools: composer:v2
           coverage: pcov
-          extensions: pdo_pgsql
           ini-values: zend.assertions=1
 
       - name: Setup Bun
@@ -95,10 +80,7 @@ jobs:
         run: bunx playwright install-deps
 
       - name: Tests
-        run: composer test:pgsql
-        env:
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
+        run: composer test:sqlite
 
       - name: Store Artifacts
         if: failure()
@@ -119,11 +101,11 @@ jobs:
           existing="$(gh issue list --label nightly --state open --limit 1 --json number --jq '.[0].number')"
 
           if [ -n "$existing" ]; then
-            gh issue comment "$existing" --body "The nightly Postgres run failed again: $RUN_URL"
+            gh issue comment "$existing" --body "The nightly SQLite run failed again: $RUN_URL"
           else
             gh issue create \
-              --title "Nightly Postgres run failed" \
+              --title "Nightly SQLite run failed" \
               --label nightly \
-              --body "The suite passes on SQLite but failed on Postgres 17: $RUN_URL"
+              --body "The suite passes on PostgreSQL but failed on SQLite: $RUN_URL"
           fi
 

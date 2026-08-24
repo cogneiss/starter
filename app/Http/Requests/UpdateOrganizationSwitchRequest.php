@@ -16,7 +16,10 @@ final class UpdateOrganizationSwitchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'organization' => ['required', 'string', Rule::exists(Organization::class, 'id')->whereNull('deleted_at')],
+            // `bail` and `uuid` before the lookup: on PostgreSQL, comparing a
+            // non-UUID string against a uuid column is a database error rather
+            // than an empty result.
+            'organization' => ['bail', 'required', 'string', 'uuid', Rule::exists(Organization::class, 'id')->whereNull('deleted_at')],
         ];
     }
 }

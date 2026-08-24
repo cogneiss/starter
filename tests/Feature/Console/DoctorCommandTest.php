@@ -26,16 +26,18 @@ function fakeHealthyShell(): void
  */
 function withAudit(?string $json, Closure $assert): void
 {
-    $path = base_path('wiki/_meta/audit.json');
-    $original = is_file($path) ? (string) file_get_contents($path) : null;
+    withWikiWorklistLock(function () use ($json, $assert): void {
+        $path = base_path('wiki/_meta/audit.json');
+        $original = is_file($path) ? (string) file_get_contents($path) : null;
 
-    try {
-        $json === null ? unlink($path) : file_put_contents($path, $json);
+        try {
+            $json === null ? unlink($path) : file_put_contents($path, $json);
 
-        $assert();
-    } finally {
-        $original === null ? unlink($path) : file_put_contents($path, $original);
-    }
+            $assert();
+        } finally {
+            $original === null ? unlink($path) : file_put_contents($path, $original);
+        }
+    });
 }
 
 beforeEach(function (): void {
@@ -56,7 +58,7 @@ it('emits valid JSON', function (): void {
 
     $decoded = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
-    expect($decoded['checks'])->toHaveCount(12)
+    expect($decoded['checks'])->toHaveCount(13)
         ->and($decoded['checks'][0])->toHaveKeys(['name', 'ok', 'fix']);
 
     // Everything but the coverage driver, which depends on how PHP was invoked.
@@ -86,6 +88,8 @@ it('fails when the files a checkout needs are missing', function (): void {
 it('fails when the database cannot be reached', function (): void {
     // A connection that cannot open, left out of the way of the transaction
     // this test is already running in.
+    $default = config('database.default');
+
     config([
         'database.connections.broken' => ['driver' => 'sqlite', 'database' => '/nonexistent/directory/database.sqlite'],
         'database.default' => 'broken',
@@ -94,11 +98,11 @@ it('fails when the database cannot be reached', function (): void {
     expect(Artisan::call('app:doctor', ['--json' => true]))->toBe(1);
 
     $output = Artisan::output();
-    config(['database.default' => 'sqlite']);
+    config(['database.default' => $default]);
 
     $checks = collect(json_decode($output, true, flags: JSON_THROW_ON_ERROR)['checks'])->keyBy('name');
 
-    expect($checks['Database connection']['ok'])->toBeFalse()
+    expect($checks['Database connection (sqlite)']['ok'])->toBeFalse()
         // Nothing can be said about migrations without a database either.
         ->and($checks['Migrations']['ok'])->toBeFalse();
 });
@@ -141,6 +145,16 @@ it('fails when the generated TypeScript is stale', function (): void {
         ->keyBy('name');
 
     expect($checks['Generated TypeScript']['ok'])->toBeFalse();
+});
+
+it('reports whether the database has pgvector installed', function (): void {
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $optional = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'])
+        ->keyBy('name');
+
+    expect($optional['pgvector extension'])->toHaveKeys(['name', 'set', 'disables'])
+        ->and($optional['pgvector extension']['disables'])->toBe('vector search is unavailable');
 });
 
 it('reports a missing third-party credential as off rather than failed', function (): void {

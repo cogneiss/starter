@@ -29,6 +29,25 @@ pest()->extend(TestCase::class)
 expect()->extend('toBeOne', fn () => $this->toBe(1));
 
 /**
+ * Serialises the handful of tests that read or write this repository's own
+ * `wiki/_meta/audit.json`. It is one shared file, so two parallel workers
+ * otherwise overwrite each other's fixture mid-assertion.
+ */
+function withWikiWorklistLock(Closure $work): void
+{
+    $handle = fopen(sys_get_temp_dir().'/starter-wiki-worklist.lock', 'c');
+
+    flock($handle, LOCK_EX);
+
+    try {
+        $work();
+    } finally {
+        flock($handle, LOCK_UN);
+        fclose($handle);
+    }
+}
+
+/**
  * A scratch wiki for the documentation gates. One fixture per failure mode, so a
  * fixture can be as broken as it likes without breaking the real `wiki/`.
  */

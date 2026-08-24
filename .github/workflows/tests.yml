@@ -30,6 +30,7 @@ jobs:
           php-version: 8.5
           tools: composer:v2
           coverage: pcov
+          extensions: pdo_pgsql
           ini-values: zend.assertions=1
 
       - name: Setup Bun
@@ -82,6 +83,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U starter"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,6 +108,7 @@ jobs:
           php-version: 8.5
           tools: composer:v2
           coverage: pcov
+          extensions: pdo_pgsql
           ini-values: zend.assertions=1
 
       - name: Setup Bun
@@ -154,6 +171,12 @@ jobs:
 
       - name: Tests
         run: composer test
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
 
       - name: Store Artifacts
         if: failure()
@@ -319,6 +342,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U starter"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -329,6 +367,7 @@ jobs:
           php-version: 8.5
           tools: composer:v2
           coverage: none
+          extensions: pdo_pgsql
           ini-values: zend.assertions=1
 
       - name: Setup Bun
@@ -374,6 +413,12 @@ jobs:
 
       - name: Accessibility
         run: composer test:a11y
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
 
       - name: Store Artifacts
         if: failure()
