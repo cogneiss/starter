@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 /**
@@ -164,9 +165,23 @@ it('does not call a page with one surviving ref orphaned', function (): void {
 });
 
 it('defaults to the wiki this repository ships', function (): void {
-    $this->artisan('wiki:audit')->assertExitCode(0);
+    // This one writes to the real worklist, so it puts back whatever was there.
+    // Leaving the faked git output behind makes `app:doctor` report hundreds of
+    // stale pages that do not exist, and a report nobody believes is ignored.
+    $path = base_path('wiki/_meta/audit.json');
+    $before = is_file($path) ? (string) file_get_contents($path) : null;
 
-    $audit = json_decode((string) file_get_contents(base_path('wiki/_meta/audit.json')), true, flags: JSON_THROW_ON_ERROR);
+    try {
+        $this->artisan('wiki:audit')->assertExitCode(0);
 
-    expect($audit['generated_from'])->toBe('deadbee');
+        $audit = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+
+        expect($audit['generated_from'])->toBe('deadbee');
+    } finally {
+        if ($before === null) {
+            File::delete($path);
+        } else {
+            File::put($path, $before);
+        }
+    }
 });

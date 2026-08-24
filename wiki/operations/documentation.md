@@ -10,6 +10,7 @@ code_refs:
     - .claude/commands/document.md
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
+    - config/boost.php
 updated: 2026-08-24
 ---
 
@@ -39,6 +40,14 @@ Three are first-party: `resource-spine`, `org-access`, `testing-gates`.
 `php artisan boost:install --guidelines --skills`, which is wired into
 `post-update-cmd` so a Composer update regenerates them. `GEMINI.md` is a copy of
 `AGENTS.md`, made in the same hook, because Boost no longer emits it.
+
+`config/boost.php` pins `enforce_tests` to `true`. Left unset, Boost decides
+whether to emit its test-enforcement guideline by running
+`artisan test --list-tests` in a subprocess and counting the results, so the
+generated files change depending on whether that subprocess succeeded — and the
+drift gate below then fails on a diff that touched none of this. A blocking gate
+that goes red for unrelated reasons is a gate that gets switched off, so the
+value is pinned rather than detected.
 
 `tests/Feature/Docs/GuidelinesAreCurrentTest.php` fails when they drift. It proves
 drift _inside_ the `<laravel-boost-guidelines>` block; a check over the whole file
