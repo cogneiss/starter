@@ -110,7 +110,8 @@ it('keeps every agent final, promptable and on the default middleware', function
 
         expect($reflection->isFinal())->toBeTrue("{$class} must be final")
             ->and($reflection->implementsInterface(Agent::class))->toBeTrue("{$class} must implement ".Agent::class)
-            ->and(class_uses_recursive($class))->toContain(HasDefaultMiddleware::class, "{$class} must use ".HasDefaultMiddleware::class);
+            ->and(in_array(HasDefaultMiddleware::class, class_uses_recursive($class), true))
+            ->toBeTrue("{$class} must use ".HasDefaultMiddleware::class);
     }
 
     // Keeps the guard honest while app/Ai/Agents is still empty: an

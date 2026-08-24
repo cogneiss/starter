@@ -56,6 +56,7 @@ it('is accessible when signed in', function (string $url, string $title): void {
     'members' => ['/settings/members', 'Members - Laravel'],
     'invite member' => ['/settings/members/invite', 'Invite member - Laravel'],
     'confirm password' => ['/user/confirm-password', 'Confirm password - Laravel'],
+    'block gallery' => ['/_block-gallery', 'Block gallery - Laravel'],
 ]);
 
 it('is accessible behind the password confirmation gate', function (string $url, string $title): void {

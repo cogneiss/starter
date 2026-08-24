@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Ai\Contracts\ConfirmableAction;
+use App\Ai\ConfirmableActions;
 use App\Exceptions\InvalidConfirmToken;
 use App\Models\AiConfirmToken;
 use App\Models\User;
@@ -56,12 +56,8 @@ final readonly class ConsumeConfirmToken
                 throw InvalidConfirmToken::tampered();
             }
 
-            /** @var array<string, class-string<ConfirmableAction>> $allowlist */
-            $allowlist = config()->array('ai.actions');
-
-            $class = $allowlist[$confirmation->action] ?? throw InvalidConfirmToken::unmappedAction($confirmation->action);
-
-            $action = resolve($class);
+            $action = ConfirmableActions::find($confirmation->action)
+                ?? throw InvalidConfirmToken::unmappedAction($confirmation->action);
 
             // Permissions change between proposing and confirming. The one that
             // counts is the one held now.

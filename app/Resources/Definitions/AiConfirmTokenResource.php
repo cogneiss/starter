@@ -32,7 +32,7 @@ final class AiConfirmTokenResource implements ResourceContract
         return AiConfirmTokenData::class;
     }
 
-    public function policy(): ?string
+    public function policy(): string
     {
         return AiConfirmTokenPolicy::class;
     }

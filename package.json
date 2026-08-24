@@ -9,7 +9,8 @@
         "test:lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt --check resources/ && NODE_OPTIONS='--experimental-strip-types' vp lint",
         "knip": "knip",
         "knip:fix": "knip --fix",
-        "test:types": "tsc --noEmit"
+        "test:types": "tsc --noEmit",
+        "types": "tsc --noEmit"
     },
     "devDependencies": {
         "@laravel/vite-plugin-wayfinder": "^0.1.7",

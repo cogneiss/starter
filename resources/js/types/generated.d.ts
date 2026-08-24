@@ -1,9 +1,53 @@
 export type AiAuditStatus = 'ok' | 'blocked' | 'failed';
+export type AiBlockType = 'text' | 'markdown' | 'table' | 'list' | 'metric' | 'form' | 'confirm';
+export type AiConfirmBlock = {
+type: AiBlockType,
+summary: string,
+expires_at: string,
+token: string,
+};
 export type AiConfirmToken = {
 id: string,
 action: string,
 summary: string,
 expires_at: string,
+};
+export type AiFormBlock = {
+type: AiBlockType,
+summary: string,
+fields: AiFormField[],
+action: string,
+};
+export type AiFormField = {
+name: string,
+value: string,
+};
+export type AiListBlock = {
+type: AiBlockType,
+items: string[],
+ordered: boolean,
+};
+export type AiMarkdownBlock = {
+type: AiBlockType,
+html: string,
+markdown: string,
+};
+export type AiMetricBlock = {
+type: AiBlockType,
+label: string,
+value: string,
+delta: string | null,
+trend: AiMetricTrend | null,
+};
+export type AiMetricTrend = 'up' | 'down' | 'flat';
+export type AiTableBlock = {
+type: AiBlockType,
+columns: string[],
+rows: string[][],
+};
+export type AiTextBlock = {
+type: AiBlockType,
+text: string,
 };
 export type BrowserSession = {
 id: string,

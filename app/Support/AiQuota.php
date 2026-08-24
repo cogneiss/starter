@@ -9,6 +9,7 @@ use App\Models\AiAuditLog;
 use App\Models\AiCreditLedgerEntry;
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The three limits an agent request is measured against: how much one member
@@ -55,7 +56,7 @@ final class AiQuota
     private function requestsSince(?User $user, CarbonInterface $since): int
     {
         return AiAuditLog::query()
-            ->when($user, fn ($query) => $query->where('user_id', $user?->id))
+            ->when($user, fn (Builder $query): Builder => $query->where('user_id', $user?->id))
             ->where('status', '!=', AiAuditStatus::Blocked)
             ->where('created_at', '>=', $since)
             ->count();

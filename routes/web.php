@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Ai\Blocks\BlockCollection;
+use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
+use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
@@ -123,6 +126,14 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
     // AI Confirmations...
     Route::post('ai/confirm/{token}', [AiConfirmController::class, 'store'])
         ->name('ai-confirm.store');
+
+    // AI Blocks...
+    Route::post('ai/blocks', [AiBlockController::class, 'store'])
+        ->middleware('organization')
+        ->name('ai-block.store');
+    Route::post('ai/proposals', [AiProposalController::class, 'store'])
+        ->middleware('organization')
+        ->name('ai-proposal.store');
 });
 
 Route::middleware('guest')->group(function (): void {
@@ -192,4 +203,21 @@ if (! app()->environment('production')) {
     Route::get('_value-gallery', fn () => Inertia::render('value-gallery', [
         'now' => now()->toIso8601String(),
     ]))->name('value-gallery');
+
+    // Block gallery... every AI block the renderer knows, plus one it does not,
+    // on one page. It is the reference for what each block looks like and what
+    // the browser tests read.
+    Route::get('_block-gallery', fn () => Inertia::render('block-gallery', [
+        'blocks' => [
+            ...BlockCollection::fromPayloads([
+                ['type' => 'text', 'text' => 'A sentence the agent wrote.'],
+                ['type' => 'markdown', 'markdown' => "## Heading\n\nA [link](https://example.com) and `code`.<script>alert(1)</script>"],
+                ['type' => 'table', 'columns' => ['Member', 'Role'], 'rows' => [['Taylor', 'Owner'], ['Jess', 'Admin']]],
+                ['type' => 'list', 'ordered' => false, 'items' => ['First', 'Second', 'Third']],
+                ['type' => 'metric', 'label' => 'Active members', 'value' => '128', 'delta' => '+12', 'trend' => 'up'],
+                ['type' => 'form', 'action' => 'invite-member', 'values' => ['email' => 'new@example.com', 'role' => 'member']],
+            ])->toArray(),
+            ['type' => 'quantum-hologram', 'text' => 'A block from the future.'],
+        ],
+    ]))->name('block-gallery');
 }

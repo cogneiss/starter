@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Ai\Contracts\ConfirmableAction;
+use App\Ai\ConfirmableActions;
 use App\Exceptions\InvalidConfirmToken;
 use App\Models\AiConfirmToken;
 use App\Models\User;
@@ -24,12 +24,8 @@ final readonly class CreateConfirmToken
      */
     public function handle(User $user, string $action, array $payload): AiConfirmToken
     {
-        /** @var array<string, class-string<ConfirmableAction>> $allowlist */
-        $allowlist = config()->array('ai.actions');
-
-        $class = $allowlist[$action] ?? throw InvalidConfirmToken::unmappedAction($action);
-
-        $confirmable = resolve($class);
+        $confirmable = ConfirmableActions::find($action)
+            ?? throw InvalidConfirmToken::unmappedAction($action);
 
         Gate::forUser($user)->authorize($confirmable->ability());
 
