@@ -12,6 +12,10 @@ parameters:
         - database
         - public
         - routes
+        # Test fixtures are plain classes, so they analyse cleanly and keep the
+        # traits they exercise (app/Ai/Concerns) inside PHPStan's view. Pest
+        # test files themselves are not analysable at this level.
+        - tests/Fixtures
 
 
     level: max

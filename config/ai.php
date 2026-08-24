@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Laravel\Ai\Enums\Lab;
+
 return [
 
     /*
@@ -52,6 +54,28 @@ return [
     */
 
     'default_tier' => env('AI_DEFAULT_TIER', 'cheap'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Tiers
+    |--------------------------------------------------------------------------
+    |
+    | Agents pick a tier, never a model name, so that swapping a model is one
+    | edit here instead of a sweep through app/Ai/Agents. Resolve a tier with
+    | App\Support\AiTier::for('cheap').
+    |
+    */
+
+    'tiers' => [
+        'cheap' => [
+            'provider' => Lab::Anthropic,
+            'model' => env('AI_MODEL_CHEAP', 'claude-haiku-4-5-20251001'),
+        ],
+        'smart' => [
+            'provider' => Lab::Anthropic,
+            'model' => env('AI_MODEL_SMART'),
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
