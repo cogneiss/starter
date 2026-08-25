@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\AiAuditLog;
 use App\Models\AiCreditLedgerEntry;
 use App\Models\AiDocument;
+use App\Models\AiMemory;
 use App\Models\FeatureOverride;
 use App\Models\ImpersonationLog;
 use App\Models\LoginHistory;
@@ -23,6 +24,7 @@ return [
         AiAuditLog::class => 'Append-only AI usage log, reported in aggregate by app:ai-usage, never linked.',
         AiCreditLedgerEntry::class => 'Append-only AI credit ledger, summed for a balance, never listed as a record.',
         AiDocument::class => 'Retrieval corpus rows, reached only through an agent tool, never listed or linked.',
+        AiMemory::class => 'One person\'s private assistant memory, written by one tool and read into their own prompt, never listed or linked.',
         FeatureOverride::class => 'pending resource adapter',
         ImpersonationLog::class => 'Append-only audit table, never listed or linked.',
         LoginHistory::class => 'Append-only audit table, read through UserData, never linked.',

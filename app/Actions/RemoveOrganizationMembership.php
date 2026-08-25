@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Models\AiMemory;
 use App\Models\OrganizationMembership;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,11 @@ final readonly class RemoveOrganizationMembership
             if ($user->current_organization_id === $membership->organization_id) {
                 $user->forceFill(['current_organization_id' => null])->save();
             }
+
+            AiMemory::query()
+                ->where('organization_id', $membership->organization_id)
+                ->where('user_id', $membership->user_id)
+                ->delete();
 
             $membership->delete();
         });

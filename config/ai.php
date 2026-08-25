@@ -143,6 +143,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Assistant Memory
+    |--------------------------------------------------------------------------
+    |
+    | How many remembered facts one person may carry in one organization. The
+    | cap is a prompt-size decision as much as a storage one: every fact is
+    | read into the system prompt on every request, so an uncapped memory is a
+    | bill that grows on its own. Past the cap the least recently touched fact
+    | is dropped. Read it as config('ai.memory.max_facts').
+    |
+    */
+
+    'memory' => [
+        'max_facts' => env('AI_MEMORY_MAX_FACTS', 20),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Model Pricing
     |--------------------------------------------------------------------------
     |
