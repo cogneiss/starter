@@ -21,7 +21,7 @@ return [
 
     /** Models with no resource adapter, with a reason. G5 fails on anything absent from here. */
     'non_resource_models' => [
-        AiAuditLog::class => 'Append-only AI usage log, reported in aggregate by app:ai-usage, never linked.',
+        AiAuditLog::class => 'Append-only AI usage log, reported in aggregate by ai:usage, never linked.',
         AiCreditLedgerEntry::class => 'Append-only AI credit ledger, summed for a balance, never listed as a record.',
         AiDocument::class => 'Retrieval corpus rows, reached only through an agent tool, never listed or linked.',
         AiMemory::class => 'One person\'s private assistant memory, written by one tool and read into their own prompt, never listed or linked.',

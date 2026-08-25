@@ -85,7 +85,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17
+        image: pgvector/pgvector:pg17
         env:
           POSTGRES_DB: testing
           POSTGRES_USER: starter
@@ -344,7 +344,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17
+        image: pgvector/pgvector:pg17
         env:
           POSTGRES_DB: testing
           POSTGRES_USER: starter

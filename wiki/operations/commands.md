@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Commands
@@ -32,11 +32,21 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 
 ## Reporting — scheduled, never blocking
 
-| Command                | Does                                                        |
-| ---------------------- | ----------------------------------------------------------- |
-| `composer test:pgsql`  | The whole suite against Postgres instead of SQLite, nightly |
-| `composer test:mutate` | Mutation score over `app/`, weekly                          |
-| `composer sbom`        | Write `sbom.json` (CycloneDX), attached to each release     |
+| Command                | Does                                                                             |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `composer test:sqlite` | The whole suite against SQLite instead of Postgres, minus vector search, nightly |
+| `composer test:mutate` | Mutation score over `app/`, weekly                                               |
+| `composer test:evals`  | Grade prompts against real providers, weekly and on request                      |
+| `composer sbom`        | Write `sbom.json` (CycloneDX), attached to each release                          |
+
+The default connection is Postgres, because pgvector is where retrieval lives
+([[domains/ai-retrieval]]). `test:sqlite` runs the other direction to prove the
+kit still boots and passes without it — everything except vector search does.
+
+`test:evals` is the only command here that spends money and the only one allowed
+out to a provider. It is excluded from `composer test`, skips itself with no key
+configured, and reports rather than blocks, for the reasons in
+[[domains/ai-evals]].
 
 ## Local loops
 
@@ -56,6 +66,8 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 | `php artisan resource:cache`               | Cache the resource registry for production                |
 | `php artisan app:sync-permissions`         | Write the permission catalog to the database              |
 | `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed            |
+| `php artisan ai:install`                   | Create the pgvector extension, a no-op away from Postgres |
+| `php artisan ai:usage`                     | Report AI runs, tokens and spend from the audit log       |
 
 Details per command sit with the thing it operates on:
 [[operations/testing]], [[operations/tooling]], [[domains/console-commands]],

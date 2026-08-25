@@ -4,7 +4,7 @@ status: current
 supersedes: []
 code_refs:
     - .ai/rules/index.md
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Wiki index
@@ -34,8 +34,8 @@ Answer in this order, and put it in exactly one place:
    anything long enough to skim is too long to be a rule.
 2. **Is it a procedure for a task — "when you are doing X, do Y, in this order"?**
    A skill. `.ai/skills/<name>/SKILL.md`, authored here and published into the
-   agent directories by `php artisan boost:install --skills`. Three ship:
-   `resource-spine`, `org-access`, `testing-gates`. A skill is read while
+   agent directories by `php artisan boost:install --skills`. Four ship:
+   `resource-spine`, `org-access`, `testing-gates`, `ai-layer`. A skill is read while
    working, so it names exact commands and file paths and states the failure it
    prevents. About 150 lines is the ceiling.
 3. **Is it the reasoning — why the thing is shaped this way, what was rejected?**
@@ -75,6 +75,19 @@ See [[operations/documentation]] for the loop that keeps pages current.
 - [[domains/http-layer]]
 - [[domains/events-and-notifications]]
 - [[domains/console-commands]]
+
+## The AI layer
+
+- [[domains/ai-layer-overview]]
+- [[domains/ai-agents-and-tools]]
+- [[domains/ai-injection-defense]]
+- [[domains/ai-confirm-tokens]]
+- [[domains/ai-blocks]]
+- [[domains/ai-metering-and-quotas]]
+- [[domains/ai-retrieval]]
+- [[domains/ai-memory]]
+- [[domains/ai-mcp-server]]
+- [[domains/ai-evals]]
 
 ## Features — what a user touches
 

@@ -8,8 +8,9 @@ code_refs:
     - app/Http/Controllers/OrganizationController.php
     - app/Http/Controllers/OrganizationSwitchController.php
     - app/Services/.gitkeep
+    - app/Actions/SummarizeAiUsage.php
     - tests/Unit/ArchTest.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Actions and cruddy controllers
@@ -44,6 +45,22 @@ method on the organization controller.
 including the rule that controllers are used from routes and nowhere else. A
 controller called from another controller is the first sign that the logic
 belonged in an action.
+
+## Agents are callers, not a second home for logic
+
+An AI agent is one more caller of an action, and the same rules bind it. The
+`aiUsage()` method on `app/Http/Controllers/OrganizationController.php` renders
+whatever `app/Actions/SummarizeAiUsage.php` returns; the aggregation, the pricing
+and the thirty-day window live in the action, so `php artisan ai:usage` and the
+page cannot disagree about the bill.
+
+The direction only runs one way. `tests/Unit/ArchTest.php` asserts that nothing
+in `App\Ai\Agents` touches `DB`, `ConsumeConfirmToken` or
+`CreateOrganizationInvitation`: an agent may read and may propose, and a write it
+performed itself would be a write nobody confirmed
+([[domains/ai-confirm-tokens]]). The same file requires every vertical to
+implement `OrganizationScoped` and `HasMiddleware`, which is how a new agent
+inherits the tenancy and metering pipeline instead of quietly opting out of it.
 
 ## Writing one
 

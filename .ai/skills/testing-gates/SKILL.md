@@ -100,9 +100,11 @@ Use factory states before hand-building a model; `UserFactory` ships
 
 ## Scheduled, never blocking
 
-`composer test:pgsql` (nightly, the suite against Postgres — SQLite and Postgres
-disagree on UUID keys, JSON columns, unordered `ORDER BY`, case-sensitive `LIKE`)
-and `composer test:mutate` (weekly). A mutation score moves when nobody touched
+`composer test:sqlite` (nightly, the suite on SQLite minus the `pgvector` group —
+SQLite and Postgres disagree on UUID keys, JSON columns, unordered `ORDER BY`,
+case-sensitive `LIKE`), `composer test:mutate` (weekly) and `composer test:evals`
+(weekly, the only command allowed out to a provider; it skips itself with no key
+set). A mutation score moves when nobody touched
 it, so gating on it would teach people to write tests that satisfy the mutator.
 Promoting either to a required check means making it deterministic first.
 

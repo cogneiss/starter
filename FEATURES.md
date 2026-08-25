@@ -220,10 +220,11 @@ Each failure message names the exact command that fixes it.
 - Test Impact Analysis enabled locally — only the tests your change touches run.
   It is deliberately local only (`pest()->tia()->locally()`): CI has no reason
   to trust a map it did not build, so every CI job runs the full suite.
-- The whole suite reruns against `postgres:17` nightly, because dev and CI use
-  SQLite while most forks deploy Postgres, and the two disagree on UUID keys,
-  JSON columns, unordered `ORDER BY` and case-sensitive `LIKE`. A failure opens
-  an issue.
+- `composer test:sqlite` reruns the whole suite on SQLite nightly, minus the
+  `pgvector` group. Postgres is the default everywhere, so the scheduled run
+  proves a fork that drops it still gets everything except vector search. The
+  two engines disagree on UUID keys, JSON columns, unordered `ORDER BY` and
+  case-sensitive `LIKE`; a failure opens an issue.
 - Mutation testing weekly. Coverage says a line ran; the mutation score says a
   test actually failed when that line was broken. It reports, it never blocks —
   gating on the score teaches people to write tests that satisfy the mutator.
@@ -396,6 +397,49 @@ stack trace. `app:doctor` reports the same split — required-and-missing is an
 error, an absent credential is a feature listed as off and never changes the
 exit code.
 
+### AI layer
+
+A product layer built on `laravel/ai`, living in `app/Ai/` and wired so the
+tenancy, authorization and metering rules the rest of the kit enforces apply to
+an agent too. It boots with zero keys: with no provider credential configured
+every agent is answered by the fake gateway, so a fresh clone renders the AI
+pages and runs the whole suite without an account anywhere.
+
+**Agents inherit the pipeline.** Every vertical implements `OrganizationScoped`
+and runs four middleware in `app/Ai/Middleware` — a quota check, an untrusted
+input fence, a topic filter, and an audit record. `tests/Unit/ArchTest.php` fails
+the build when a new agent skips either interface, so the pipeline is inherited
+rather than remembered. Agents pick a tier (`cheap` or `smart`), never a
+model name, and `config/ai.php` maps each tier to a provider and model.
+
+**Tools ask the policy.** `app/Ai/Tools` reads through the resource registry —
+list records, show one, search the organization's documents, remember a fact —
+and every tool calls `authorizeFor()` before it answers, so an agent can reach
+exactly what the person driving it can reach. Writes are never performed by an
+agent: `ProposeAction` returns a single-use confirm token, and the write happens
+when a human confirms it.
+
+**Injection defence.** Customer text reaches a prompt fenced by
+`UntrustedContent`, never inline, and the egress allowlist bounds what a tool may
+fetch. The controls have tests that go red when the control is removed, not tests
+that only assert the happy path.
+
+**Metered.** Every run writes an audit row with tokens and cost.
+`php artisan ai:usage` and the organization usage page read the same action, and
+quotas (per hour, per day, per month of spend) refuse a run before it costs
+anything.
+
+**Rendered as blocks.** Agents answer with typed blocks — text, markdown, table,
+list, metric, form, confirm — rendered by React components, so an answer is a UI
+rather than a wall of prose.
+
+**MCP.** `app/Mcp` exposes the same three tools over the Model Context Protocol
+for a local client, delegating to the AI tools rather than reimplementing their
+checks. It ships disabled in `.mcp.json`.
+
+The long version, one page per piece, starts at
+[`wiki/domains/ai-layer-overview.md`](wiki/domains/ai-layer-overview.md).
+
 ### Better defaults
 
 Courtesy of [Essentials](https://github.com/nunomaduro/essentials), on by
@@ -433,6 +477,7 @@ Scheduled — these report, they never block:
 | ---------------------- | -------------------------------------------------------------------------------------------------- |
 | `composer test:sqlite` | The whole suite against SQLite instead of PostgreSQL, minus the vector-search tests. Runs nightly. |
 | `composer test:mutate` | Mutation score over `app/`. Runs weekly.                                                           |
+| `composer test:evals`  | Grades prompts against a real provider. Weekly and on request; skips itself with no key set.       |
 | `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.                                           |
 
 Local loops:
@@ -516,6 +561,16 @@ The agent and documentation work left these out:
 | `bin/setup`, Sail, a devcontainer         | A third way to start the app that has to be kept in step with the other two. `composer setup` handles a fresh clone and `php artisan dev` runs the daily loop; both are already tested by `app:doctor`. |
 | A Scout-indexed, searchable wiki          | Forces the search-driver decision the resource spine deliberately does not make, for a corpus of a few dozen files that `rg` reads in milliseconds.                                                     |
 | A language model anywhere in the pipeline | `/document` runs on a developer's machine. Putting it in CI means an API key in the build, a cost on every push, and a non-deterministic gate.                                                          |
+
+The AI layer left these out:
+
+| Skipped                                              | Why                                                                                                                                                      |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A chat product                                       | A thread UI, history, sharing and moderation are a product, not a layer. The blocks, tools and confirm tokens are what a chat product would be built on. |
+| Billing for AI spend                                 | Billing-shaped, like the rest of it. The credit ledger and `ai:usage` are the meter a billing module would read.                                         |
+| Images, speech, transcription, provider file storage | The SDK supports all four. None of them has a place in this kit yet, and each drags in storage, moderation and a second provider account.                |
+| Reranking                                            | Useful once retrieval is tuned against a real corpus. There is no corpus here to tune against.                                                           |
+| Provider-hosted vector stores                        | pgvector in the application's own database keeps the corpus inside the tenancy boundary the rest of the kit enforces. A hosted store moves it outside.   |
 
 The resource spine was cut back for the same reason — the pattern pays off with
 several consumers reading one adapter, and this kit has none yet:

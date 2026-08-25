@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - CONTRIBUTING.md
     - .githooks/commit-msg
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Contributing
@@ -28,6 +28,20 @@ fails and so does dead code ([[operations/testing]]).
 While working, `composer test:fast` (parallel, compact, stops at the first
 failure) or `composer test:dirty` (only tests covering edited files) are the local
 loops. `composer test` is the gate.
+
+## Three AI-layer rules are in `CONTRIBUTING.md` rather than only in the wiki
+
+Touching `app/Ai` carries rules whose failure mode is not a red test on your
+branch: a tool that skips `authorizeFor()` returns another member's rows and
+renders them correctly, a test that forgets its fake spends real money, and
+unfenced text hands a stored record the ability to give instructions. Those three
+are stated in `CONTRIBUTING.md` because a contributor reads that file before
+their first pull request and the wiki only when something already went wrong
+([[domains/ai-layer-overview]]).
+
+Each is backed by something that fails: `tests/Unit/ArchTest.php` for the
+read-only tool rule, `tests/Pest.php` for the provider ban, and the fence's own
+tests. The prose exists so the failure is recognisable, not to replace it.
 
 ## Formatting is not a review topic
 

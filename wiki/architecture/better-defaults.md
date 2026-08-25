@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - config/essentials.php
     - tests/Pest.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Better defaults from Essentials
@@ -38,5 +38,19 @@ calls, so a test that reaches the network or the shell fails loudly rather than
 becoming flaky later. When a test genuinely needs a subprocess — rendering the
 agent guideline files, for instance — it constructs the Symfony process directly
 rather than going through the facade the ban applies to.
+
+## The same default, extended to providers
+
+Blocked stray HTTP does not cover an AI provider, which speaks through the SDK's
+gateway rather than the `Http` facade, so `tests/Pest.php` adds the equivalent:
+every agent under `app/Ai/Agents` is faked before each test in `Feature/Ai` with
+`preventStrayPrompts()`, no scripted answer attached. A test that forgets its own
+fake throws instead of dialling a provider and spending money. It is central for
+the same reason the HTTP ban is — the per-file version is the one someone forgets
+in the file that matters.
+
+`tests/Evals/` is the deliberate exception, and the only one: that suite is
+grouped `evals`, excluded from `composer test`, and skips itself when no key is
+configured ([[domains/ai-evals]]).
 
 Runtime driver choices are separate; see [[operations/runtime]].

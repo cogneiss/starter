@@ -5,6 +5,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | Applies to                                                            | Rule file              |
 | --------------------------------------------------------------------- | ---------------------- |
 | app/**                                                                | .ai/rules/app.md       |
+| app/Ai/**, app/Mcp/**, config/ai.php, tests/Evals/**                  | .ai/rules/ai.md        |
 | bootstrap/**                                                          | .ai/rules/bootstrap.md |
 | .github/**, composer.json, package.json                               | .ai/rules/ci.md        |
 | **, {AGENTS,CLAUDE,GEMINI}.md                                         | .ai/rules/general.md   |

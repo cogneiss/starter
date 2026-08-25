@@ -11,7 +11,7 @@ code_refs:
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Documentation
@@ -31,7 +31,14 @@ a specific kind of change. A fact belongs in exactly one of them
 Skills are authored in `.ai/skills/<name>/SKILL.md` and published into
 `.claude/skills/*/` alongside the vendor packs by
 `php artisan boost:install --skills`. Edit the source, not the published copy.
-Three are first-party: `resource-spine`, `org-access`, `testing-gates`.
+Four are first-party: `resource-spine`, `org-access`, `testing-gates` and
+`ai-layer`. Publishing writes a symlink per agent directory — `.claude`,
+`.agents`, `.cursor`, `.github`, `.junie` — and all five are committed, so a
+clone gets the pack without running Boost first.
+
+`.ai/rules/index.md` maps globs to rule files, and its row is what makes a rule
+load at all. A rule file with no row is a file nobody reads: `app/Ai/**`,
+`app/Mcp/**`, `config/ai.php` and `tests/Evals/**` route to `.ai/rules/ai.md`.
 
 ## Generated files
 

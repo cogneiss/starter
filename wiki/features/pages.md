@@ -7,7 +7,8 @@ code_refs:
     - resources/js/pages/welcome.tsx
     - resources/js/pages/dashboard.tsx
     - resources/js/pages/value-gallery.tsx
-updated: 2026-08-24
+    - resources/js/pages/organization/ai-usage.tsx
+updated: 2026-08-25
 ---
 
 # Pages
@@ -20,7 +21,11 @@ What ships rendered, and nothing more:
   (`resources/js/pages/dashboard.tsx`).
 - The auth and settings screens listed in [[features/authentication]] and
   [[features/account-settings]].
-- The organization screens in [[features/organizations]].
+- The organization screens in [[features/organizations]], including
+  `/settings/organization/ai-usage`
+  (`resources/js/pages/organization/ai-usage.tsx`), which renders AI spend
+  through the same block components an agent answers with
+  ([[domains/ai-blocks]]) rather than a hand-built table.
 - `/_value-gallery` — every semantic value component rendered with a value and
   without, outside production only
   (`resources/js/pages/value-gallery.tsx`, see [[features/interface]]).

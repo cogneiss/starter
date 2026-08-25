@@ -11,15 +11,17 @@ code_refs:
     - app/Console/Commands/ResourceClearCommand.php
     - app/Console/Commands/WikiLintCommand.php
     - app/Console/Commands/WikiAuditCommand.php
+    - app/Console/Commands/AiInstallCommand.php
+    - app/Console/Commands/AiUsageCommand.php
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Console commands
 
-Eight first-party commands. Each one either answers a question a newcomer would
+Ten first-party commands. Each one either answers a question a newcomer would
 otherwise ask a human, or maintains something that would otherwise drift.
 
 | Command                                    | Class                           | Does                                         |
@@ -32,6 +34,8 @@ otherwise ask a human, or maintains something that would otherwise drift.
 | `php artisan resource:clear`               | `ResourceClearCommand`          | undo the cache                               |
 | `php artisan wiki:lint`                    | `WikiLintCommand`               | fail the build when a wiki page has rotted   |
 | `php artisan wiki:audit`                   | `WikiAuditCommand`              | write the `/document` worklist, never blocks |
+| `php artisan ai:install`                   | `AiInstallCommand`              | prepare the database for the AI layer        |
+| `php artisan ai:usage`                     | `AiUsageCommand`                | report AI runs, tokens and spend             |
 
 `routes/console.php` holds the schedule for the ones that run unattended.
 
@@ -55,6 +59,26 @@ and printing it as FAIL next to a missing `APP_KEY` is how people learn to skim
 past this command. `tests/Feature/ZeroKeyBootTest.php` is the other half of that
 claim: it blanks every credential through the config layer and asserts each page
 the kit ships still answers 200.
+
+The AI credentials sit in the same optional block, alongside two reports that
+never move the exit code either: whether quotas are configured, and whether every
+model the application names has a price. A missing price is not a broken machine,
+it is a bill reported as zero, which is worth reading before it surprises someone
+([[domains/ai-metering-and-quotas]]).
+
+## ai:install and ai:usage
+
+`ai:install` creates the pgvector extension so retrieval has somewhere to search.
+On any connection other than PostgreSQL it is a deliberate no-op rather than an
+error — the rest of the layer works on SQLite, which is what `composer
+test:sqlite` proves ([[domains/ai-retrieval]]).
+
+`ai:usage` reads the audit log and prints runs, tokens and spend for the last 30
+days, split by agent and by tier. `--org` limits it to one organization by id or
+slug, `--since` takes anything `strtotime` understands, and `--json` emits the
+same figures for a script. It shares `app/Actions/SummarizeAiUsage.php` with the
+organization page, so the console and the browser cannot report different
+numbers.
 
 ## wiki:lint
 

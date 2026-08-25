@@ -11,7 +11,8 @@ code_refs:
     - app/Actions/DeleteUser.php
     - app/Models/LoginHistory.php
     - app/Http/Middleware/HandleAppearance.php
-updated: 2026-08-24
+    - app/Models/AiMemory.php
+updated: 2026-08-25
 ---
 
 # Account settings
@@ -41,6 +42,15 @@ the wrong theme. Encrypting them puts the flash back.
 table. On the file or cookie driver the screen is empty rather than wrong. Swapping
 the session driver is a supported change ([[operations/runtime]]) — this screen is
 what it costs.
+
+**Deleting the account deletes what the assistant remembered.**
+`app/Actions/DeleteUser.php` wraps the delete in a transaction and purges
+`ai_memories` for that user first, in every organization. The purge is explicit
+rather than a cascade or a global scope: assistant memory is keyed by
+organization _and_ user ([[domains/ai-memory]]), so deleting through whichever
+organization happens to be bound to the request would leave the person's notes
+behind in the others. A row that outlives its subject is the kind of thing a
+privacy request finds later.
 
 Logging out the other browsers is `app/Actions/DeleteOtherBrowserSessions.php`,
 behind a password confirmation.

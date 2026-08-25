@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Not included
@@ -54,6 +54,31 @@ and this kit has none yet: `searchQuery()`/Scout/a generic `/search`/⌘K palett
 cheatsheet parity CI, the motion layer, and guard G6 (precognition on form
 routes). Each reason is in `FEATURES.md`; the shape is
 [[architecture/six-method-spine]] and [[decisions/resource-spine]].
+
+## The AI layer
+
+Shipped as a layer, not a product. `FEATURES.md` lists what was left out and
+this is the reasoning:
+
+| Skipped                                              | Why                                                                                                         |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| A chat product                                       | Threads, history, sharing and moderation are a product; blocks, tools and confirm tokens are its foundation |
+| Billing for AI spend                                 | Billing-shaped — the credit ledger and `ai:usage` are the meter such a module would read                    |
+| Images, speech, transcription, provider file storage | Supported by the SDK, but each brings storage, moderation and a second provider account                     |
+| Reranking                                            | Pays off against a tuned corpus, and there is no corpus here to tune                                        |
+| Provider-hosted vector stores                        | pgvector keeps the corpus inside the tenancy boundary the rest of the kit enforces                          |
+
+The last row is the one with teeth. Every other control in the layer assumes the
+data never leaves a database this application scopes — see
+[[domains/ai-retrieval]] and [[architecture/fail-closed-scoping]]. A hosted store
+puts the corpus somewhere `BelongsToOrganization` cannot reach, so the boundary
+would have to be re-implemented against someone else's filter API.
+
+An earlier cut in the resource spine — `actions()` / `actionSchemas()`, listed
+above as _only useful to an AI assistant layer that is not here_ — is now half
+answered: `app/Ai/ConfirmableActions.php` is the registry of writes an agent may
+propose ([[domains/ai-confirm-tokens]]). It is explicit rather than derived from
+an adapter, because a write an agent can reach is worth listing by hand.
 
 ## Drafted, not shipped
 

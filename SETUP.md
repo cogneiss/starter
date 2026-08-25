@@ -377,25 +377,41 @@ run the tests for; `--dirty` then reports fewer tests than it should. Reseeding
 is the fix. `main` publishes a fresh map from the `tia-baseline` workflow as an
 artifact, so `pest --tia --baselined` can fetch one instead of building it.
 
-## Running the suite against Postgres
+## The database, pgvector, and running without them
 
-Dev and CI use SQLite; most forks deploy Postgres. The two disagree on UUID
-primary keys, JSON columns, `ORDER BY` without a tiebreaker, and case-sensitive
-`LIKE`, so the `nightly` workflow reruns the whole suite against `postgres:17`
-every night and opens an issue when it fails.
-
-Locally, Herd ships Postgres. Create the database once and run:
+`DB_CONNECTION=pgsql` is the default. Retrieval stores embeddings in a `vector`
+column, and pgvector only exists on Postgres. Herd ships Postgres, so locally:
 
 ```bash
 herd services:start postgresql
-psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE testing;'
-DB_USERNAME=postgres composer test:pgsql
+psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE starter;'
+php artisan ai:install
+php artisan migrate
 ```
 
-`composer test:pgsql` only sets `DB_CONNECTION`, `DB_DATABASE` and `DB_HOST`;
-credentials come from your environment because they differ per machine.
-PHPUnit's `<env>` entries in `phpunit.xml` do not overwrite variables that are
-already set, which is what lets the script swap the connection out.
+`php artisan ai:install` creates the `vector` extension in the current database.
+It is a no-op on any connection that is not Postgres, and CI gets the same thing
+from the `pgvector/pgvector:pg17` service image — a plain `postgres:17` has no
+extension to create and fails at migrate time.
+
+Skipping pgvector costs vector search and nothing else. `.env.example` keeps the
+SQLite pair commented out for that case, and the `nightly` workflow proves it
+keeps working:
+
+```bash
+composer test:sqlite
+```
+
+That runs the whole suite on SQLite in memory with `--exclude-group=pgvector`.
+It is also the check that catches the disagreements between the two engines —
+UUID primary keys, JSON columns, `ORDER BY` without a tiebreaker, case-sensitive
+`LIKE` — which is why it is scheduled rather than blocking.
+
+Provider keys are optional in the same way. With `ANTHROPIC_API_KEY`,
+`OPENAI_API_KEY` and `GEMINI_API_KEY` all blank the app boots, every page
+renders and `composer test` passes: no test is allowed to reach a provider.
+`composer test:evals` is the one command that does, it skips itself when no key
+is set, and it never blocks.
 
 ## Mutation testing
 

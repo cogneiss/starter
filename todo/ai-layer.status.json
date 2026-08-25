@@ -92,7 +92,7 @@
         {
             "id": 15,
             "name": "documentation",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan wiki:lint && rg -q 'AI layer' README.md && rg -q 'pgvector' SETUP.md"
         },
         {

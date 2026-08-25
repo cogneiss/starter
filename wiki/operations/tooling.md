@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Tooling
@@ -38,9 +38,10 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
 - **Laravel Boost** — an MCP server (browser log capture at `_boost/browser-logs`)
   plus ten skill packs and the guideline files, so an agent gets version-correct
   package docs instead of guessing at an API.
-- `boost.json` records which agents and skills are installed;
-  `php artisan boost:install --guidelines --skills` regenerates all of them
-  ([[operations/documentation]]).
+- `boost.json` records which agents and skills are installed, first-party packs
+  included — `ai-layer` sits in that list next to `org-access`, `resource-spine`
+  and `testing-gates`. `php artisan boost:install --guidelines --skills`
+  regenerates all of them ([[operations/documentation]]).
 - `.ai/rules/` holds the committed, path-scoped project rules, mapped by
   `.ai/rules/index.md`. Boost's `record-rule` tool adds to it, so a decision
   reached once is inherited rather than re-derived.

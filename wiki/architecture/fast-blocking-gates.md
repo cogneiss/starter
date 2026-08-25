@@ -7,7 +7,7 @@ code_refs:
     - .github/workflows/nightly.yml
     - .github/workflows/mutation.yml
     - .ai/rules/ci.md
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Why blocking gates stay fast and deterministic
@@ -27,14 +27,19 @@ That is the whole reason for the split in `.github/workflows/`:
 - Blocking, on every pull request: `.github/workflows/tests.yml` — `composer test`,
   gitleaks, dependency audits, dead code, unused Composer packages, knip, and the
   axe-core accessibility suite.
-- Scheduled, reporting: `.github/workflows/nightly.yml` (the suite against
-  Postgres) and `.github/workflows/mutation.yml` (the mutation score).
+- Scheduled, reporting: `.github/workflows/nightly.yml` (the suite on SQLite,
+  minus vector search) and `.github/workflows/mutation.yml` (the mutation score).
 
-Mutation testing and the Postgres run are not scheduled because they matter less.
+Postgres is the blocking database, on a `pgvector/pgvector:pg17` service, because
+that is what the kit defaults to and where retrieval lives
+([[domains/ai-retrieval]]). The SQLite run is the scheduled one: it answers "does
+a fork that drops Postgres still work", and its failures are driver differences
+rather than anything wrong with the diff in front of you.
+
+Mutation testing and the SQLite run are not scheduled because they matter less.
 They are scheduled because a mutation score moves when nobody touched it, and a
-Postgres failure is usually about a driver difference rather than the diff in
-front of you. Promoting either to a required check means making it deterministic
-first.
+driver difference is not a review comment. Promoting either to a required check
+means making it deterministic first.
 
 ## The corollaries
 

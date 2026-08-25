@@ -56,7 +56,7 @@ All of these run on every pull request and all of them have to be green:
 Run `composer test` before you push. `composer test:fast` is the quick loop
 while you work.
 
-Postgres and mutation runs happen on a schedule and never block you.
+The SQLite, mutation and eval runs happen on a schedule and never block you.
 
 ## Tests are not optional
 
@@ -66,6 +66,24 @@ add a branch, add the test that takes it.
 
 Accessibility is a gate too. If you add a page, add it to
 `tests/Browser/AccessibilityTest.php` with its own distinct title.
+
+## Touching the AI layer
+
+Three rules, all of them enforced by a test rather than by review:
+
+- **No test reaches a provider.** `tests/Pest.php` fakes every agent under
+  `app/Ai/Agents` with `preventStrayPrompts()` before each `Feature/Ai` test, so
+  a test that forgets to script its own fake throws instead of dialling out.
+  `tests/Evals/` is the one exception, and it is excluded from `composer test`.
+- **A tool authorizes.** Every tool calls `authorizeFor()` against the acting
+  user before it returns anything. A tool is a new caller of your policies, not
+  an exemption from them — and it reads. Writes go through a proposal and a
+  single-use confirm token.
+- **Untrusted text gets fenced.** Anything a user or a record supplies goes
+  through `UntrustedContent::fence()` before it reaches a model.
+
+`app/Ai/` has the detail, and `wiki/domains/ai-layer-overview.md` explains why
+each of those exists.
 
 ## Documentation
 

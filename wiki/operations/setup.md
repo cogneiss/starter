@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Setting up a clone
@@ -34,11 +34,27 @@ coverage driver, `.env` and `APP_KEY`, database reachability, pending migrations
 writable `storage`/`bootstrap/cache`. Every failure prints its fix
 ([[domains/console-commands]]).
 
-## What needs no service
+Below the failures it prints an optional section — mail transport, the pgvector
+extension, AI provider keys, the AI gateway. Those are reported, never failed,
+because the kit is designed to run with all of them absent.
 
-Nothing. SQLite, database sessions, queue and cache, and the log mailer mean a
-fresh clone runs with no Postgres, Redis or SMTP anywhere
-([[operations/runtime]]).
+## What needs a service
+
+Postgres, and only Postgres ([[operations/runtime]]). Sessions, queue, cache and
+mail all sit on the database or the log, so there is no Redis or SMTP to install.
+
+```bash
+php artisan ai:install
+```
+
+creates the `vector` extension in the current database, which is what retrieval
+stores embeddings in ([[domains/ai-retrieval]]). It is a no-op on any connection
+that is not Postgres, so running it on the commented-out SQLite setup is safe and
+pointless. Skipping it costs you vector search and nothing else.
+
+AI provider keys are optional in the same way social keys are: with all three
+blank the app boots, every page renders and the whole suite passes, because no
+test is allowed to reach a provider ([[domains/ai-evals]]).
 
 ## Decisions a new project makes early
 

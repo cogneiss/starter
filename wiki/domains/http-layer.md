@@ -13,12 +13,13 @@ code_refs:
     - app/Http/Middleware/ForbiddenDuringImpersonation.php
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
-updated: 2026-08-24
+    - app/Http/Controllers/OrganizationController.php
+updated: 2026-08-25
 ---
 
 # The HTTP layer
 
-Eighteen controllers, sixteen form requests, eight middleware, one validation
+Twenty-one controllers, sixteen form requests, eight middleware, one validation
 rule.
 
 ## Routes
@@ -31,6 +32,24 @@ Organization `create` and `store` are deliberately _outside_ the `organization`
 middleware: a user with no organization has to be able to make one, and requiring
 an organization to create an organization is a lockout. Settings, members and
 invitations are all inside it.
+
+`settings/organization/ai-usage` is inside it too, and that placement is the
+whole of its tenancy: `OrganizationController::aiUsage()` reads the bound
+organization from `OrganizationContext`, authorizes `view` on it, and summarizes
+only that organization's spend. There is no organization id in the URL, so there
+is nothing to tamper with ([[domains/ai-metering-and-quotas]]).
+
+Three more AI routes sit behind `auth`, and each is a POST that does one thing:
+`ai/blocks` runs the block composer, `ai/proposals` asks a vertical for a
+proposal, and `ai/confirm/{token}` spends a confirm token. The first two carry
+the `organization` middleware, because an agent with no organization bound is an
+agent with nothing to scope its reads to
+([[architecture/fail-closed-scoping]]).
+
+`ai/confirm/{token}` deliberately does not. The token already names the
+organization it was minted in, and the write is authorized from the token's own
+record rather than from whatever organization the browser happens to have
+switched to since ([[domains/ai-confirm-tokens]]).
 
 ## Form requests
 

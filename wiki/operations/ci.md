@@ -9,7 +9,7 @@ code_refs:
     - .github/workflows/lint-autofix.yml
     - .github/workflows/tia-baseline.yml
     - .github/workflows/release-please.yml
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # CI topology
@@ -32,15 +32,21 @@ runs in parallel:
 Fanning out this way costs a job slot, not a second install. The shared build is
 uploaded as a tar so binaries stay executable through the artifact round trip.
 
+The `tests` and `a11y` jobs both run against a `pgvector/pgvector:pg17` service
+rather than plain `postgres:17`. The AI documents migration calls
+`Schema::ensureVectorExtensionExists()`, which needs the extension to be
+installable on the server — an image without it fails every run at migrate time
+([[domains/ai-retrieval]]).
+
 ## The other five
 
-| Workflow             | Trigger              | Does                                               |
-| -------------------- | -------------------- | -------------------------------------------------- |
-| `nightly.yml`        | cron `17 3 * * *`    | `composer test:pgsql` against a `pgsql` service    |
-| `mutation.yml`       | schedule             | the mutation score, reporting only                 |
-| `tia-baseline.yml`   | schedule             | `composer test:tia-seed`, recording the impact map |
-| `lint-autofix.yml`   | branch push, in-repo | formats and commits back; hard-skipped on forks    |
-| `release-please.yml` | push to `main`       | keeps the release pull request open                |
+| Workflow             | Trigger              | Does                                                |
+| -------------------- | -------------------- | --------------------------------------------------- |
+| `nightly.yml`        | cron `17 3 * * *`    | `composer test:sqlite` — the suite without pgvector |
+| `mutation.yml`       | schedule             | the mutation score, reporting only                  |
+| `tia-baseline.yml`   | schedule             | `composer test:tia-seed`, recording the impact map  |
+| `lint-autofix.yml`   | branch push, in-repo | formats and commits back; hard-skipped on forks     |
+| `release-please.yml` | push to `main`       | keeps the release pull request open                 |
 
 Two of those carry warnings worth repeating. The fork guard in
 `lint-autofix.yml` is a security control — it stops a fork's pull request running

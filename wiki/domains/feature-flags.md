@@ -9,7 +9,8 @@ code_refs:
     - config/features.php
     - config/pennant.php
     - tests/Feature/FeatureFlagTest.php
-updated: 2026-08-24
+    - app/Ai/Agents/DashboardBriefing.php
+updated: 2026-08-25
 ---
 
 # Feature flags
@@ -30,12 +31,20 @@ string looks correct in review. With the enum, a typo does not compile, and
 
 | Flag                    | Env                             | Default |
 | ----------------------- | ------------------------------- | ------- |
+| `ai-briefing-enabled`   | `FEATURE_AI_BRIEFING_ENABLED`   | `false` |
 | `impersonation-enabled` | `FEATURE_IMPERSONATION_ENABLED` | `false` |
 | `social-login-enabled`  | `FEATURE_SOCIAL_LOGIN_ENABLED`  | `false` |
 
-Both ship off. Impersonation is a support tool that reads another user's data, and
-social login needs credentials that do not exist in a fresh clone — neither
-should be on because nobody chose.
+All three ship off. Impersonation is a support tool that reads another user's
+data, and social login needs credentials that do not exist in a fresh clone —
+neither should be on because nobody chose.
+
+The AI briefing is off for a third reason: it spends money. `DashboardBriefing`
+checks `KnownFeatures::AiBriefingEnabled->enabledFor($organization)` and returns
+nothing when it is off, so the dashboard renders without it rather than failing.
+A flag on the per-organization override is how one organization tries the
+briefing while the rest of the tenancy does not pay for it
+([[domains/ai-metering-and-quotas]]).
 
 ## Per-organization overrides
 

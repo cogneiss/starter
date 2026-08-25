@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - tests/Unit/Conventions/ConventionTest.php
     - config/conventions.php
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Convention guards G1, G4 and G5
@@ -44,6 +44,15 @@ diff, and an entry whose reason no longer holds is obvious.
 resource adapter_, and `ImpersonationLog`, `LoginHistory`, `RoleTemplate` and
 `SocialAccount` as models a user never navigates to. Two of those reasons are
 temporary and say so.
+
+The AI layer added four more, and each reason names what reads the table instead
+of a resource page: `AiAuditLog` is reported in aggregate by `php artisan
+ai:usage`, `AiCreditLedgerEntry` is summed for a balance,
+`AiDocument` is reached only through a retrieval tool
+([[domains/ai-retrieval]]), and `AiMemory` is read into one person's own prompt
+([[domains/ai-memory]]). None of the four has a URL, which is exactly the claim
+G5 makes you write down. Giving one an adapter later means deleting its line
+here, and the deletion is the review.
 
 ## The rule around them
 

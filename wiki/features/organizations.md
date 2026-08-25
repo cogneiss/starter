@@ -17,7 +17,9 @@ code_refs:
     - app/Actions/StartImpersonation.php
     - app/Actions/StopImpersonation.php
     - app/Support/Impersonation.php
-updated: 2026-08-24
+    - app/Actions/SummarizeAiUsage.php
+    - app/Ai/Agents/InvitationDrafter.php
+updated: 2026-08-25
 ---
 
 # Organizations
@@ -57,6 +59,26 @@ destroyed. Deleting the membership would take the audit trail with it.
 Name, and a switch requiring two-factor from every member — enforced by the
 `two-factor` middleware rather than by this screen
 ([[features/authentication]]).
+
+## AI usage
+
+`settings/organization/ai-usage` shows what this organization has spent on AI in
+the last thirty days — runs, tokens and cost, split by agent and by tier. It is
+`OrganizationController::aiUsage()` rendering whatever
+`app/Actions/SummarizeAiUsage.php` returns, which is the same action
+`php artisan ai:usage` prints, so the page and the console cannot disagree.
+
+Viewing it needs the `view` policy on the organization, and the figures come from
+the bound organization rather than an id in the URL
+([[domains/ai-metering-and-quotas]]).
+
+## Drafted invitations
+
+`app/Ai/Agents/InvitationDrafter.php` writes the message body for an invitation.
+It cannot send one: the agent returns a proposal, a confirm token is minted, and
+`app/Ai/Actions/InviteMember.php` runs only after a member with the permission
+confirms it ([[domains/ai-confirm-tokens]]). An agent that could invite people
+into an organization on its own is an agent that can add a member nobody chose.
 
 ## Impersonation
 

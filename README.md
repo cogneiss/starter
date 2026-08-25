@@ -30,11 +30,12 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Just Better Laravel Defaults**: Thanks to **[Essentials](https://github.com/nunomaduro/essentials)** / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
 - **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
+- **An AI layer, not a chatbot**: `laravel/ai` wired into the same architecture as everything else — agents scoped to one organization, read-only tools that call `authorizeFor()`, writes that go through a single-use confirm token, untrusted text fenced before it reaches a model, and every run metered against a per-org budget. It boots and passes the whole suite with zero keys configured, and no test may reach a provider ([`app/Ai/`](app/Ai), [wiki](wiki/domains/ai-layer-overview.md))
 - **Documentation That Fails The Build**: A linted [wiki](wiki/index.md) whose pages name the files they describe, three loadable skill packs, and one generated source for every agent guideline file — change a documented file without updating its page and CI goes red
 - **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
 - **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
 - **Full Testing Suite**: 493 tests with 100% code coverage using Pest
-- **Quality Gates That Block**: Every pull request runs the suite, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; Postgres and mutation runs happen on a schedule
+- **Quality Gates That Block**: Every pull request runs the suite, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; the SQLite and mutation runs happen on a schedule
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
@@ -85,9 +86,12 @@ knobs worth knowing:
 | `GOOGLE_CLIENT_ID` / `_SECRET`    | empty     | Google social login.                                                                                                     |
 | `GITHUB_CLIENT_ID` / `_SECRET`    | empty     | GitHub social login.                                                                                                     |
 | `MICROSOFT_CLIENT_ID` / `_SECRET` | empty     | Microsoft social login.                                                                                                  |
+| `ANTHROPIC_API_KEY`               | empty     | The AI layer's default provider. Blank is a supported state: agents simply have nothing to call.                         |
+| `AI_FAKE`                         | `false`   | Answer every agent from a canned response instead of a provider.                                                         |
 
 Social login stays off until you fill in a provider's keys and enable the
-feature flag — see [SETUP.md](SETUP.md).
+feature flag — see [SETUP.md](SETUP.md). The same is true of the AI layer:
+with no key set the app boots, every page renders and `composer test` passes.
 
 ### Optional: Browser Testing Setup
 
@@ -134,7 +138,7 @@ You should see 100% test coverage and all quality checks passing.
 - `composer test:fast` / `composer test:dirty` - Quick local loops; see [SETUP.md](SETUP.md)
 - `composer test:a11y` - axe-core over every page the kit ships
 - `composer test:audit`, `composer test:dead-code`, `composer test:deps`, `composer test:knip` - The other blocking CI gates
-- `composer test:pgsql`, `composer test:mutate` - The scheduled runs, on demand
+- `composer test:sqlite`, `composer test:mutate`, `composer test:evals` - The scheduled runs, on demand
 
 ### Code knowledge graphs
 
