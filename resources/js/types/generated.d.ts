@@ -49,6 +49,21 @@ export type AiTextBlock = {
 type: AiBlockType,
 text: string,
 };
+export type AiUsage = {
+since: string,
+runs: number,
+tokens: number,
+cost_micros: number,
+blocked: number,
+agents: AiUsageRow[],
+tiers: AiUsageRow[],
+};
+export type AiUsageRow = {
+name: string,
+runs: number,
+tokens: number,
+cost_micros: number,
+};
 export type BrowserSession = {
 id: string,
 device: string,

@@ -261,7 +261,45 @@ it('never fails a check over a missing AI provider key', function (): void {
     $reported = array_column(array_filter($report['optional'], static fn (array $entry): bool => str_starts_with($entry['name'], 'AI ')), 'set');
 
     expect($failed)->not->toContain('AI providers')
-        ->and($reported)->toBe([false, false, false]);
+        // Retrieval, providers and the live gateway are off without a key.
+        // Quotas and pricing are configured either way.
+        ->and($reported)->toBe([false, false, false, true, true]);
+});
+
+it('reports the quotas an AI request is measured against', function (): void {
+    Artisan::call('app:doctor');
+
+    expect(Artisan::output())->toContain('AI quotas (60/user/hour, 2000/org/day, $50.00/org/month)');
+});
+
+/**
+ * A configured model nobody has priced bills as zero forever, so the budget
+ * quota never trips and nothing ever says why. Doctor says it out loud.
+ */
+it('warns about a configured model with no pricing', function (): void {
+    config()->set('ai.tiers.smart.model', 'claude-opus-nobody-priced');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    /** @var array{optional: list<array{name: string, set: bool, disables: string}>} $report */
+    $report = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+    $pricing = collect($report['optional'])->firstOrFail(fn (array $entry): bool => str_starts_with($entry['name'], 'AI pricing'));
+
+    expect($pricing['set'])->toBeFalse()
+        ->and($pricing['name'])->toContain('claude-opus-nobody-priced (smart)')
+        ->and($pricing['disables'])->toContain('costing nothing');
+});
+
+it('says nothing about pricing when every configured model has a price', function (): void {
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    /** @var array{optional: list<array{name: string, set: bool}>} $report */
+    $report = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+    $pricing = collect($report['optional'])->firstOrFail(fn (array $entry): bool => str_starts_with($entry['name'], 'AI pricing'));
+
+    expect($pricing)->toBe(['name' => 'AI pricing', 'set' => true, 'disables' => $pricing['disables']]);
 });
 
 it('reports the AI providers by name and the gateway, never a key value', function (): void {

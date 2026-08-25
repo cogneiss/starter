@@ -45,6 +45,8 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
             ->name('organization.edit');
         Route::patch('settings/organization', [OrganizationController::class, 'update'])
             ->name('organization.update');
+        Route::get('settings/organization/ai-usage', [OrganizationController::class, 'aiUsage'])
+            ->name('organization.ai-usage');
 
         // Organization Members...
         Route::get('settings/members', [OrganizationMemberController::class, 'edit'])

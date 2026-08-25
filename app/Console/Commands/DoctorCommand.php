@@ -13,6 +13,7 @@ use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
+use Laravel\Ai\Enums\Lab;
 
 /**
  * Every question a fresh checkout asks, answered in one command.
@@ -287,6 +288,8 @@ final class DoctorCommand extends Command
             $this->retrieval(),
             $this->aiProviders(),
             $this->aiGateway(),
+            $this->aiQuotas(),
+            $this->aiPricing(),
             $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',
@@ -337,6 +340,67 @@ final class DoctorCommand extends Command
             'name' => sprintf('AI live gateway (default tier: %s)', AiAvailability::defaultTier()),
             'set' => ! AiAvailability::faked(),
             'disables' => 'every agent answers from the fake gateway',
+        ];
+    }
+
+    /**
+     * The three AI quotas, reported as one line. A zero anywhere means that
+     * limit is off, which is a decision someone should have made on purpose.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function aiQuotas(): array
+    {
+        $user = config()->integer('ai.quotas.user_requests_per_hour');
+        $organization = config()->integer('ai.quotas.org_requests_per_day');
+        $budget = config()->integer('ai.quotas.org_budget_micros_per_month');
+
+        return [
+            'name' => sprintf(
+                'AI quotas (%d/user/hour, %d/org/day, $%s/org/month)',
+                $user,
+                $organization,
+                number_format($budget / 1_000_000, 2),
+            ),
+            'set' => $user > 0 && $organization > 0 && $budget > 0,
+            'disables' => 'a quota set to zero refuses every request',
+        ];
+    }
+
+    /**
+     * Whether every model this application can actually reach has a price. A
+     * configured model with no entry in `ai.pricing` bills as zero forever, and
+     * silent zero-cost accounting is worse than an unpriced model: the budget
+     * quota never trips, so nothing ever tells anyone.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function aiPricing(): array
+    {
+        /** @var array<string, array{provider?: mixed, model?: mixed}> $tiers */
+        $tiers = config('ai.tiers', []);
+
+        $unpriced = [];
+
+        foreach ($tiers as $tier => $configuration) {
+            $provider = $configuration['provider'] ?? null;
+            $model = $configuration['model'] ?? null;
+
+            if (! $provider instanceof Lab || ! is_string($model) || $model === '') {
+                continue;
+            }
+
+            if (! is_array(config(sprintf('ai.pricing.%s.%s', $provider->value, $model)))) {
+                $unpriced[] = sprintf('%s (%s)', $model, $tier);
+            }
+        }
+
+        return [
+            'name' => $unpriced === []
+                ? 'AI pricing'
+                : sprintf('AI pricing: no price for %s', implode(', ', $unpriced)),
+            'set' => $unpriced === [],
+            'disables' => 'those runs are recorded as costing nothing, so the budget quota never trips',
         ];
     }
 

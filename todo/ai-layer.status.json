@@ -86,7 +86,7 @@
         {
             "id": 14,
             "name": "usage observability",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan ai:usage --json"
         },
         {
