@@ -27,7 +27,7 @@ trait AuthorizesToolCall
     {
         try {
             Gate::forUser($user)->authorize($ability, $subject);
-        } catch (AuthorizationException $exception) {
+        } catch (AuthorizationException $authorizationException) {
             AiAuditLog::query()->create([
                 'user_id' => $user->id,
                 'agent' => static::class,
@@ -35,7 +35,7 @@ trait AuthorizesToolCall
                 'blocked_reason' => "The tool call was refused: [{$ability}] is not allowed for this member.",
             ]);
 
-            throw $exception;
+            throw $authorizationException;
         }
     }
 }

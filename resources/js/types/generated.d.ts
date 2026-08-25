@@ -1,4 +1,4 @@
-export type AiAuditStatus = 'ok' | 'blocked' | 'failed';
+export type AiAuditStatus = 'ok' | 'blocked';
 export type AiBlockType = 'text' | 'markdown' | 'table' | 'list' | 'metric' | 'form' | 'confirm';
 export type AiConfirmBlock = {
 type: AiBlockType,

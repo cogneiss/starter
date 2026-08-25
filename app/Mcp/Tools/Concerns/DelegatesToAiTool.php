@@ -36,15 +36,11 @@ trait DelegatesToAiTool
     {
         $user = $request->user();
 
-        if (! $user instanceof User) {
-            throw new AuthenticationException('This server answers a signed-in member only.');
-        }
+        throw_unless($user instanceof User, AuthenticationException::class, 'This server answers a signed-in member only.');
 
         $organization = $user->currentOrganization;
 
-        if (! $organization instanceof Organization) {
-            throw new AuthorizationException('This member has no current organization to work in.');
-        }
+        throw_unless($organization instanceof Organization, AuthorizationException::class, 'This member has no current organization to work in.');
 
         $answer = resolve(OrganizationContext::class)->runAs(
             $organization,

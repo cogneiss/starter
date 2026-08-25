@@ -51,7 +51,7 @@ it('runs the default middleware in the one order that is correct', function (): 
     // Quota first: a prompt that will be rejected is never paid for. Audit
     // last: it records what actually went out, after every other slot has had
     // its chance to change or refuse the prompt.
-    expect((new KernelFixtureAgent($user, $organization))->middleware())->toBe([
+    expect(new KernelFixtureAgent($user, $organization)->middleware())->toBe([
         EnforceQuota::class,
         FenceUntrustedInput::class,
         FilterTopics::class,
@@ -64,7 +64,7 @@ it('sends a prompt through every middleware slot', function (): void {
 
     KernelFixtureAgent::fake(['Hello from the fixture.'])->preventStrayPrompts();
 
-    $response = (new KernelFixtureAgent($user, $organization))->prompt('Say hello.');
+    $response = new KernelFixtureAgent($user, $organization)->prompt('Say hello.');
 
     expect($response->text)->toBeString()->not->toBeEmpty();
 
@@ -87,7 +87,7 @@ it('resolves a tier to a provider and model from configuration', function (): vo
 });
 
 it('leaves the model null when a tier defers to the provider default', function (): void {
-    config()->set('ai.tiers.smart.model', null);
+    config()->set('ai.tiers.smart.model');
 
     expect(AiTier::for('smart')['model'])->toBeNull();
 });
@@ -123,7 +123,7 @@ it('keeps every class in the tools directory a tool', function (): void {
     $classes = kernelClassesIn('Ai/Tools');
 
     foreach ($classes as $class) {
-        expect((new ReflectionClass($class))->implementsInterface(Tool::class))
+        expect(new ReflectionClass($class)->implementsInterface(Tool::class))
             ->toBeTrue("{$class} must implement ".Tool::class);
     }
 

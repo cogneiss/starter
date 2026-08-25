@@ -25,7 +25,7 @@ final class RetrievalFixtureAgent implements Agent, HasMiddleware, HasTools, Org
 
     public function instructions(): string
     {
-        return 'You answer from the organization\'s own documents.';
+        return "You answer from the organization's own documents.";
     }
 
     /**

@@ -30,3 +30,9 @@ The autofix job checks that the head repository is this repository before it run
 ## Both copyright lines in `LICENSE` stay
 
 This kit is a fork. Removing `Copyright (c) Nuno Maduro` is an MIT violation, not a tidy-up.
+
+## Coverage and phpstan need explicit memory and ini on Herd
+
+Herd's PHP ignores PHPRC and PHP_INI_SCAN_DIR for memory_limit (always 128M), but coverage only works when PHPRC points at an ini that loads Xdebug. So `composer test:unit`, `composer test` and `php artisan app:doctor` all need that PHPRC exported; a bare `php -d memory_limit=2G vendor/bin/phpstan analyse` still crashes because parallel workers do not inherit -d. Pass `--memory-limit=2G` to phpstan itself, which `composer test:types` already does.
+
+Pest TIA is on (`pest()->tia()->locally()`). `Pest\Support\Coverage::report()` merges the TIA baseline (`~/.pest/tia/<project>/coverage.bin.gz`) into the terminal report, so after you move lines in a file the baseline's old line map shows up as uncovered lines that are blank or docblock in the file on disk. Clover from the same run is written by PHPUnit directly, skips the merge and reports the truth — when the two disagree, believe clover and reseed with `composer test:tia-seed`. It exits 2 on the known `widgets.create` permission-ordering failures, which is expected. Never delete the TIA directory by hand; `--fresh` rebuilds it.

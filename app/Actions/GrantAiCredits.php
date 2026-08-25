@@ -22,11 +22,9 @@ final readonly class GrantAiCredits
 
     public function handle(Organization $organization, int $micros, string $reason, ?User $actor = null): AiCreditLedgerEntry
     {
-        if ($micros <= 0) {
-            throw new InvalidArgumentException('A grant has to be a positive number of micros.');
-        }
+        throw_if($micros <= 0, InvalidArgumentException::class, 'A grant has to be a positive number of micros.');
 
-        if ($actor !== null) {
+        if ($actor instanceof User) {
             $this->context->runAs($organization, fn (): bool => Gate::forUser($actor)->authorize('create', AiCreditLedgerEntry::class)->allowed());
         }
 

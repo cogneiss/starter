@@ -5,11 +5,14 @@ declare(strict_types=1);
 use App\Exceptions\AiQuotaExceededException;
 use App\Models\AiAuditLog;
 use App\Models\AiCreditLedgerEntry;
+use App\Models\Organization;
 use App\Models\OrganizationMembership;
+use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Tests\Fixtures\Ai\KernelFixtureAgent;
 
 /**
- * @return array{0: App\Models\User, 1: App\Models\Organization}
+ * @return array{0: User, 1: Organization}
  */
 function quotaMember(): array
 {
@@ -30,7 +33,7 @@ it('lets a member prompt while they are one request under the hourly limit', fun
 
     KernelFixtureAgent::fake(['Under the limit.'])->preventStrayPrompts();
 
-    $response = (new KernelFixtureAgent($user, $organization))->prompt('Say hello.');
+    $response = new KernelFixtureAgent($user, $organization)->prompt('Say hello.');
 
     expect($response->text)->toBe('Under the limit.');
 
@@ -49,7 +52,7 @@ it('refuses the request that would exceed the hourly limit, without prompting th
 
     KernelFixtureAgent::fake(['Never sent.'])->preventStrayPrompts();
 
-    expect(fn (): mixed => (new KernelFixtureAgent($user, $organization))->prompt('Say hello.'))
+    expect(fn (): mixed => new KernelFixtureAgent($user, $organization)->prompt('Say hello.'))
         ->toThrow(AiQuotaExceededException::class);
 
     $this->assertDatabaseCount('ai_audit_logs', 61);
@@ -75,7 +78,7 @@ it('stays refused once the member is past the hourly limit', function (): void {
 
     KernelFixtureAgent::fake(['Never sent.'])->preventStrayPrompts();
 
-    expect(fn (): mixed => (new KernelFixtureAgent($user, $organization))->prompt('Say hello.'))
+    expect(fn (): mixed => new KernelFixtureAgent($user, $organization)->prompt('Say hello.'))
         ->toThrow(AiQuotaExceededException::class);
 
     $this->assertDatabaseCount('ai_audit_logs', 62);
@@ -98,7 +101,7 @@ it('does not count a refused request against the member', function (): void {
 
     KernelFixtureAgent::fake(['Still allowed.'])->preventStrayPrompts();
 
-    expect((new KernelFixtureAgent($user, $organization))->prompt('Say hello.')->text)
+    expect(new KernelFixtureAgent($user, $organization)->prompt('Say hello.')->text)
         ->toBe('Still allowed.');
 });
 
@@ -119,7 +122,7 @@ it('counts another member of the organization against the daily organization lim
 
     KernelFixtureAgent::fake(['Never sent.'])->preventStrayPrompts();
 
-    expect(fn (): mixed => (new KernelFixtureAgent($user, $organization))->prompt('Say hello.'))
+    expect(fn (): mixed => new KernelFixtureAgent($user, $organization)->prompt('Say hello.'))
         ->toThrow(AiQuotaExceededException::class, 'This organization has used all 100 AI requests allowed in a day.');
 
     $this->assertDatabaseCount('ai_audit_logs', 101);
@@ -139,7 +142,7 @@ it('refuses once the organization has spent its monthly budget', function (): vo
 
     KernelFixtureAgent::fake(['Never sent.'])->preventStrayPrompts();
 
-    expect(fn (): mixed => (new KernelFixtureAgent($user, $organization))->prompt('Say hello.'))
+    expect(fn (): mixed => new KernelFixtureAgent($user, $organization)->prompt('Say hello.'))
         ->toThrow(AiQuotaExceededException::class, 'This organization has spent its AI budget for the month.');
 
     $this->assertDatabaseCount('ai_audit_logs', 1);
@@ -160,23 +163,23 @@ it('measures another organization spend against its own budget', function (): vo
 
     KernelFixtureAgent::fake(['Allowed.'])->preventStrayPrompts();
 
-    expect((new KernelFixtureAgent($user, $organization))->prompt('Say hello.')->text)->toBe('Allowed.');
+    expect(new KernelFixtureAgent($user, $organization)->prompt('Say hello.')->text)->toBe('Allowed.');
 });
 
 it('never reaches a provider for a user who is not a member of the organization', function (): void {
-    $outsider = App\Models\User::factory()->create();
+    $outsider = User::factory()->create();
     [, $organization] = quotaMember();
 
     KernelFixtureAgent::fake(['Never sent.'])->preventStrayPrompts();
 
     expect(fn (): KernelFixtureAgent => new KernelFixtureAgent($outsider, $organization))
-        ->toThrow(Illuminate\Auth\Access\AuthorizationException::class);
+        ->toThrow(AuthorizationException::class);
 
     KernelFixtureAgent::assertNeverPrompted();
 });
 
 it('answers a refused request with 429 and a machine readable error', function (): void {
-    $response = (new AiQuotaExceededException('You have used all 60 AI requests allowed in an hour.'))
+    $response = new AiQuotaExceededException('You have used all 60 AI requests allowed in an hour.')
         ->render(request());
 
     expect($response->getStatusCode())->toBe(429)

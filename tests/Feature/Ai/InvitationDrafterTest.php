@@ -9,6 +9,7 @@ use App\Models\AiConfirmToken;
 use App\Models\Organization;
 use App\Models\User;
 use App\Support\OrganizationContext;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
@@ -86,7 +87,7 @@ it('refuses to draft for someone who is not a member', function (): void {
     $stranger = User::factory()->create();
 
     expect(fn (): InvitationDrafter => new InvitationDrafter($stranger, $organization))
-        ->toThrow(Illuminate\Auth\Access\AuthorizationException::class);
+        ->toThrow(AuthorizationException::class);
 });
 
 it('throws rather than dialling a provider when a test forgets its fake', function (): void {

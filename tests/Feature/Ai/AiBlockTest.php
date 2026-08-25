@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\StreamBlocks;
 use App\Ai\Agents\BlockComposer;
 use App\Ai\Blocks\AiBlock;
+use App\Ai\Blocks\AiFormField;
 use App\Ai\Blocks\BlockCollection;
 use App\Ai\Blocks\ConfirmBlock;
 use App\Ai\Blocks\FormBlock;
@@ -111,12 +112,12 @@ it('carries a metric without a delta or a trend', function (): void {
         ->toBe(AiMetricTrend::Down);
 });
 
-it('reads a form block\'s fields off the action rather than the payload', function (): void {
+it("reads a form block's fields off the action rather than the payload", function (): void {
     blockMember();
 
     $block = new FormBlock('invite-member', ['email' => 'new@example.com', 'sneaky' => 'yes']);
 
-    expect(array_map(fn ($field): string => $field->name, $block->fields))
+    expect(array_map(fn (AiFormField $field): string => $field->name, $block->fields))
         ->toBe(['email', 'role'])
         ->and($block->fields[0]->value)->toBe('new@example.com')
         ->and($block->fields[1]->value)->toBe('')
@@ -130,7 +131,7 @@ it('refuses a form block for an action that is not on the allowlist', function (
     expect(BlockCollection::block(['type' => 'form', 'action' => 'delete-everything']))->toBeNull();
 });
 
-it('reads a confirm block\'s summary from the token rather than the payload', function (): void {
+it("reads a confirm block's summary from the token rather than the payload", function (): void {
     [$user, $organization] = blockMember();
 
     $token = AiConfirmToken::factory()->for($user)->for($organization)->create([
@@ -150,7 +151,7 @@ it('reads a confirm block\'s summary from the token rather than the payload', fu
         ->and($block->expires_at)->toBe($token->expires_at->toIso8601String());
 });
 
-it('refuses a confirm block naming another organization\'s token', function (): void {
+it("refuses a confirm block naming another organization's token", function (): void {
     $other = Organization::factory()->create();
 
     $token = AiConfirmToken::factory()
@@ -255,7 +256,7 @@ it('hands the gallery a built block for every payload it names', function (): vo
 it('tells the model about every block type it may emit', function (): void {
     [$user, $organization] = blockMember();
 
-    $instructions = (new BlockComposer($user, $organization))->instructions();
+    $instructions = new BlockComposer($user, $organization)->instructions();
 
     foreach (AiBlockType::cases() as $type) {
         expect($instructions)->toContain($type->value);

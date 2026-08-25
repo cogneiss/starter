@@ -44,7 +44,7 @@ it('throws and records a blocked audit row for a member without the ability', fu
 
     expect(fn (): string => resolve(OrganizationContext::class)->runAs(
         $membership->organization,
-        fn (): string => (new FixtureTool($membership->user, $membership->organization))->handle(new Request),
+        fn (): string => new FixtureTool($membership->user, $membership->organization)->handle(new Request),
     ))->toThrow(AuthorizationException::class);
 
     $this->assertDatabaseHas('ai_audit_logs', [
@@ -61,7 +61,7 @@ it('runs the tool for a member who holds the ability, recording nothing', functi
 
     $result = resolve(OrganizationContext::class)->runAs(
         $organization,
-        fn (): string => (new FixtureTool($owner, $organization))->handle(new Request),
+        fn (): string => new FixtureTool($owner, $organization)->handle(new Request),
     );
 
     expect($result)->toBe($organization->name);

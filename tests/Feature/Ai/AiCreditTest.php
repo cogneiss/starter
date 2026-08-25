@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\DebitAiCredits;
 use App\Actions\GrantAiCredits;
+use App\Models\AiAuditLog;
 use App\Models\AiCreditLedgerEntry;
 use App\Models\Organization;
 use App\Models\User;
@@ -51,6 +52,7 @@ it('keeps one organization balance out of another', function (): void {
     resolve(GrantAiCredits::class)->handle($other, 9_000, 'Signup grant');
 
     resolve(OrganizationContext::class)->set($organization);
+
     expect(AiCreditLedgerEntry::balanceMicros())->toBe(4_000);
 
     resolve(OrganizationContext::class)->set($other);
@@ -100,7 +102,7 @@ it('lets someone with permission grant credit', function (): void {
 it('charges the organization on the system path, where there is no actor', function (): void {
     $organization = Organization::factory()->create();
 
-    resolve(DebitAiCredits::class)->handle($organization, 750, 'AI usage', null, actor: null);
+    resolve(DebitAiCredits::class)->handle($organization, 750, 'AI usage');
 
     $this->assertDatabaseHas('ai_credit_ledger', [
         'organization_id' => $organization->id,
@@ -112,7 +114,7 @@ it('charges the organization on the system path, where there is no actor', funct
 it('links a debit to the audit row it paid for', function (): void {
     $organization = Organization::factory()->create();
 
-    $log = App\Models\AiAuditLog::factory()->create(['organization_id' => $organization->id]);
+    $log = AiAuditLog::factory()->create(['organization_id' => $organization->id]);
 
     $entry = resolve(DebitAiCredits::class)->handle($organization, 200, 'AI usage', $log);
 

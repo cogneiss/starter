@@ -15,6 +15,7 @@ use App\Resources\ResourceRegistry;
 use App\Support\OrganizationContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Illuminate\Validation\ValidationException;
 use Laravel\Ai\Tools\Request;
 
 /**
@@ -79,7 +80,7 @@ it('refuses an unregistered resource key rather than reaching a model', function
         ->toThrow(UnknownResource::class);
 });
 
-it('returns the resource\'s own Data object rather than an ad hoc array', function (): void {
+it("returns the resource's own Data object rather than an ad hoc array", function (): void {
     [$owner, $organization, $membership] = toolOwner();
 
     $result = resolve(OrganizationContext::class)->runAs($organization, fn (): array => toolResult(
@@ -155,7 +156,7 @@ it('refuses an invalid payload before any confirm token exists', function (): vo
     expect(fn (): array => resolve(OrganizationContext::class)->runAs($organization, fn (): array => toolResult(
         resolve(ProposeAction::class, ['user' => $owner, 'organization' => $organization]),
         ['action' => 'invite-member', 'fields' => ['email' => 'not-an-email', 'role' => 'member']],
-    )))->toThrow(Illuminate\Validation\ValidationException::class);
+    )))->toThrow(ValidationException::class);
 
     expect(AiConfirmToken::withoutOrganizationScope()->count())->toBe($before);
 });

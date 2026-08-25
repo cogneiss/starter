@@ -49,9 +49,7 @@ final readonly class InviteMember implements ConfirmableAction
 
         $organization = $this->context->get();
 
-        if (! $organization instanceof Organization) {
-            throw new RuntimeException('An invitation needs an organization bound to the context.');
-        }
+        throw_unless($organization instanceof Organization, RuntimeException::class, 'An invitation needs an organization bound to the context.');
 
         return $this->invitations->handle($organization, $user, $payload->email, $payload->role);
     }

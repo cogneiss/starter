@@ -49,7 +49,7 @@ pest()->beforeEach(function (): void {
  * key configured there is nothing to grade.
  */
 pest()->extend(TestCase::class)
-    ->group('evals')
+    ->group('Evals')
     ->beforeEach(function (): void {
         if (AiAvailability::faked()) {
             $this->markTestSkipped('No AI provider key is configured, so there is nothing to grade.');

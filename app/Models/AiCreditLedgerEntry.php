@@ -8,6 +8,7 @@ use App\Concerns\BelongsToOrganization;
 use App\Support\OrganizationContext;
 use Carbon\CarbonInterface;
 use Database\Factories\AiCreditLedgerEntryFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +30,7 @@ use LogicException;
  * @property-read CarbonInterface $created_at
  * @property-read Organization $organization
  */
+#[Table(name: 'ai_credit_ledger')]
 final class AiCreditLedgerEntry extends Model
 {
     use BelongsToOrganization;
@@ -39,8 +41,6 @@ final class AiCreditLedgerEntry extends Model
     use HasUuids;
 
     public const UPDATED_AT = null;
-
-    protected $table = 'ai_credit_ledger';
 
     /**
      * Append one movement and carry the running balance forward, in the one

@@ -82,7 +82,7 @@ final readonly class AssistantMemory
             ->where(fn (Builder $unexpired): Builder => $unexpired
                 ->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now()))
-            ->orderByDesc('updated_at')
+            ->latest('updated_at')
             ->limit(config()->integer('ai.memory.max_facts'))
             ->get()
             ->map(fn (AiMemory $memory): string => $memory->key.': '.$memory->value)
@@ -92,7 +92,7 @@ final readonly class AssistantMemory
     private function evict(): void
     {
         $keep = $this->query()
-            ->orderByDesc('updated_at')
+            ->latest('updated_at')
             ->limit(config()->integer('ai.memory.max_facts'))
             ->pluck('id');
 

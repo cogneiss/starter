@@ -21,6 +21,16 @@ use Throwable;
  */
 final readonly class BlockCollection implements Arrayable
 {
+    private const array CLASSES = [
+        AiBlockType::Text->value => TextBlock::class,
+        AiBlockType::Markdown->value => MarkdownBlock::class,
+        AiBlockType::Table->value => TableBlock::class,
+        AiBlockType::ListItems->value => ListBlock::class,
+        AiBlockType::Metric->value => MetricBlock::class,
+        AiBlockType::Form->value => FormBlock::class,
+        AiBlockType::Confirm->value => ConfirmBlock::class,
+    ];
+
     /**
      * @param  list<AiBlock>  $blocks
      */
@@ -75,7 +85,7 @@ final readonly class BlockCollection implements Arrayable
     public function toArray(): array
     {
         return array_map(
-            fn (AiBlock $block) => $block->toArray(),
+            fn (AiBlock $block): array => $block->toArray(),
             $this->blocks,
         );
     }
@@ -85,16 +95,6 @@ final readonly class BlockCollection implements Arrayable
      */
     private static function classFor(AiBlockType $type): string
     {
-        $class = match ($type) {
-            AiBlockType::Text => TextBlock::class,
-            AiBlockType::Markdown => MarkdownBlock::class,
-            AiBlockType::Table => TableBlock::class,
-            AiBlockType::ListItems => ListBlock::class,
-            AiBlockType::Metric => MetricBlock::class,
-            AiBlockType::Form => FormBlock::class,
-            AiBlockType::Confirm => ConfirmBlock::class,
-        };
-
-        return $class;
+        return self::CLASSES[$type->value];
     }
 }

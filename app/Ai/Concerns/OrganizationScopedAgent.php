@@ -22,8 +22,6 @@ trait OrganizationScopedAgent
         public readonly User $user,
         public readonly Organization $organization,
     ) {
-        if (! $user->belongsToOrganization($organization)) {
-            throw new AuthorizationException('The user is not a member of that organization.');
-        }
+        throw_unless($user->belongsToOrganization($organization), AuthorizationException::class, 'The user is not a member of that organization.');
     }
 }

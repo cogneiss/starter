@@ -39,7 +39,7 @@ it('stays faked on a configured machine when AI_FAKE is on', function (): void {
 });
 
 it('falls back to the cheap tier when none is configured', function (): void {
-    config()->set('ai.default_tier', null);
+    config()->set('ai.default_tier');
 
     expect(AiAvailability::defaultTier())->toBe('cheap');
 });

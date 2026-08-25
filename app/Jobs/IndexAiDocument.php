@@ -52,7 +52,7 @@ final class IndexAiDocument implements OrganizationAware, ShouldQueue
 
     public function handle(): void
     {
-        $chunks = self::chunk($this->content);
+        $chunks = $this->chunk($this->content);
 
         // Re-indexing replaces: a source that changed must not leave the old
         // text in the corpus to be retrieved alongside the new.
@@ -78,7 +78,7 @@ final class IndexAiDocument implements OrganizationAware, ShouldQueue
     /**
      * @return list<string>
      */
-    private static function chunk(string $content): array
+    private function chunk(string $content): array
     {
         return array_values(array_filter(array_map(
             fn (string $chunk): string => Str::of($chunk)->trim()->toString(),

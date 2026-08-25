@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Support\AiRetrieval;
 use App\Support\OrganizationContext;
 use App\Support\UntrustedContent;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
@@ -56,7 +57,7 @@ function fakeEmbeddingProvider(): void
     config()->set('ai.default_for_embeddings', 'openai');
 
     Embeddings::fake(fn (EmbeddingsPrompt $prompt): array => array_map(
-        fn (): array => retrievalVector(),
+        retrievalVector(...),
         $prompt->inputs,
     ));
 }
@@ -98,10 +99,10 @@ it('finds only the documents of the acting organization, never those of another 
         return 'Revenue was 1.1 million.';
     })->preventStrayPrompts();
 
-    $retrieved = (new SearchKnowledge($owner, $organization))
+    $retrieved = new SearchKnowledge($owner, $organization)
         ->handle(new Request(['query' => 'How did revenue do?']));
 
-    $response = (new RetrievalFixtureAgent($owner, $organization))
+    $response = new RetrievalFixtureAgent($owner, $organization)
         ->prompt('How did revenue do? '.$retrieved);
 
     expect($retrieved)->toContain('1.1 million')
@@ -132,10 +133,10 @@ it('fences every retrieved passage before it reaches the prompt', function (): v
         return 'No.';
     })->preventStrayPrompts();
 
-    $retrieved = (new SearchKnowledge($owner, $organization))
+    $retrieved = new SearchKnowledge($owner, $organization)
         ->handle(new Request(['query' => 'How do I onboard?']));
 
-    (new RetrievalFixtureAgent($owner, $organization))->prompt($retrieved);
+    new RetrievalFixtureAgent($owner, $organization)->prompt($retrieved);
 
     expect($retrieved)->toContain(UntrustedContent::PREAMBLE)
         ->and($received)->toContain(UntrustedContent::PREAMBLE)
@@ -147,7 +148,7 @@ it('says so rather than inventing an answer when nothing matches', function (): 
 
     [$owner, $organization] = retrievalOwner();
 
-    $answer = (new SearchKnowledge($owner, $organization))
+    $answer = new SearchKnowledge($owner, $organization)
         ->handle(new Request(['query' => 'Anything at all?']));
 
     expect($answer)->toBe('No document in this organization matched that question.');
@@ -174,7 +175,7 @@ it('registers no retrieval tool at all when the connection is not pgsql', functi
 
         expect(AiRetrieval::available())->toBeFalse()
             ->and(AiRetrieval::unavailableReason())->toContain('not pgsql')
-            ->and((new RetrievalFixtureAgent($owner, $organization))->tools())->toBe([]);
+            ->and(new RetrievalFixtureAgent($owner, $organization)->tools())->toBe([]);
     } finally {
         // Restored before the test ends: the suite's own rollback runs on the
         // default connection.
@@ -190,7 +191,7 @@ it('registers no retrieval tool when no embedding provider is configured', funct
 
     expect(AiRetrieval::available())->toBeFalse()
         ->and(AiRetrieval::unavailableReason())->toContain('no embedding provider')
-        ->and((new RetrievalFixtureAgent($owner, $organization))->tools())->toBe([]);
+        ->and(new RetrievalFixtureAgent($owner, $organization)->tools())->toBe([]);
 })->group('pgvector');
 
 it('still answers, and does not throw, when retrieval is unavailable', function (): void {
@@ -201,7 +202,7 @@ it('still answers, and does not throw, when retrieval is unavailable', function 
 
     RetrievalFixtureAgent::fake(['Answered from what I was given.'])->preventStrayPrompts();
 
-    $response = (new RetrievalFixtureAgent($owner, $organization))->prompt('What do we charge?');
+    $response = new RetrievalFixtureAgent($owner, $organization)->prompt('What do we charge?');
 
     expect($response->text)->toBe('Answered from what I was given.');
 })->group('pgvector');
@@ -211,7 +212,7 @@ it('indexes on the queue rather than in the request', function (): void {
 
     [, $organization] = retrievalOwner();
 
-    IndexAiDocument::dispatch($organization->id, 'note', '1', 'Handbook', 'The handbook.');
+    dispatch(new IndexAiDocument($organization->id, 'note', '1', 'Handbook', 'The handbook.'));
 
     Queue::assertPushed(
         IndexAiDocument::class,
@@ -225,11 +226,11 @@ it('splits long content into more than one chunk, and replaces them on re-index'
 
     [, $organization] = retrievalOwner();
 
-    (new IndexAiDocument($organization->id, 'note', '1', 'Handbook', str_repeat('a', 2500)))->handle();
+    new IndexAiDocument($organization->id, 'note', '1', 'Handbook', str_repeat('a', 2500))->handle();
 
     expect(AiDocument::query()->where('source_id', '1')->count())->toBe(3);
 
-    (new IndexAiDocument($organization->id, 'note', '1', 'Handbook', str_repeat('b', 1200)))->handle();
+    new IndexAiDocument($organization->id, 'note', '1', 'Handbook', str_repeat('b', 1200))->handle();
 
     expect(AiDocument::query()->where('source_id', '1')->count())->toBe(2)
         ->and(AiDocument::query()->where('source_id', '1')->first()?->content)->toStartWith('b');
@@ -261,8 +262,8 @@ it('writes the dispatching organization id, never the one the previous job left 
     // The context is `$first`. Two jobs run back to back on this process: the
     // first for the other organization, the second for the bound one. Neither
     // may take the other's id, and neither may take the ambient one.
-    IndexAiDocument::dispatch($second->id, 'note', 'second', 'Second', 'Belongs to the second organization.');
-    IndexAiDocument::dispatch($first->id, 'note', 'first', 'First', 'Belongs to the first organization.');
+    dispatch(new IndexAiDocument($second->id, 'note', 'second', 'Second', 'Belongs to the second organization.'));
+    dispatch(new IndexAiDocument($first->id, 'note', 'first', 'First', 'Belongs to the first organization.'));
 
     $written = fn (string $source): array => AiDocument::withoutOrganizationScope()
         ->where('source_id', $source)
@@ -293,7 +294,7 @@ it('proves the organization scope always applies, whoever is acting', function (
 
     expect(AiDocument::query()->count())->toBe(0)
         ->and(AiDocument::query()->find($hidden->id))->toBeNull()
-        ->and((new SearchKnowledge($owner, $organization))->handle(new Request(['query' => 'handbook'])))
+        ->and(new SearchKnowledge($owner, $organization)->handle(new Request(['query' => 'handbook'])))
         ->toBe('No document in this organization matched that question.')
         // The owner of the other organization, acting here, sees no more than anyone else.
         ->and(AiDocument::query()->whereKey($hidden->id)->count())->toBe(0)
@@ -301,9 +302,9 @@ it('proves the organization scope always applies, whoever is acting', function (
         ->and($outsider->id)->not->toBe($owner->id);
 
     // And an outsider of both cannot even reach the query.
-    expect(fn (): string => (new SearchKnowledge($outsider, $organization))
+    expect(fn (): string => new SearchKnowledge($outsider, $organization)
         ->handle(new Request(['query' => 'handbook'])))
-        ->toThrow(Illuminate\Auth\Access\AuthorizationException::class);
+        ->toThrow(AuthorizationException::class);
 })->group('pgvector');
 
 it('embeds identical content once on re-index — cache hit', function (): void {
@@ -316,13 +317,13 @@ it('embeds identical content once on re-index — cache hit', function (): void 
     Embeddings::fake(function (EmbeddingsPrompt $prompt) use (&$calls): array {
         $calls++;
 
-        return array_map(fn (): array => retrievalVector(), $prompt->inputs);
+        return array_map(retrievalVector(...), $prompt->inputs);
     });
 
     [, $organization] = retrievalOwner();
 
-    IndexAiDocument::dispatch($organization->id, 'note', 'handbook', 'Handbook', 'The handbook never changed.');
-    IndexAiDocument::dispatch($organization->id, 'note', 'handbook', 'Handbook', 'The handbook never changed.');
+    dispatch(new IndexAiDocument($organization->id, 'note', 'handbook', 'Handbook', 'The handbook never changed.'));
+    dispatch(new IndexAiDocument($organization->id, 'note', 'handbook', 'Handbook', 'The handbook never changed.'));
 
     expect($calls)->toBe(1)
         ->and(AiDocument::query()->where('source_id', 'handbook')->count())->toBe(1);
@@ -335,7 +336,7 @@ it('refuses a search for someone who is not a member of the organization', funct
 
     $stranger = User::factory()->create();
 
-    expect(fn (): string => (new SearchKnowledge($stranger, $organization))
+    expect(fn (): string => new SearchKnowledge($stranger, $organization)
         ->handle(new Request(['query' => 'anything'])))
-        ->toThrow(Illuminate\Auth\Access\AuthorizationException::class);
+        ->toThrow(AuthorizationException::class);
 })->group('pgvector');

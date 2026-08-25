@@ -45,7 +45,7 @@ final class ProposeChange extends Tool
         return [
             'action' => $schema->string()->enum(array_keys(ConfirmableActions::all()))->required()
                 ->description('The action to propose.'),
-            'fields' => $schema->object()->description('The action\'s fields, keyed by name.'),
+            'fields' => $schema->object()->description("The action's fields, keyed by name."),
         ];
     }
 }

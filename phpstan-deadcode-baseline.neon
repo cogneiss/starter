@@ -6,7 +6,7 @@ parameters:
         # The Laravel container builds these through reflection on the
         # constructor signature, so no literal `new` appears anywhere.
         -
-            message: '#^Unused App\\(Actions|Auth\\Drivers|Policies|Support)\\.*::__construct$#'
+            message: '#^Unused App\\(Actions|Ai\\Actions|Auth\\Drivers|Policies|Support)\\.*::__construct$#'
             identifier: shipmonk.deadMethod
             reportUnmatched: false
 
@@ -14,9 +14,19 @@ parameters:
         # array or a request) and read by its serialisers and the TypeScript
         # transformer. Nothing reads the promoted properties from PHP by design.
         -
-            message: '#^(Unused App\\Data\\.*::__construct|Property App\\Data\\.*is never read)$#'
+            message: '#^(Unused App\\(Data|Ai\\Blocks)\\.*::(__construct|fromModel)|Property App\\Data\\.*is never read)$#'
             paths:
                 - app/Data/*
+                - app/Ai/Blocks/*
+            reportUnmatched: false
+
+        # An agent names a trend as a string (`"trend": "up"`); the case is
+        # reached by spatie/laravel-data casting that value, never by a literal
+        # `AiMetricTrend::Up` in PHP. Dropping a case would drop what the model
+        # is allowed to send.
+        -
+            message: '#^Unused App\\Enums\\AiMetricTrend::.*$#'
+            identifier: shipmonk.deadEnumCase
             reportUnmatched: false
 
         # Eloquent boots trait hooks by naming convention (`boot<TraitName>`),

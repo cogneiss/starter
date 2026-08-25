@@ -10,7 +10,7 @@ code_refs:
     - resources/js/components/ai/blocks/AiBlocks.tsx
     - resources/js/pages/organization/ai-usage.tsx
     - tests/Feature/Ai/AiBlockTest.php
-updated: 2026-08-25
+updated: 2026-08-26
 ---
 
 # AI blocks

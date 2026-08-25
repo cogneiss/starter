@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Actions\ConsumeConfirmToken;
 use App\Actions\CreateConfirmToken;
 use App\Ai\Actions\InviteMember;
+use App\Data\AiConfirmTokenData;
+use App\Data\InviteMemberData;
 use App\Exceptions\InvalidConfirmToken;
 use App\Models\AiConfirmToken;
 use App\Models\Organization;
@@ -13,6 +15,9 @@ use App\Models\User;
 use App\Support\OrganizationContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
+use Illuminate\Validation\ValidationException;
+use Inertia\Support\SessionKey;
 
 /**
  * A member who may invite, and a proposal waiting for them.
@@ -211,7 +216,7 @@ it('validates the payload against the action data object', function (): void {
             'invite-member',
             ['email' => 'not-an-email', 'role' => 'Member'],
         ),
-    ))->toThrow(Illuminate\Validation\ValidationException::class);
+    ))->toThrow(ValidationException::class);
 });
 
 it('shows a pending confirmation only to the person it was raised for', function (): void {
@@ -236,7 +241,7 @@ it('shows a pending confirmation only to the person it was raised for', function
 it('refuses the same token posted twice over HTTP, inviting once', function (): void {
     [, $owner, $token] = pendingConfirmToken('replayed@example.com');
 
-    $post = fn (): Illuminate\Testing\TestResponse => $this->actingAs($owner)
+    $post = fn (): TestResponse => $this->actingAs($owner)
         ->from(route('dashboard'))
         ->post(route('ai-confirm.store', ['token' => $token->id]));
 
@@ -246,7 +251,7 @@ it('refuses the same token posted twice over HTTP, inviting once', function (): 
     // is refused as an ordinary answer, not a server fault.
     $replayed = $post()->assertRedirect();
 
-    expect($replayed->getSession()->get(Inertia\Support\SessionKey::FLASH_DATA)['toast'])
+    expect($replayed->getSession()->get(SessionKey::FLASH_DATA)['toast'])
         ->toBe(['type' => 'error', 'message' => 'That confirmation has already been used.']);
 
     expect(OrganizationInvitation::withoutOrganizationScope()
@@ -259,7 +264,7 @@ it('describes a pending confirmation to the client without its payload', functio
 
     $data = resolve(OrganizationContext::class)->runAs(
         $organization,
-        fn (): App\Data\AiConfirmTokenData => App\Data\AiConfirmTokenData::from($token),
+        fn (): AiConfirmTokenData => AiConfirmTokenData::from($token),
     );
 
     expect($data->id)->toBe($token->id)
@@ -277,7 +282,7 @@ it('refuses to invite when no organization is bound to the context', function ()
 
     expect(fn (): OrganizationInvitation => resolve(InviteMember::class)->confirm(
         $owner,
-        App\Data\InviteMemberData::from(['email' => 'nobody@example.com', 'role' => 'Member']),
+        InviteMemberData::from(['email' => 'nobody@example.com', 'role' => 'Member']),
     ))->toThrow(RuntimeException::class, 'needs an organization bound');
 
     expect(OrganizationInvitation::withoutOrganizationScope()->count())->toBe(0);

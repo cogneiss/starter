@@ -28,16 +28,12 @@ final class AiTier
     {
         $config = config('ai.tiers.'.$tier);
 
-        if (! is_array($config)) {
-            throw new InvalidArgumentException("There is no [{$tier}] model tier in config/ai.php.");
-        }
+        throw_unless(is_array($config), InvalidArgumentException::class, "There is no [{$tier}] model tier in config/ai.php.");
 
         $provider = $config['provider'] ?? null;
         $model = $config['model'] ?? null;
 
-        if (! $provider instanceof Lab) {
-            throw new InvalidArgumentException("The [{$tier}] model tier has no provider.");
-        }
+        throw_unless($provider instanceof Lab, InvalidArgumentException::class, "The [{$tier}] model tier has no provider.");
 
         return [
             'provider' => $provider,

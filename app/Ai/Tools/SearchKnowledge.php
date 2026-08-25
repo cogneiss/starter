@@ -51,7 +51,7 @@ final readonly class SearchKnowledge implements Tool
 
     public function description(): string
     {
-        return 'Searches the organization\'s own documents for passages related to a question.';
+        return "Searches the organization's own documents for passages related to a question.";
     }
 
     public function handle(Request $request): string

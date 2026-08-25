@@ -11,5 +11,4 @@ enum AiAuditStatus: string
 {
     case Ok = 'ok';
     case Blocked = 'blocked';
-    case Failed = 'failed';
 }

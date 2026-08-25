@@ -48,7 +48,7 @@ final class FormBlock extends Data implements AiBlock
                 name: $property->getName(),
                 value: (string) ($values[$property->getName()] ?? ''),
             ),
-            (new ReflectionClass($action->dataClass()))->getProperties(ReflectionProperty::IS_PUBLIC),
+            new ReflectionClass($action->dataClass())->getProperties(ReflectionProperty::IS_PUBLIC),
         );
 
         $this->summary = Str::headline($this->action);

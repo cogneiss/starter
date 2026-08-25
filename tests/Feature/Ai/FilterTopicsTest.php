@@ -13,7 +13,7 @@ it('refuses a prompt about a denied topic before it reaches a provider', functio
 
     KernelFixtureAgent::fake(['Never sent.'])->preventStrayPrompts();
 
-    expect(fn (): mixed => (new KernelFixtureAgent($membership->user, $membership->organization))
+    expect(fn (): mixed => new KernelFixtureAgent($membership->user, $membership->organization)
         ->prompt('Give me Medical Advice about this rash.'))
         ->toThrow(BlockedTopicException::class);
 
@@ -29,7 +29,7 @@ it('passes the prompt through when the denied topic list is empty', function ():
 
     KernelFixtureAgent::fake(['Answered.'])->preventStrayPrompts();
 
-    $response = (new KernelFixtureAgent($membership->user, $membership->organization))
+    $response = new KernelFixtureAgent($membership->user, $membership->organization)
         ->prompt('Give me medical advice about this rash.');
 
     expect($response->text)->toBe('Answered.');

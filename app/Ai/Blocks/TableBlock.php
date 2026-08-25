@@ -23,9 +23,7 @@ final class TableBlock extends Data implements AiBlock
         public array $rows,
     ) {
         foreach ($this->rows as $row) {
-            if (count($row) !== count($this->columns)) {
-                throw new InvalidArgumentException('Every row must have one cell per column.');
-            }
+            throw_if(count($row) !== count($this->columns), InvalidArgumentException::class, 'Every row must have one cell per column.');
         }
     }
 }

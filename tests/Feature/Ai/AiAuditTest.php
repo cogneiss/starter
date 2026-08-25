@@ -34,7 +34,7 @@ it('writes one audit row for a prompt that reached a provider', function (): voi
 
     KernelFixtureAgent::fake(['Answered.'])->preventStrayPrompts();
 
-    (new KernelFixtureAgent($user, $organization))->prompt('Say hello.');
+    new KernelFixtureAgent($user, $organization)->prompt('Say hello.');
 
     resolve(OrganizationContext::class)->set($organization);
 
@@ -55,7 +55,7 @@ it('records an unpriced model as costing nothing rather than guessing a price', 
 
     KernelFixtureAgent::fake(['Answered.'])->preventStrayPrompts();
 
-    (new KernelFixtureAgent($user, $organization))->prompt('Say hello.');
+    new KernelFixtureAgent($user, $organization)->prompt('Say hello.');
 
     resolve(OrganizationContext::class)->set($organization);
 
@@ -98,7 +98,7 @@ it('keeps one organization audit rows out of another', function (): void {
 
     KernelFixtureAgent::fake(['Answered.'])->preventStrayPrompts();
 
-    (new KernelFixtureAgent($user, $organization))->prompt('Say hello.');
+    new KernelFixtureAgent($user, $organization)->prompt('Say hello.');
 
     resolve(OrganizationContext::class)->set($other);
 
@@ -114,7 +114,7 @@ it('meters a streamed response when the stream completes', function (): void {
 
     KernelFixtureAgent::fake(['Streamed answer.'])->preventStrayPrompts();
 
-    $stream = (new KernelFixtureAgent($user, $organization))->stream('Say hello.');
+    $stream = new KernelFixtureAgent($user, $organization)->stream('Say hello.');
 
     resolve(OrganizationContext::class)->set($organization);
 

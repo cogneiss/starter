@@ -24,7 +24,7 @@ return [
         AiAuditLog::class => 'Append-only AI usage log, reported in aggregate by ai:usage, never linked.',
         AiCreditLedgerEntry::class => 'Append-only AI credit ledger, summed for a balance, never listed as a record.',
         AiDocument::class => 'Retrieval corpus rows, reached only through an agent tool, never listed or linked.',
-        AiMemory::class => 'One person\'s private assistant memory, written by one tool and read into their own prompt, never listed or linked.',
+        AiMemory::class => "One person's private assistant memory, written by one tool and read into their own prompt, never listed or linked.",
         FeatureOverride::class => 'pending resource adapter',
         ImpersonationLog::class => 'Append-only audit table, never listed or linked.',
         LoginHistory::class => 'Append-only audit table, read through UserData, never linked.',

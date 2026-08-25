@@ -67,3 +67,13 @@ build rather than leaking across organizations.
 
 It arrives through `laravel/boost` at 0.9.4. Do not add it to `composer.json`
 and do not bump it. The server in `app/Mcp` ships disabled.
+
+## Map a block enum to its class with a const array
+
+Xdebug attributes no opcode to a multi-line `return match (...) {` line while
+PHPUnit still counts it executable, so that line can never be covered and the
+100% gate fails. Do not reach for a `SimplifyUselessVariableRector` skip in
+`rector.php` — that narrows a lint gate to hide the problem. Use a
+`private const array` keyed by `Enum::Case->value` and return the one-line
+lookup, the way `BlockCollection::classFor()` does. phpstan at level max infers
+the literal shape, so the `class-string` return type still holds.

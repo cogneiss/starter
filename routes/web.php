@@ -7,6 +7,7 @@ use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\BrowserSessionController;
+use App\Http\Controllers\OrganizationAiUsageController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -45,7 +46,7 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
             ->name('organization.edit');
         Route::patch('settings/organization', [OrganizationController::class, 'update'])
             ->name('organization.update');
-        Route::get('settings/organization/ai-usage', [OrganizationController::class, 'aiUsage'])
+        Route::get('settings/organization/ai-usage', [OrganizationAiUsageController::class, 'index'])
             ->name('organization.ai-usage');
 
         // Organization Members...

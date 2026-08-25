@@ -37,7 +37,7 @@ final class AiUsageCommand extends Command
 
         $since = $this->since();
 
-        if ($since === null) {
+        if (! $since instanceof CarbonInterface) {
             $this->components->error(sprintf('Could not read [%s] as a date.', $this->option('since')));
 
             return self::FAILURE;

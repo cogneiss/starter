@@ -22,7 +22,7 @@ final class AiServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (AiAvailability::faked()) {
-            foreach (self::agents() as $agent) {
+            foreach ($this->agents() as $agent) {
                 // No canned responses: the gateway then echoes the prompt back
                 // as a fake answer, for as many prompts as arrive. A fixed list
                 // would run out and start throwing halfway through a demo.
@@ -39,7 +39,7 @@ final class AiServiceProvider extends ServiceProvider
      *
      * @return list<class-string>
      */
-    private static function agents(): array
+    private function agents(): array
     {
         $directory = app_path('Ai/Agents');
 

@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Actions\ConsumeConfirmToken;
+use App\Actions\CreateOrganizationInvitation;
+use App\Ai\Contracts\OrganizationScoped;
+use App\Ai\Tools\ProposeAction;
+use Illuminate\Support\Facades\DB;
+use Laravel\Ai\Contracts\HasMiddleware;
+
 arch()->preset()->php();
 arch()->preset()->strict();
 arch()->preset()->laravel();
@@ -13,28 +20,28 @@ arch()->preset()->security()->ignoring([
 // the only thing it writes is the proposal itself — see ResourceToolTest.
 arch('tools')
     ->expect('App\Ai\Tools')
-    ->not->toUse(['Illuminate\Support\Facades\DB', 'App\Actions\ConsumeConfirmToken'])
-    ->ignoring('App\Ai\Tools\ProposeAction');
+    ->not->toUse([DB::class, ConsumeConfirmToken::class])
+    ->ignoring(ProposeAction::class);
 
 // A vertical is an agent, and an agent is scoped to one organization and runs
 // the default middleware. Writing is not on the list: an agent that reaches for
 // the invitation model or a transaction has skipped the confirm gate.
 arch('verticals are scoped to one organization')
     ->expect('App\Ai\Agents')
-    ->toImplement('App\Ai\Contracts\OrganizationScoped')
+    ->toImplement(OrganizationScoped::class)
     ->ignoring('App\Ai\Agents\Concerns');
 
 arch('verticals run the default middleware')
     ->expect('App\Ai\Agents')
-    ->toImplement('Laravel\Ai\Contracts\HasMiddleware')
+    ->toImplement(HasMiddleware::class)
     ->ignoring('App\Ai\Agents\Concerns');
 
 arch('verticals never write')
     ->expect('App\Ai\Agents')
     ->not->toUse([
-        'Illuminate\Support\Facades\DB',
-        'App\Actions\ConsumeConfirmToken',
-        'App\Actions\CreateOrganizationInvitation',
+        DB::class,
+        ConsumeConfirmToken::class,
+        CreateOrganizationInvitation::class,
     ]);
 
 arch('controllers')

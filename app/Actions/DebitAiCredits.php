@@ -24,11 +24,9 @@ final readonly class DebitAiCredits
 
     public function handle(Organization $organization, int $micros, string $reason, ?Model $reference = null, ?User $actor = null): AiCreditLedgerEntry
     {
-        if ($micros <= 0) {
-            throw new InvalidArgumentException('A charge has to be a positive number of micros.');
-        }
+        throw_if($micros <= 0, InvalidArgumentException::class, 'A charge has to be a positive number of micros.');
 
-        if ($actor !== null) {
+        if ($actor instanceof User) {
             $this->context->runAs($organization, fn (): bool => Gate::forUser($actor)->authorize('create', AiCreditLedgerEntry::class)->allowed());
         }
 

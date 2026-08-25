@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Ai\Agents\DashboardBriefing;
+use App\Enums\KnownFeatures;
 use App\Models\AiAuditLog;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 
 /**
  * An organization with the briefing turned on, its owner, and figures worth
@@ -101,7 +103,7 @@ it('prompts nothing at all while the feature flag is off', function (): void {
 
     DashboardBriefing::fake(['Never reached.'])->preventStrayPrompts();
 
-    expect(App\Enums\KnownFeatures::AiBriefingEnabled->default())->toBeFalse()
+    expect(KnownFeatures::AiBriefingEnabled->default())->toBeFalse()
         ->and(new DashboardBriefing($owner, $organization)->briefing())->toBeNull();
 
     DashboardBriefing::assertNeverPrompted();
@@ -112,5 +114,5 @@ it('refuses to brief someone who is not a member', function (): void {
     $stranger = User::factory()->create();
 
     expect(fn (): DashboardBriefing => new DashboardBriefing($stranger, $organization))
-        ->toThrow(Illuminate\Auth\Access\AuthorizationException::class);
+        ->toThrow(AuthorizationException::class);
 });
