@@ -2,10 +2,12 @@
     "mcpServers": {
         "laravel-boost": {
             "command": "php",
-            "args": [
-                "artisan",
-                "boost:mcp"
-            ]
+            "args": ["artisan", "boost:mcp"]
+        },
+        "starter-ai": {
+            "command": "php",
+            "args": ["artisan", "mcp:start", "starter-ai"],
+            "disabled": true
         }
     }
 }

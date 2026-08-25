@@ -30,6 +30,13 @@ function rememberedFact(Organization $organization, User $user, string $key, str
     ]);
 }
 
+it('says nothing at all when this person has no facts here', function (): void {
+    $user = User::factory()->create();
+    $organization = Organization::factory()->create();
+
+    expect(new AssistantMemory($user, $organization)->instructions())->toBe('');
+});
+
 it('does not cross organizations for one person', function (): void {
     $user = User::factory()->create();
     $first = Organization::factory()->create();
