@@ -15,6 +15,7 @@ use Illuminate\Contracts\Database\Query\Builder;
  */
 enum KnownFeatures: string
 {
+    case AiBriefingEnabled = 'ai-briefing-enabled';
     case ImpersonationEnabled = 'impersonation-enabled';
     case SocialLoginEnabled = 'social-login-enabled';
 

@@ -15,6 +15,7 @@ return [
     */
 
     'defaults' => [
+        'ai-briefing-enabled' => env('FEATURE_AI_BRIEFING_ENABLED', false),
         'impersonation-enabled' => env('FEATURE_IMPERSONATION_ENABLED', false),
         'social-login-enabled' => env('FEATURE_SOCIAL_LOGIN_ENABLED', false),
     ],

@@ -138,7 +138,26 @@ return [
     ],
 
     'actions' => [
+        // App\Ai\Actions\InviteMember is a face, not an implementation: the
+        // write it performs on confirmation is App\Actions\CreateOrganizationInvitation,
+        // the same action the invitation form posts to.
         'invite-member' => InviteMember::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Briefing
+    |--------------------------------------------------------------------------
+    |
+    | How long, in seconds, one organization's dashboard briefing is reused for.
+    | The figures behind it move slowly and the briefing is rendered on every
+    | dashboard load, so regenerating it per request buys nothing and is billed
+    | per request. Read it as config('ai.briefing.ttl').
+    |
+    */
+
+    'briefing' => [
+        'ttl' => env('AI_BRIEFING_TTL', 900),
     ],
 
     /*

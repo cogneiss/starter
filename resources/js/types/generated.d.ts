@@ -64,7 +64,7 @@ export type InviteMember = {
 email: string,
 role: string,
 };
-export type KnownFeatures = 'impersonation-enabled' | 'social-login-enabled';
+export type KnownFeatures = 'ai-briefing-enabled' | 'impersonation-enabled' | 'social-login-enabled';
 export type LoginHistoryEntry = {
 id: string,
 device: string,
