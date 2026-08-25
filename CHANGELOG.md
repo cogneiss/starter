@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/cogneiss/starter/compare/v0.2.0...v0.2.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* pin the boost config so the guideline gate only fails on real drift ([ad9f337](https://github.com/cogneiss/starter/commit/ad9f3375e9de66696a4d237822f60bbd1cd043f8))
+
 ## [0.2.0](https://github.com/cogneiss/starter/compare/v0.1.0...v0.2.0) (2026-08-23)
 
 
