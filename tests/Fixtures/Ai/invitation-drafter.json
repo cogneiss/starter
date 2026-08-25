@@ -1,0 +1,23 @@
+{
+    "prompt": "prompts/invitation-drafter.md",
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5-20251001",
+    "captured_at": "2026-08-25",
+    "cases": [
+        {
+            "request": "invite taylor@example.com as a member",
+            "email": "taylor@example.com",
+            "role": "member"
+        },
+        {
+            "request": "can you add jordan@example.com to the org, they should be an admin",
+            "email": "jordan@example.com",
+            "role": "admin"
+        },
+        {
+            "request": "we need casey@example.com on the team",
+            "email": "casey@example.com",
+            "role": "member"
+        }
+    ]
+}

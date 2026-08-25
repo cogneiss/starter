@@ -89,6 +89,15 @@ it('refuses to draft for someone who is not a member', function (): void {
         ->toThrow(Illuminate\Auth\Access\AuthorizationException::class);
 });
 
+it('throws rather than dialling a provider when a test forgets its fake', function (): void {
+    [$user, $organization] = drafterMember();
+
+    // No fake of its own: the one inherited from tests/Pest.php has no scripted
+    // answer, which is the point — a forgotten fake is loud, not billable.
+    expect(fn (): mixed => draftInvitation($user, $organization, 'invite taylor as a member'))
+        ->toThrow(RuntimeException::class);
+});
+
 it('proposes only the action key the allowlist knows', function (): void {
     [$user, $organization] = drafterMember();
 

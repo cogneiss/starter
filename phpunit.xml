@@ -14,7 +14,15 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <testsuite name="Evals">
+            <directory>tests/Evals</directory>
+        </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <group>evals</group>
+        </exclude>
+    </groups>
     <source>
         <include>
             <directory>app</directory>

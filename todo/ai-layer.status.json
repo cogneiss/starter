@@ -80,8 +80,8 @@
         {
             "id": 13,
             "name": "fakes and scheduled evals",
-            "status": "failing",
-            "command": "rg -q 'preventStrayPrompts' tests/Pest.php && test -f .github/workflows/evals.yml"
+            "status": "passing",
+            "command": "rg -q 'preventStrayPrompts' tests/Pest.php && test -f .github/workflows/evals.yml && composer test:evals"
         },
         {
             "id": 14,

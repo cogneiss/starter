@@ -1,0 +1,55 @@
+name: evals
+
+# Evals grade prompts against real providers, so they cost money and they are
+# allowed to be flaky in a way a test never is. They run on a schedule and on
+# request, never on a pull request, and they never fail a branch: a regression
+# opens an issue for someone to read.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare the environment
+        run: cp .env.example .env && php artisan key:generate
+
+      - name: Run the evals
+        id: evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: composer test:evals
+
+      - name: Open an issue when an eval regresses
+        if: failure() && steps.evals.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Eval regression on ${new Date().toISOString().slice(0, 10)}`,
+              body: `An eval graded a prompt as regressed. Nothing is broken for users yet — a model changed, or a prompt did.\n\n${run}`,
+              labels: ['evals'],
+            })

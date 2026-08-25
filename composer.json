@@ -113,6 +113,7 @@
             "bun run test:lint"
         ],
         "test:unit": "XDEBUG_MODE=\"coverage\" pest --parallel --coverage --exactly=100.0",
+        "test:evals": "pest --testsuite=Evals --group=evals --compact",
         "test:audit": [
             "@composer audit --no-interaction",
             "bun audit --prod"
