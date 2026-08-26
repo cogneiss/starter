@@ -91,6 +91,27 @@ it('is accessible on the two-factor challenge', function (): void {
         ->assertTitle('Two-factor authentication - Laravel');
 });
 
+/**
+ * The palette is a layer over the page rather than a page of its own, so it is
+ * opened and then audited in place: axe checks the dialog role, the focus trap
+ * the dialog brings, the labelled input and the named result list.
+ */
+it('is accessible with the command palette open on results', function (): void {
+    $organization = Organization::factory()->create();
+
+    $this->actingAs(User::factory()->forOrganization($organization)->create());
+
+    User::factory()->forOrganization($organization, 'Member')->create(['name' => 'Marguerite Blythe']);
+
+    visit('/dashboard')
+        ->wait(1)
+        ->keys('html > body', 'Meta+k')
+        ->type('[data-test="palette-input"]', 'Marguerite')
+        ->waitForText('Marguerite Blythe')
+        ->assertNoAccessibilityIssues(level: 3)
+        ->assertNoJavaScriptErrors();
+});
+
 it('is accessible while creating a first organization', function (): void {
     $this->actingAs(User::factory()->create());
 
