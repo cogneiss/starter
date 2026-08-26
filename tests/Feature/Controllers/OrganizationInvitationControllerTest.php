@@ -6,7 +6,37 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use App\Notifications\OrganizationInvitationNotification;
+use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\Notification;
+
+it('lists the pending invitations', function (): void {
+    $organization = Organization::factory()->create();
+    $owner = User::factory()->forOrganization($organization)->create();
+    OrganizationInvitation::factory()->create(['organization_id' => $organization->id]);
+    OrganizationInvitation::factory()->create([
+        'organization_id' => $organization->id,
+        'accepted_at' => now(),
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('organization-invitation.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('organization-invitation/index')
+            ->has('invitations.rows', 1)
+            ->where('invitations.total', 1));
+});
+
+it('refuses the pending invitations without the permission', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->forOrganization($organization)->create();
+
+    resolve(OrganizationContext::class)->runAs($organization, fn () => $user->syncRoles([]));
+
+    $this->actingAs($user)
+        ->get(route('organization-invitation.index'))
+        ->assertForbidden();
+});
 
 it('renders the invite page', function (): void {
     $organization = Organization::factory()->create();
@@ -32,7 +62,7 @@ it('sends an invitation', function (): void {
             'email' => 'new@example.com',
             'role' => 'Member',
         ])
-        ->assertRedirectToRoute('organization-member.edit');
+        ->assertRedirectToRoute('organization-invitation.index');
 
     expect(OrganizationInvitation::withoutOrganizationScope()->where('email', 'new@example.com')->exists())->toBeTrue();
 
@@ -74,9 +104,9 @@ it('revokes an invitation', function (): void {
     $invitation = OrganizationInvitation::factory()->create(['organization_id' => $organization->id]);
 
     $this->actingAs($owner)
-        ->fromRoute('organization-member.edit')
+        ->fromRoute('organization-invitation.index')
         ->delete(route('organization-invitation.destroy', $invitation))
-        ->assertRedirectToRoute('organization-member.edit');
+        ->assertRedirectToRoute('organization-invitation.index');
 
     expect(OrganizationInvitation::withoutOrganizationScope()->count())->toBe(0);
 });
@@ -87,7 +117,7 @@ it('cannot even see an invitation of another organization', function (): void {
     $invitation = OrganizationInvitation::factory()->create();
 
     $this->actingAs($owner)
-        ->fromRoute('organization-member.edit')
+        ->fromRoute('organization-invitation.index')
         ->delete(route('organization-invitation.destroy', $invitation))
         ->assertNotFound();
 

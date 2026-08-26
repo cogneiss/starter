@@ -1,0 +1,13 @@
+diff --git a/app/Http/Controllers/Concerns/ListsResources.php b/app/Http/Controllers/Concerns/ListsResources.php
+index 01ca1ed..02f9da2 100644
+--- a/app/Http/Controllers/Concerns/ListsResources.php
++++ b/app/Http/Controllers/Concerns/ListsResources.php
+@@ -32,7 +32,7 @@ protected function listResource(string $key, Request $request, Closure $row, ?Cl
+     {
+         $resource = resolve(ResourceRegistry::class)->get($key);
+ 
+-        $query = $resource->scopedQuery();
++        $query = $resource->model()::query()->withoutGlobalScopes(); // control disabled
+ 
+         $query->with(ResourceQuery::relationsIn($resource->searchable()));
+ 

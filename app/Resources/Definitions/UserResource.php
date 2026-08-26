@@ -58,6 +58,16 @@ final class UserResource implements ResourceContract
         return ['name', 'email'];
     }
 
+    /**
+     * Newest people first is the useful default for a member directory.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['created_at', 'name', 'email'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof User);

@@ -190,46 +190,61 @@ function classesIn(string $directory, string $namespace): array
  */
 function resourceSearchDefects(ResourceContract $resource): array
 {
-    $defects = [];
-
     $model = new ($resource->model());
-    $columns = $resource->searchable();
 
-    if ($columns === []) {
-        $defects[] = 'searchable() is empty, so no term can ever match this resource';
-    }
+    /**
+     * Both column lists are judged the same way, and both blow up at query time
+     * on a column that was never there, so the check is written once.
+     *
+     * @param  list<string>  $columns
+     * @return list<string>
+     */
+    $columnDefects = function (string $method, array $columns, string $emptyReason) use ($model): array {
+        $defects = [];
 
-    foreach ($columns as $column) {
-        if (! str_contains($column, '.')) {
-            if (! Schema::hasColumn($model->getTable(), $column)) {
-                $defects[] = "searchable() names '{$column}', which is not a column on {$model->getTable()}";
+        if ($columns === []) {
+            $defects[] = "{$method}() is empty, so {$emptyReason}";
+        }
+
+        foreach ($columns as $column) {
+            if (! str_contains($column, '.')) {
+                if (! Schema::hasColumn($model->getTable(), $column)) {
+                    $defects[] = "{$method}() names '{$column}', which is not a column on {$model->getTable()}";
+                }
+
+                continue;
             }
 
-            continue;
+            [$name, $field] = explode('.', $column, 2);
+
+            if (! method_exists($model, $name)) {
+                $defects[] = "{$method}() names '{$column}', but ".$model::class." has no {$name} relation";
+
+                continue;
+            }
+
+            $relation = $model->{$name}();
+
+            if (! $relation instanceof Relation) {
+                $defects[] = "{$method}() names '{$column}', but {$name}() is not a relation";
+
+                continue;
+            }
+
+            $table = $relation->getRelated()->getTable();
+
+            if (! Schema::hasColumn($table, $field)) {
+                $defects[] = "{$method}() names '{$column}', which is not a column on {$table}";
+            }
         }
 
-        [$name, $field] = explode('.', $column, 2);
+        return $defects;
+    };
 
-        if (! method_exists($model, $name)) {
-            $defects[] = "searchable() names '{$column}', but ".$model::class." has no {$name} relation";
-
-            continue;
-        }
-
-        $relation = $model->{$name}();
-
-        if (! $relation instanceof Relation) {
-            $defects[] = "searchable() names '{$column}', but {$name}() is not a relation";
-
-            continue;
-        }
-
-        $table = $relation->getRelated()->getTable();
-
-        if (! Schema::hasColumn($table, $field)) {
-            $defects[] = "searchable() names '{$column}', which is not a column on {$table}";
-        }
-    }
+    $defects = [
+        ...$columnDefects('searchable', $resource->searchable(), 'no term can ever match this resource'),
+        ...$columnDefects('sortable', $resource->sortable(), 'a list of it has no order to fall back on'),
+    ];
 
     if (mb_trim($resource->recordLabel($resource->model()::factory()->make())) === '') {
         $defects[] = 'recordLabel() is empty, so a hit would render as a blank row';

@@ -57,6 +57,16 @@ interface ResourceContract
     public function searchable(): array;
 
     /**
+     * Columns a list may be ordered by, most useful first — the first entry is
+     * the default order. An allowlist rather than the table's columns, so no
+     * request can order by something the screen never shows. A dotted entry
+     * ('user.name') orders through a belongsTo relation.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array;
+
+    /**
      * One-line title for a record in a result list.
      */
     public function recordLabel(Model $record): string;

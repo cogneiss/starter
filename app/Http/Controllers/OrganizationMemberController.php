@@ -8,23 +8,26 @@ use App\Actions\ReactivateOrganizationMembership;
 use App\Actions\RemoveOrganizationMembership;
 use App\Actions\SuspendOrganizationMembership;
 use App\Actions\UpdateOrganizationMembershipRole;
-use App\Data\OrganizationInvitationData;
 use App\Data\OrganizationMemberData;
 use App\Enums\MembershipStatus;
+use App\Http\Controllers\Concerns\ListsResources;
 use App\Http\Requests\UpdateOrganizationMembershipRequest;
 use App\Models\Organization;
-use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMembership;
 use App\Models\Role;
 use App\Support\OrganizationContext;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final readonly class OrganizationMemberController
 {
-    public function edit(OrganizationContext $context): Response
+    use ListsResources;
+
+    public function edit(Request $request, OrganizationContext $context): Response
     {
         $organization = $context->get();
         assert($organization instanceof Organization);
@@ -32,19 +35,24 @@ final readonly class OrganizationMemberController
         Gate::authorize('members.view');
 
         return Inertia::render('organization-member/edit', [
-            'members' => $this->members($organization),
-            'invitations' => $this->invitations(),
+            'members' => $this->listResource(
+                'organization-members',
+                $request,
+                $this->memberRow(...),
+            ),
             'roles' => $this->roles($organization),
         ]);
     }
 
     public function update(
         UpdateOrganizationMembershipRequest $request,
-        OrganizationMembership $membership,
+        string $membership,
         UpdateOrganizationMembershipRole $updateRole,
         SuspendOrganizationMembership $suspend,
         ReactivateOrganizationMembership $reactivate,
     ): RedirectResponse {
+        $membership = $this->membership($membership);
+
         Gate::authorize('update', $membership);
 
         if ($request->has('role')) {
@@ -65,8 +73,10 @@ final readonly class OrganizationMemberController
         return to_route('organization-member.edit');
     }
 
-    public function destroy(OrganizationMembership $membership, RemoveOrganizationMembership $action): RedirectResponse
+    public function destroy(string $membership, RemoveOrganizationMembership $action): RedirectResponse
     {
+        $membership = $this->membership($membership);
+
         Gate::authorize('delete', $membership);
 
         $action->handle($membership);
@@ -80,28 +90,22 @@ final readonly class OrganizationMemberController
     }
 
     /**
-     * @return array<int, OrganizationMemberData>
+     * The membership behind a row, found inside the organization scope so an id
+     * from elsewhere is a 404 rather than a policy decision about a real record.
      */
-    private function members(Organization $organization): array
+    private function membership(string $id): OrganizationMembership
     {
-        return $organization->memberships()
-            ->with('user')
-            ->get()
-            ->map(fn (OrganizationMembership $membership): OrganizationMemberData => OrganizationMemberData::fromModel($membership))
-            ->all();
+        $membership = $this->findListed('organization-members', $id);
+        assert($membership instanceof OrganizationMembership);
+
+        return $membership;
     }
 
-    /**
-     * @return array<int, OrganizationInvitationData>
-     */
-    private function invitations(): array
+    private function memberRow(Model $record): OrganizationMemberData
     {
-        return OrganizationInvitation::query()
-            ->whereNull('accepted_at')
-            ->orderBy('email')
-            ->get()
-            ->map(fn (OrganizationInvitation $invitation): OrganizationInvitationData => OrganizationInvitationData::fromModel($invitation))
-            ->all();
+        assert($record instanceof OrganizationMembership);
+
+        return OrganizationMemberData::fromModel($record);
     }
 
     /**

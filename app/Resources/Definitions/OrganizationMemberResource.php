@@ -57,6 +57,16 @@ final class OrganizationMemberResource implements ResourceContract
         return ['user.name', 'user.email'];
     }
 
+    /**
+     * A membership row carries no name of its own; it orders by the person, through the same relation search matches on.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['user.name', 'user.email', 'status', 'created_at'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof OrganizationMembership);

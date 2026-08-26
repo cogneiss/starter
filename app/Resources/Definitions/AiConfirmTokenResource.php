@@ -55,6 +55,16 @@ final class AiConfirmTokenResource implements ResourceContract
         return ['summary', 'action'];
     }
 
+    /**
+     * A confirmation is answered while it is fresh, so newest first.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['created_at', 'summary', 'action'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof AiConfirmToken);

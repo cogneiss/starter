@@ -58,6 +58,18 @@ final class {{ class }}Resource implements ResourceContract
         return ['name'];
     }
 
+    /**
+     * Columns a list may be ordered by, most useful first — the first entry is
+     * the default order. An allowlist, so no request can order by a column the
+     * screen never shows.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['created_at', 'name'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof {{ class }});

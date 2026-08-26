@@ -65,6 +65,8 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
             ->name('organization-member.destroy');
 
         // Organization Invitations...
+        Route::get('settings/invitations', [OrganizationInvitationController::class, 'index'])
+            ->name('organization-invitation.index');
         Route::get('settings/members/invite', [OrganizationInvitationController::class, 'create'])
             ->name('organization-invitation.create');
         Route::post('settings/members/invite', [OrganizationInvitationController::class, 'store'])

@@ -4,26 +4,24 @@ declare(strict_types=1);
 
 use App\Enums\MembershipStatus;
 use App\Models\Organization;
-use App\Models\OrganizationInvitation;
 use App\Models\OrganizationMembership;
 use App\Models\User;
 use App\Support\OrganizationContext;
 
 it('renders the members page', function (): void {
     $organization = Organization::factory()->create();
-    $owner = User::factory()->forOrganization($organization)->create();
-    $member = User::factory()->forOrganization($organization, 'Member')->create();
-    OrganizationInvitation::factory()->create(['organization_id' => $organization->id]);
+    $owner = User::factory()->forOrganization($organization)->create(['name' => 'Ada']);
+    $member = User::factory()->forOrganization($organization, 'Member')->create(['name' => 'Zoe']);
 
     $this->actingAs($owner)
         ->get(route('organization-member.edit'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('organization-member/edit')
-            ->has('members', 2)
-            ->has('invitations', 1)
+            ->has('members.rows', 2)
+            ->where('members.total', 2)
             ->has('roles', 3)
-            ->where('members.1.email', $member->email));
+            ->where('members.rows.1.email', $member->email));
 });
 
 it('refuses the members page without the permission', function (): void {
@@ -98,7 +96,7 @@ it('removes a member', function (): void {
     expect(OrganizationMembership::query()->whereKey($membership->id)->exists())->toBeFalse();
 });
 
-it('refuses to touch a membership of another organization', function (): void {
+it('does not admit that a membership of another organization exists', function (): void {
     $organization = Organization::factory()->create();
     $owner = User::factory()->forOrganization($organization)->create();
 
@@ -109,5 +107,5 @@ it('refuses to touch a membership of another organization', function (): void {
     $this->actingAs($owner)
         ->fromRoute('organization-member.edit')
         ->delete(route('organization-member.destroy', $otherMembership))
-        ->assertForbidden();
+        ->assertNotFound();
 });

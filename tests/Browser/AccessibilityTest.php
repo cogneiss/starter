@@ -55,6 +55,7 @@ it('is accessible when signed in', function (string $url, string $title): void {
     'organization' => ['/settings/organization', 'Organization settings - Laravel'],
     'members' => ['/settings/members', 'Members - Laravel'],
     'invite member' => ['/settings/members/invite', 'Invite member - Laravel'],
+    'pending invitations' => ['/settings/invitations', 'Pending invitations - Laravel'],
     'confirm password' => ['/user/confirm-password', 'Confirm password - Laravel'],
     'block gallery' => ['/_block-gallery', 'Block gallery - Laravel'],
 ]);

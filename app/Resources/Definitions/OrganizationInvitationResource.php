@@ -55,6 +55,16 @@ final class OrganizationInvitationResource implements ResourceContract
         return ['email', 'role'];
     }
 
+    /**
+     * Alphabetical by address: an invitation list is read to find one address, not to see which arrived first.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['email', 'role', 'expires_at', 'created_at'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof OrganizationInvitation);

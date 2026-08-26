@@ -9,6 +9,7 @@ use App\Data\SearchResultData;
 use App\Models\User;
 use App\Resources\ResourceContract;
 use App\Resources\ResourceRegistry;
+use App\Support\ResourceQuery;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -103,45 +104,18 @@ final readonly class SearchResources
     }
 
     /**
+     * The matching itself — escaped wildcards, dotted relations and all — is the
+     * same code the list screens run, so a term behaves identically wherever it
+     * is typed. The palette asks for no ordering: five hits are five hits.
+     *
      * @return Builder<covariant Model>
      */
     private function matching(ResourceContract $resource, string $term): Builder
     {
-        $columns = $resource->searchable();
-
-        // A term is user input, so its wildcards are escaped: searching for
-        // "100%" must not turn into a match-everything pattern.
-        $like = '%'.addcslashes($term, '%_\\').'%';
-
         $query = $resource->scopedQuery();
 
-        $relations = [];
+        $query->with(ResourceQuery::relationsIn($resource->searchable()));
 
-        foreach ($columns as $column) {
-            if (str_contains($column, '.')) {
-                $relations[] = explode('.', $column, 2)[0];
-            }
-        }
-
-        if ($relations !== []) {
-            $query->with(array_unique($relations));
-        }
-
-        return $query->where(function (Builder $inner) use ($columns, $like): void {
-            foreach ($columns as $column) {
-                if (str_contains($column, '.')) {
-                    [$relation, $field] = explode('.', $column, 2);
-
-                    $inner->orWhereHas(
-                        $relation,
-                        fn (Builder $related): Builder => $related->where($field, 'like', $like),
-                    );
-
-                    continue;
-                }
-
-                $inner->orWhere($column, 'like', $like);
-            }
-        });
+        return ResourceQuery::forTerm($term, self::PER_GROUP)->applyTo($query, $resource);
     }
 }

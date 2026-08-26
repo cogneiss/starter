@@ -115,6 +115,19 @@ authenticator: string | null,
 created_at_diff: string | null,
 last_used_at_diff: string | null,
 };
+export type ResourceList = {
+rows: Array<unknown>,
+total: number,
+pages: number,
+query: ResourceQuery,
+};
+export type ResourceQuery = {
+q: string,
+sort: string | null,
+dir: 'asc' | 'desc',
+page: number,
+per: number,
+};
 export type SearchGroup = {
 key: string,
 label: string,

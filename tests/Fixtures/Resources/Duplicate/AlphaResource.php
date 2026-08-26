@@ -50,6 +50,14 @@ final class AlphaResource implements ResourceContract
         return ['name'];
     }
 
+    /**
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['name'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof User);

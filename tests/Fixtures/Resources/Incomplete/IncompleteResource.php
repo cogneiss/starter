@@ -63,6 +63,16 @@ final class IncompleteResource implements ResourceContract
         return ['nickname'];
     }
 
+    /**
+     * A column that is not a column, so ordering by it would fail at query time. The guard has to say so before a request does.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['nickname'];
+    }
+
     public function recordLabel(Model $record): string
     {
         return '';

@@ -58,6 +58,16 @@ final class OrganizationResource implements ResourceContract
         return ['name', 'slug'];
     }
 
+    /**
+     * One organization is ever in reach, so the order is a formality.
+     *
+     * @return list<string>
+     */
+    public function sortable(): array
+    {
+        return ['name', 'slug', 'created_at'];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof Organization);

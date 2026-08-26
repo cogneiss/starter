@@ -44,8 +44,12 @@ arch('verticals never write')
         CreateOrganizationInvitation::class,
     ]);
 
+// A controller is an endpoint, not a service: nothing else in the application
+// may call one. The concerns namespace is the exception by definition — a trait
+// exists to be used, and it is used by controllers only.
 arch('controllers')
     ->expect('App\Http\Controllers')
-    ->not->toBeUsed();
+    ->not->toBeUsed()
+    ->ignoring('App\Http\Controllers\Concerns');
 
 //
