@@ -8,6 +8,7 @@ use App\Data\AiConfirmTokenData;
 use App\Models\AiConfirmToken;
 use App\Policies\AiConfirmTokenPolicy;
 use App\Resources\ResourceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 final class AiConfirmTokenResource implements ResourceContract
@@ -44,5 +45,40 @@ final class AiConfirmTokenResource implements ResourceContract
     public function url(Model $record): string
     {
         return route('dashboard');
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function searchable(): array
+    {
+        return ['summary', 'action'];
+    }
+
+    public function recordLabel(Model $record): string
+    {
+        assert($record instanceof AiConfirmToken);
+
+        return $record->summary;
+    }
+
+    public function recordDescription(Model $record): string
+    {
+        assert($record instanceof AiConfirmToken);
+
+        return $record->action;
+    }
+
+    /**
+     * A confirmation is addressed to one person, so the organization scope the
+     * model carries is not enough on its own: the acting user is part of the
+     * where clause, matching what AiConfirmTokenPolicy::view allows. No signed
+     * in user means no rows.
+     *
+     * @return Builder<AiConfirmToken>
+     */
+    public function scopedQuery(): Builder
+    {
+        return AiConfirmToken::query()->where('user_id', auth()->id());
     }
 }

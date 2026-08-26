@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Resources\ResourceContract;
 use App\Support\AiAvailability;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Laravel\Ai\Ai;
@@ -171,4 +174,66 @@ function classesIn(string $directory, string $namespace): array
     sort($classes);
 
     return $classes;
+}
+
+/**
+ * The convention guard for a resource's search surface, as one body of code.
+ *
+ * An interface can only insist that a method exists. It cannot insist that
+ * `searchable()` names real columns or that `recordLabel()` returns anything, so
+ * a definition can satisfy `ResourceContract` and still be useless — or worse,
+ * blow up at query time on a column that was never there. This returns one
+ * string per defect, and the shipped definitions and the deliberately incomplete
+ * fixture are both judged by it.
+ *
+ * @return list<string>
+ */
+function resourceSearchDefects(ResourceContract $resource): array
+{
+    $defects = [];
+
+    $model = new ($resource->model());
+    $columns = $resource->searchable();
+
+    if ($columns === []) {
+        $defects[] = 'searchable() is empty, so no term can ever match this resource';
+    }
+
+    foreach ($columns as $column) {
+        if (! str_contains($column, '.')) {
+            if (! Schema::hasColumn($model->getTable(), $column)) {
+                $defects[] = "searchable() names '{$column}', which is not a column on {$model->getTable()}";
+            }
+
+            continue;
+        }
+
+        [$name, $field] = explode('.', $column, 2);
+
+        if (! method_exists($model, $name)) {
+            $defects[] = "searchable() names '{$column}', but ".$model::class." has no {$name} relation";
+
+            continue;
+        }
+
+        $relation = $model->{$name}();
+
+        if (! $relation instanceof Relation) {
+            $defects[] = "searchable() names '{$column}', but {$name}() is not a relation";
+
+            continue;
+        }
+
+        $table = $relation->getRelated()->getTable();
+
+        if (! Schema::hasColumn($table, $field)) {
+            $defects[] = "searchable() names '{$column}', which is not a column on {$table}";
+        }
+    }
+
+    if (mb_trim($resource->recordLabel($resource->model()::factory()->make())) === '') {
+        $defects[] = 'recordLabel() is empty, so a hit would render as a blank row';
+    }
+
+    return $defects;
 }

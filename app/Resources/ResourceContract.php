@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resources;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\Data;
 
@@ -46,4 +47,31 @@ interface ResourceContract
      * In-app path a record navigates to. Consumed by links, notifications and breadcrumbs.
      */
     public function url(Model $record): string;
+
+    /**
+     * Columns search matches against. A dotted entry ('user.name') matches
+     * through a belongsTo relation.
+     *
+     * @return list<string>
+     */
+    public function searchable(): array;
+
+    /**
+     * One-line title for a record in a result list.
+     */
+    public function recordLabel(Model $record): string;
+
+    /**
+     * Optional second line under the label.
+     */
+    public function recordDescription(Model $record): ?string;
+
+    /**
+     * Base query already narrowed to the acting organization. Scoping is
+     * query-level: a record outside the organization is not reachable, not
+     * merely hidden after the fact.
+     *
+     * @return Builder<covariant Model>
+     */
+    public function scopedQuery(): Builder;
 }

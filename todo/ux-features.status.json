@@ -1,0 +1,104 @@
+{
+    "plan": "UX feature layer (agnostic)",
+    "created": "2026-08-26",
+    "depends_on": "todo/resource-spine.status.json (registry), todo/ai-layer.status.json (blocks, doctor)",
+    "coverage_command": "herd coverage vendor/bin/pest --parallel --coverage --exactly=100.0 --testsuite=Unit,Feature",
+    "phases": [
+        {
+            "id": 1,
+            "name": "scoped search endpoint",
+            "status": "passing",
+            "command": "php artisan test --compact --filter=SearchResources"
+        },
+        {
+            "id": 2,
+            "name": "command palette",
+            "status": "failing",
+            "command": "php artisan test --compact tests/Browser/CommandPaletteTest.php"
+        },
+        {
+            "id": 3,
+            "name": "server-driven list kit",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"ResourceQuery|ListsResources\""
+        },
+        {
+            "id": 4,
+            "name": "faceted filters and url state",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"Facet|UrlRoundTrip\""
+        },
+        {
+            "id": 5,
+            "name": "columns, bulk actions, csv",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"BulkAction|CsvExport\""
+        },
+        {
+            "id": 6,
+            "name": "saved searches",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=SavedSearch"
+        },
+        {
+            "id": 7,
+            "name": "ux primitives",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"FriendlyError|ConfirmDialog|DetailDrawer\""
+        },
+        {
+            "id": 8,
+            "name": "motion and route announcer",
+            "status": "failing",
+            "command": "composer test:a11y"
+        },
+        {
+            "id": 9,
+            "name": "accessible brand palette",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=BrandPalette"
+        },
+        {
+            "id": 10,
+            "name": "realtime and notifications",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"Channel|Notification\""
+        },
+        {
+            "id": 11,
+            "name": "precognition parity gate",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=PrecognitionParity"
+        },
+        {
+            "id": 12,
+            "name": "onboarding and checklist",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Onboarding"
+        },
+        {
+            "id": 13,
+            "name": "bulk import and temp uploads",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=\"Import|TempUpload\""
+        },
+        {
+            "id": 14,
+            "name": "i18n",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=Locale"
+        },
+        {
+            "id": 15,
+            "name": "documentation",
+            "status": "failing",
+            "command": "php artisan wiki:lint && rg -q 'command palette' README.md"
+        },
+        {
+            "id": 16,
+            "name": "full gate green",
+            "status": "failing",
+            "command": "composer test"
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+diff --git a/app/Actions/SearchResources.php b/app/Actions/SearchResources.php
+index 03b61c2..e95e470 100644
+--- a/app/Actions/SearchResources.php
++++ b/app/Actions/SearchResources.php
+@@ -22,6 +22,7 @@
+  * may not view a resource gets no group for it, rather than a 403 that would
+  * take down the whole search because of one resource they cannot see.
+  */
++// no-op canary
+ final readonly class SearchResources
+ {
+     /**

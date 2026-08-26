@@ -13,6 +13,7 @@ use App\Http\Controllers\OrganizationInvitationAcceptanceController;
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationSwitchController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UserController;
@@ -32,6 +33,12 @@ Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
 Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(function (): void {
     Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
+
+    // Search... the command palette calls this on every keystroke, so it is
+    // throttled well above a human typing speed and well below a scraper's.
+    Route::get('search', SearchController::class)
+        ->middleware('throttle:60,1')
+        ->name('search');
 });
 
 Route::middleware(['auth', 'two-factor'])->group(function (): void {

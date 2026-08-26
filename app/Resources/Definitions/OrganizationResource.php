@@ -8,10 +8,14 @@ use App\Data\OrganizationData;
 use App\Models\Organization;
 use App\Policies\OrganizationPolicy;
 use App\Resources\ResourceContract;
+use App\Resources\ScopedToOrganization;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 final class OrganizationResource implements ResourceContract
 {
+    use ScopedToOrganization;
+
     public function key(): string
     {
         return 'organizations';
@@ -44,5 +48,40 @@ final class OrganizationResource implements ResourceContract
     public function url(Model $record): string
     {
         return route('organization.edit');
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function searchable(): array
+    {
+        return ['name', 'slug'];
+    }
+
+    public function recordLabel(Model $record): string
+    {
+        assert($record instanceof Organization);
+
+        return $record->name;
+    }
+
+    public function recordDescription(Model $record): string
+    {
+        assert($record instanceof Organization);
+
+        return $record->slug;
+    }
+
+    /**
+     * The only organization in reach is the one bound to the request. Anything
+     * else is another tenant.
+     *
+     * @return Builder<Organization>
+     */
+    public function scopedQuery(): Builder
+    {
+        return $this->scopedToOrganization(
+            fn (Organization $organization): Builder => Organization::query()->whereKey($organization->id),
+        );
     }
 }

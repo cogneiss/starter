@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace App\Resources\Definitions;
 
 use App\Data\UserData;
+use App\Models\Organization;
 use App\Models\User;
 use App\Resources\ResourceContract;
+use App\Resources\ScopedToOrganization;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 final class UserResource implements ResourceContract
 {
+    use ScopedToOrganization;
+
     public function key(): string
     {
         return 'users';
@@ -43,5 +48,40 @@ final class UserResource implements ResourceContract
     public function url(Model $record): string
     {
         return route('user-profile.edit');
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function searchable(): array
+    {
+        return ['name', 'email'];
+    }
+
+    public function recordLabel(Model $record): string
+    {
+        assert($record instanceof User);
+
+        return $record->name;
+    }
+
+    public function recordDescription(Model $record): string
+    {
+        assert($record instanceof User);
+
+        return $record->email;
+    }
+
+    /**
+     * Users are global rows, so the reachable set is the bound organization's
+     * membership — the pivot is the where clause.
+     *
+     * @return Builder<User>
+     */
+    public function scopedQuery(): Builder
+    {
+        return $this->scopedToOrganization(
+            fn (Organization $organization): Builder => $organization->users()->getQuery(),
+        );
     }
 }

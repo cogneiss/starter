@@ -12,6 +12,11 @@ final readonly class OrganizationMembershipPolicy
 {
     public function __construct(private OrganizationContext $context) {}
 
+    public function viewAny(User $user): bool
+    {
+        return $this->context->id() !== null && $user->can('members.view');
+    }
+
     public function view(User $user, OrganizationMembership $membership): bool
     {
         return $this->context->id() === $membership->organization_id && $user->can('members.view');

@@ -42,6 +42,10 @@ it('sends a record to an in-app path', function (ResourceContract $resource): vo
     expect($resource->url(new $model))->toStartWith(config()->string('app.url'));
 })->with('shipped resources');
 
+it('names real columns to search and labels a record', function (ResourceContract $resource): void {
+    expect(resourceSearchDefects($resource))->toBe([]);
+})->with('shipped resources');
+
 it('points at a policy that exists, or at nothing', function (ResourceContract $resource): void {
     $policy = $resource->policy();
 

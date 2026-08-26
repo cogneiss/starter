@@ -8,6 +8,7 @@ use App\Data\{{ class }}Data;
 use App\Models\{{ class }};
 use App\Policies\{{ class }}Policy;
 use App\Resources\ResourceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 final class {{ class }}Resource implements ResourceContract
@@ -44,5 +45,41 @@ final class {{ class }}Resource implements ResourceContract
     public function url(Model $record): string
     {
         return route('{{ kebab }}.create');
+    }
+
+    /**
+     * Columns search matches against. A dotted entry ('user.name') matches
+     * through a belongsTo relation. Every entry must be a real column.
+     *
+     * @return list<string>
+     */
+    public function searchable(): array
+    {
+        return ['name'];
+    }
+
+    public function recordLabel(Model $record): string
+    {
+        assert($record instanceof {{ class }});
+
+        return $record->name;
+    }
+
+    public function recordDescription(Model $record): ?string
+    {
+        assert($record instanceof {{ class }});
+
+        return null;
+    }
+
+    /**
+     * Narrow this to the acting organization with a where clause. Filtering
+     * records out after fetching them is not scoping.
+     *
+     * @return Builder<{{ class }}>
+     */
+    public function scopedQuery(): Builder
+    {
+        return {{ class }}::query();
     }
 }

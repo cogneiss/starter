@@ -115,6 +115,16 @@ authenticator: string | null,
 created_at_diff: string | null,
 last_used_at_diff: string | null,
 };
+export type SearchGroup = {
+key: string,
+label: string,
+results: SearchResult[],
+};
+export type SearchResult = {
+label: string,
+description: string | null,
+url: string,
+};
 export type User = {
 id: string,
 name: string,

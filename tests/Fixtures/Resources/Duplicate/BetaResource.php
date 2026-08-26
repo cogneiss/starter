@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Resources\Duplicate;
 use App\Data\UserData;
 use App\Models\User;
 use App\Resources\ResourceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 final class BetaResource implements ResourceContract
@@ -39,5 +40,35 @@ final class BetaResource implements ResourceContract
     public function url(Model $record): string
     {
         return route('dashboard');
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function searchable(): array
+    {
+        return ['name'];
+    }
+
+    public function recordLabel(Model $record): string
+    {
+        assert($record instanceof User);
+
+        return $record->name;
+    }
+
+    public function recordDescription(Model $record): string
+    {
+        assert($record instanceof User);
+
+        return $record->email;
+    }
+
+    /**
+     * @return Builder<User>
+     */
+    public function scopedQuery(): Builder
+    {
+        return User::query();
     }
 }
