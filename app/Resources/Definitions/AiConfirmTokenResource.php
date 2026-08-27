@@ -8,6 +8,7 @@ use App\Data\AiConfirmTokenData;
 use App\Models\AiConfirmToken;
 use App\Policies\AiConfirmTokenPolicy;
 use App\Resources\ResourceContract;
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -63,6 +64,14 @@ final class AiConfirmTokenResource implements ResourceContract
     public function sortable(): array
     {
         return ['created_at', 'summary', 'action'];
+    }
+
+    /**
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array
+    {
+        return [];
     }
 
     public function recordLabel(Model $record): string

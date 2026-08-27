@@ -5,14 +5,24 @@ declare(strict_types=1);
 namespace App\Resources\Definitions;
 
 use App\Data\OrganizationInvitationData;
+use App\Enums\FilterType;
+use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Models\Role;
 use App\Policies\OrganizationInvitationPolicy;
 use App\Resources\ResourceContract;
+use App\Support\OrganizationContext;
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 final class OrganizationInvitationResource implements ResourceContract
 {
+    /**
+     * @var list<string>|null
+     */
+    private ?array $roles = null;
+
     public function key(): string
     {
         return 'organization-invitations';
@@ -65,6 +75,30 @@ final class OrganizationInvitationResource implements ResourceContract
         return ['email', 'role', 'expires_at', 'created_at'];
     }
 
+    /**
+     * Which roles were offered, and which invitations are about to lapse.
+     *
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array
+    {
+        return [
+            new ResourceFilter(
+                key: 'role',
+                label: __('Role'),
+                type: FilterType::MultiSelect,
+                column: 'role',
+                options: $this->roles(),
+            ),
+            new ResourceFilter(
+                key: 'expires',
+                label: __('Expires'),
+                type: FilterType::DateRange,
+                column: 'expires_at',
+            ),
+        ];
+    }
+
     public function recordLabel(Model $record): string
     {
         assert($record instanceof OrganizationInvitation);
@@ -85,5 +119,36 @@ final class OrganizationInvitationResource implements ResourceContract
     public function scopedQuery(): Builder
     {
         return OrganizationInvitation::query();
+    }
+
+    /**
+     * The roles this organization actually has, read once per request: the
+     * facet counts ask for the filters several times over, and a role list does
+     * not change between two of those asks.
+     *
+     * @return list<string>
+     */
+    private function roles(): array
+    {
+        $organization = resolve(OrganizationContext::class)->get();
+
+        if (! $organization instanceof Organization) {
+            return [];
+        }
+
+        if ($this->roles !== null) {
+            return $this->roles;
+        }
+
+        $names = [];
+
+        foreach (Role::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('name')
+            ->get() as $role) {
+            $names[] = $role->name;
+        }
+
+        return $this->roles ??= $names;
     }
 }

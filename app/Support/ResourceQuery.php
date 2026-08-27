@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Data\ResourceFilterData;
 use App\Resources\ResourceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * allowlist, the page size against a fixed set, the page against arithmetic. A
  * hostile query string produces a boring list, never an error page and never a
  * column the screen was not meant to expose.
+ *
+ * @phpstan-import-type NormalizedFilterValue from ResourceFilter
+ * @phpstan-import-type SerializedFilterValue from ResourceFilter
  */
 #[TypeScript('ResourceQuery')]
 final class ResourceQuery extends Data
@@ -41,6 +45,7 @@ final class ResourceQuery extends Data
 
     /**
      * @param  'asc'|'desc'  $dir
+     * @param  array<string, NormalizedFilterValue>  $filters  Normalised values, keyed by filter key.
      */
     public function __construct(
         public string $q,
@@ -49,6 +54,8 @@ final class ResourceQuery extends Data
         public string $dir,
         public int $page,
         public int $per,
+        #[LiteralTypeScriptType('Record<string, string | boolean | Record<string, string | number> | Array<string>>')]
+        public array $filters = [],
     ) {}
 
     public static function fromRequest(Request $request, ResourceContract $resource): self
@@ -59,6 +66,7 @@ final class ResourceQuery extends Data
             dir: $request->query('dir') === 'desc' ? 'desc' : 'asc',
             page: self::page($request->query('page')),
             per: self::per($request->query('per')),
+            filters: self::filters($request->query('f'), $resource),
         );
     }
 
@@ -92,15 +100,128 @@ final class ResourceQuery extends Data
     }
 
     /**
+     * The query as URL parameters: everything a second person needs to see this
+     * exact list, and nothing the server would have assumed anyway.
+     *
+     * This is the half of the round trip `fromRequest()` cannot check on its
+     * own. A filtered, sorted, paged view is copied out of the address bar and
+     * opened again unchanged, because both directions go through here.
+     *
+     * @return array<string, string|int|array<string, SerializedFilterValue>>
+     */
+    public function toQueryParameters(ResourceContract $resource): array
+    {
+        $parameters = [];
+
+        if ($this->q !== '') {
+            $parameters['q'] = $this->q;
+        }
+
+        if ($this->sort !== null) {
+            $parameters['sort'] = $this->sort;
+            $parameters['dir'] = $this->dir;
+        }
+
+        if ($this->page > 1) {
+            $parameters['page'] = $this->page;
+        }
+
+        if ($this->per !== self::PER_OPTIONS[0]) {
+            $parameters['per'] = $this->per;
+        }
+
+        $filters = [];
+
+        foreach ($resource->filters() as $filter) {
+            $value = $this->filters[$filter->key] ?? null;
+
+            if ($value !== null) {
+                $filters[$filter->key] = $filter->serialize($value);
+            }
+        }
+
+        if ($filters !== []) {
+            $parameters['f'] = $filters;
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * The filters as the table draws them, each counted against the list minus
+     * its own constraint.
+     *
+     * @param  Builder<covariant Model>  $query  The list's query before any filter is applied.
+     * @return list<ResourceFilterData>
+     */
+    public function facets(Builder $query, ResourceContract $resource): array
+    {
+        $facets = [];
+
+        foreach ($resource->filters() as $filter) {
+            $counted = clone $query;
+
+            // The search term narrows every count: a facet describes the list
+            // in front of the person, not the table behind it.
+            $this->applyTerm($counted, $resource->searchable());
+
+            // Every other filter narrows the count; this one does not. Ticking
+            // an option must show what it would leave, not what it already left.
+            foreach ($resource->filters() as $other) {
+                $value = $this->filters[$other->key] ?? null;
+
+                if ($value !== null && $other->key !== $filter->key) {
+                    $other->apply($counted, $value);
+                }
+            }
+
+            $facets[] = ResourceFilterData::fromFilter(
+                $filter,
+                $filter->counts($counted),
+                $this->filters[$filter->key] ?? null,
+            );
+        }
+
+        return $facets;
+    }
+
+    /**
      * @param  Builder<covariant Model>  $query
      * @return Builder<covariant Model>
      */
     public function applyTo(Builder $query, ResourceContract $resource): Builder
     {
         $this->applyTerm($query, $resource->searchable());
+        $this->applyFilters($query, $resource);
         $this->applyOrder($query);
 
         return $query;
+    }
+
+    /**
+     * Only the filters the resource declares, only in shapes their type can
+     * mean. An unknown key, a range where a list belongs, a date that is not a
+     * date: all discarded here, so nothing downstream has to be suspicious.
+     *
+     * @return array<string, NormalizedFilterValue>
+     */
+    private static function filters(mixed $value, ResourceContract $resource): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $filters = [];
+
+        foreach ($resource->filters() as $filter) {
+            $normalized = $filter->normalize($value[$filter->key] ?? null);
+
+            if ($normalized !== null) {
+                $filters[$filter->key] = $normalized;
+            }
+        }
+
+        return $filters;
     }
 
     private static function term(mixed $value): string
@@ -146,6 +267,20 @@ final class ResourceQuery extends Data
         }
 
         return $allowed[0];
+    }
+
+    /**
+     * @param  Builder<covariant Model>  $query
+     */
+    private function applyFilters(Builder $query, ResourceContract $resource): void
+    {
+        foreach ($resource->filters() as $filter) {
+            $value = $this->filters[$filter->key] ?? null;
+
+            if ($value !== null) {
+                $filter->apply($query, $value);
+            }
+        }
     }
 
     /**

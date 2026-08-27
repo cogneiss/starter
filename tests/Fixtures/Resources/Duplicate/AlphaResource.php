@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Resources\Duplicate;
 use App\Data\UserData;
 use App\Models\User;
 use App\Resources\ResourceContract;
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -56,6 +57,14 @@ final class AlphaResource implements ResourceContract
     public function sortable(): array
     {
         return ['name'];
+    }
+
+    /**
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array
+    {
+        return [];
     }
 
     public function recordLabel(Model $record): string

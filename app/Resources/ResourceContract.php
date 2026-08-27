@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resources;
 
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\Data;
@@ -65,6 +66,15 @@ interface ResourceContract
      * @return list<string>
      */
     public function sortable(): array;
+
+    /**
+     * The filters a list of this resource offers, declared here rather than on
+     * the page: what `f[status]=active` means is a property of the resource, so
+     * two screens listing it cannot disagree.
+     *
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array;
 
     /**
      * One-line title for a record in a result list.

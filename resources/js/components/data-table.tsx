@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { DataTableFilters } from '@/components/data-table-filters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -30,9 +31,10 @@ const SEARCH_DEBOUNCE_MS = 300;
 /**
  * The shortest time the body stays marked pending. A local request can come
  * back in a few milliseconds, and a busy state that flickers reads as a glitch
- * rather than as progress.
+ * rather than as progress. Long enough to register as feedback, short enough
+ * that it is never the thing keeping a fast list waiting.
  */
-const PENDING_FLOOR_MS = 250;
+const PENDING_FLOOR_MS = 600;
 
 /**
  * A column may name the server-side column it sorts by. Nothing else is
@@ -149,6 +151,22 @@ export function DataTable<TRow extends RowData>({
                 value={term}
                 onChange={(event) => search(event.target.value)}
                 className="max-w-xs"
+            />
+
+            <DataTableFilters
+                filters={list.filters}
+                onChange={(key, value) => {
+                    const filters = { ...list.query.filters };
+
+                    if (value === null) {
+                        delete filters[key];
+                    } else {
+                        filters[key] = value;
+                    }
+
+                    visit({ filters });
+                }}
+                onClear={() => visit({ filters: {} })}
             />
 
             <Table aria-label={label}>
@@ -301,8 +319,8 @@ export function DataTable<TRow extends RowData>({
  * left out. A first visit has a clean address bar; every deviation from the
  * default is visible in it.
  */
-function parameters(query: ResourceQuery): Record<string, string | number> {
-    const parameters: Record<string, string | number> = {};
+function parameters(query: ResourceQuery): QueryParameters {
+    const parameters: QueryParameters = {};
 
     if (query.q !== '') {
         parameters.q = query.q;
@@ -317,5 +335,56 @@ function parameters(query: ResourceQuery): Record<string, string | number> {
         parameters.page = query.page;
     }
 
+    const filters: Record<string, string | string[] | Record<string, string>> =
+        {};
+
+    for (const [key, value] of Object.entries(query.filters)) {
+        const serialized = serialize(value);
+
+        if (serialized !== null) {
+            filters[key] = serialized;
+        }
+    }
+
+    if (Object.keys(filters).length > 0) {
+        parameters.f = filters;
+    }
+
     return parameters;
+}
+
+type QueryParameters = Record<
+    string,
+    string | number | Record<string, string | string[] | Record<string, string>>
+>;
+
+/**
+ * One filter value as the server writes it back out: booleans as `1`/`0`, bounds
+ * as strings with the empty ones left out. The two sides serialize the same way
+ * on purpose — a URL the table builds must parse back into the query it drew.
+ */
+function serialize(
+    value: ResourceQuery['filters'][string],
+): string | string[] | Record<string, string> | null {
+    if (typeof value === 'boolean') {
+        return value ? '1' : '0';
+    }
+
+    if (typeof value === 'string') {
+        return value;
+    }
+
+    if (Array.isArray(value)) {
+        return value.length === 0 ? null : value;
+    }
+
+    const bounds: Record<string, string> = {};
+
+    for (const [bound, edge] of Object.entries(value)) {
+        if (edge !== '') {
+            bounds[bound] = String(edge);
+        }
+    }
+
+    return Object.keys(bounds).length === 0 ? null : bounds;
 }

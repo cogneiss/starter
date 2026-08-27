@@ -42,6 +42,10 @@ trait ListsResources
 
         $listQuery = ResourceQuery::fromRequest($request, $resource);
 
+        // Counted before the filters narrow the query, so a facet can say what
+        // an option would leave rather than what the current one already left.
+        $facets = $listQuery->facets(clone $query, $resource);
+
         $page = $listQuery->applyTo($query, $resource)->paginate(
             perPage: $listQuery->per,
             page: $listQuery->page,
@@ -52,6 +56,7 @@ trait ListsResources
             total: $page->total(),
             pages: $page->lastPage(),
             query: $listQuery,
+            filters: $facets,
         );
     }
 

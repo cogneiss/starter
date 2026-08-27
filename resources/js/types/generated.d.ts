@@ -71,6 +71,7 @@ ip_address: string | null,
 last_active_diff: string,
 current: boolean,
 };
+export type FilterType = 'select' | 'multi-select' | 'boolean' | 'range' | 'date-range';
 export type Impersonator = {
 id: string,
 name: string,
@@ -115,11 +116,24 @@ authenticator: string | null,
 created_at_diff: string | null,
 last_used_at_diff: string | null,
 };
+export type ResourceFilter = {
+key: string,
+label: string,
+type: FilterType,
+options: ResourceFilterOption[],
+value: string | boolean | Record<string, string | number> | Array<string> | null,
+};
+export type ResourceFilterOption = {
+value: string,
+label: string,
+count: number,
+};
 export type ResourceList = {
 rows: Array<unknown>,
 total: number,
 pages: number,
 query: ResourceQuery,
+filters: ResourceFilter[],
 };
 export type ResourceQuery = {
 q: string,
@@ -127,6 +141,7 @@ sort: string | null,
 dir: 'asc' | 'desc',
 page: number,
 per: number,
+filters: Record<string, string | boolean | Record<string, string | number> | Array<string>>,
 };
 export type SearchGroup = {
 key: string,

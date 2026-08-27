@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Resources\Incomplete;
 use App\Data\UserData;
 use App\Models\User;
 use App\Resources\ResourceContract;
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -71,6 +72,14 @@ final class IncompleteResource implements ResourceContract
     public function sortable(): array
     {
         return ['nickname'];
+    }
+
+    /**
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array
+    {
+        return [];
     }
 
     public function recordLabel(Model $record): string

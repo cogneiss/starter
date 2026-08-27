@@ -9,6 +9,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Resources\ResourceContract;
 use App\Resources\ScopedToOrganization;
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -66,6 +67,14 @@ final class UserResource implements ResourceContract
     public function sortable(): array
     {
         return ['created_at', 'name', 'email'];
+    }
+
+    /**
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array
+    {
+        return [];
     }
 
     public function recordLabel(Model $record): string

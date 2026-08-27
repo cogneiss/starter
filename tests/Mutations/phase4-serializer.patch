@@ -1,0 +1,13 @@
+diff --git a/app/Support/ResourceQuery.php b/app/Support/ResourceQuery.php
+index 47afb6f..c97a7e5 100644
+--- a/app/Support/ResourceQuery.php
++++ b/app/Support/ResourceQuery.php
+@@ -135,7 +135,7 @@ public function toQueryParameters(ResourceContract $resource): array
+         foreach ($resource->filters() as $filter) {
+             $value = $this->filters[$filter->key] ?? null;
+ 
+-            if ($value !== null) {
++            if (is_string($value)) { // control disabled
+                 $filters[$filter->key] = $filter->serialize($value);
+             }
+         }

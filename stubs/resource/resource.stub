@@ -8,6 +8,8 @@ use App\Data\{{ class }}Data;
 use App\Models\{{ class }};
 use App\Policies\{{ class }}Policy;
 use App\Resources\ResourceContract;
+use App\Support\FilterType;
+use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -68,6 +70,26 @@ final class {{ class }}Resource implements ResourceContract
     public function sortable(): array
     {
         return ['created_at', 'name'];
+    }
+
+    /**
+     * The filters a list of this resource offers. Each one names a column and a
+     * type; the type decides how it is read from the URL and how it narrows the
+     * query, so a page never invents a filter of its own.
+     *
+     * @return list<ResourceFilter>
+     */
+    public function filters(): array
+    {
+        return [
+            // new ResourceFilter(
+            //     key: 'status',
+            //     label: __('Status'),
+            //     type: FilterType::Select,
+            //     column: 'status',
+            //     options: ['draft', 'published'],
+            // ),
+        ];
     }
 
     public function recordLabel(Model $record): string

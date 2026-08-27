@@ -22,6 +22,7 @@ final class ResourceListData extends Data
 {
     /**
      * @param  list<Data>  $rows
+     * @param  list<ResourceFilterData>  $filters
      */
     public function __construct(
         #[LiteralTypeScriptType('Array<unknown>')]
@@ -29,5 +30,6 @@ final class ResourceListData extends Data
         public int $total,
         public int $pages,
         public ResourceQuery $query,
+        public array $filters = [],
     ) {}
 }
