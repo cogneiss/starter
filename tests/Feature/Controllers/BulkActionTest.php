@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\MembershipStatus;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\OrganizationContext;
 use Inertia\Support\SessionKey;
@@ -60,6 +61,40 @@ it('applies a bulk action to the records the policy allows and names the ones it
     ]);
 
     expect($flash['toast']['message'])->toContain('Ada');
+});
+
+/**
+ * Someone who may read the members screen is not thereby allowed to empty it.
+ * The gate on the route says only that they may work with members at all; the
+ * policy is still asked about every record, and a record it refuses comes back
+ * named rather than quietly missing from the count.
+ */
+it('reports a record the policy refuses and leaves it alone', function (): void {
+    $viewer = User::factory()->forOrganization($this->organization, 'Member')->create(['name' => 'Di']);
+
+    resolve(OrganizationContext::class)->runAs($this->organization, function (): void {
+        Role::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('name', 'Member')
+            ->sole()
+            ->syncPermissions(['members.view']);
+    });
+
+    $this->actingAs($viewer)
+        ->fromRoute('organization-member.edit')
+        ->post(route('organization-member.bulk'), [
+            'action' => 'remove',
+            'ids' => [$this->first->id],
+        ])
+        ->assertRedirectToRoute('organization-member.edit');
+
+    expect(OrganizationMembership::query()->whereKey($this->first->id)->exists())->toBeTrue();
+
+    expect(session(SessionKey::FLASH_DATA)['bulk'])->toBe([[
+        'id' => (string) $this->first->id,
+        'label' => 'Bo',
+        'status' => 'unauthorized',
+    ]]);
 });
 
 it('suspends a selection', function (): void {

@@ -38,6 +38,15 @@ final class ResourceQuery extends Data
     public const array PER_OPTIONS = [10, 25, 50, 100];
 
     /**
+     * The query-string keys a list owns. Their presence is how the server knows
+     * the person has said something about this list themselves, which is what a
+     * default saved search must not override.
+     *
+     * @var list<string>
+     */
+    public const array PARAMETERS = ['q', 'sort', 'dir', 'page', 'per', 'f'];
+
+    /**
      * Long enough for a name or an address, short enough that the LIKE stays
      * cheap. Matches the search endpoint's own limit.
      */
@@ -60,13 +69,29 @@ final class ResourceQuery extends Data
 
     public static function fromRequest(Request $request, ResourceContract $resource): self
     {
+        return self::fromParameters($request->query(), $resource);
+    }
+
+    /**
+     * The same disbelief, applied to parameters that did not come from a URL.
+     *
+     * A saved search is a query string someone kept, and the table it describes
+     * keeps moving underneath it. Sending it back through here on the way out
+     * means a saved sort on a dropped column becomes the resource's default
+     * order and a saved filter key that no longer exists is discarded — the
+     * screen degrades to a valid view instead of failing on a stale bookmark.
+     *
+     * @param  array<array-key, mixed>  $parameters
+     */
+    public static function fromParameters(array $parameters, ResourceContract $resource): self
+    {
         return new self(
-            q: self::term($request->query('q')),
-            sort: self::sort($request->query('sort'), $resource),
-            dir: $request->query('dir') === 'desc' ? 'desc' : 'asc',
-            page: self::page($request->query('page')),
-            per: self::per($request->query('per')),
-            filters: self::filters($request->query('f'), $resource),
+            q: self::term($parameters['q'] ?? null),
+            sort: self::sort($parameters['sort'] ?? null, $resource),
+            dir: ($parameters['dir'] ?? null) === 'desc' ? 'desc' : 'asc',
+            page: self::page($parameters['page'] ?? null),
+            per: self::per($parameters['per'] ?? null),
+            filters: self::filters($parameters['f'] ?? null, $resource),
         );
     }
 

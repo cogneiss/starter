@@ -6,10 +6,11 @@ use App\Models\AiAuditLog;
 use App\Models\Organization;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\Fixtures\Resources\Filters\ExportedList;
 
 beforeEach(function (): void {
-    Route::get('/audit-logs.csv', fn () => ExportedList::for(request()->query()));
+    Route::get('/audit-logs.csv', fn (): StreamedResponse => ExportedList::for(request()->query()));
 });
 
 /**
@@ -19,7 +20,7 @@ beforeEach(function (): void {
  * the bytes that leave the server, not on a count the caller could have taken
  * from anywhere.
  */
-it('writes only the acting organization\'s rows, however many the table holds', function (): void {
+it("writes only the acting organization's rows, however many the table holds", function (): void {
     $ours = Organization::factory()->create();
     $theirs = Organization::factory()->create();
 
@@ -55,7 +56,7 @@ it('streams rather than collecting, so the row count does not decide the memory'
 
     // Nothing is written until the stream is read: the response carries a
     // callback, not a body.
-    expect($response->baseResponse)->toBeInstanceOf(Symfony\Component\HttpFoundation\StreamedResponse::class)
+    expect($response->baseResponse)->toBeInstanceOf(StreamedResponse::class)
         ->and($response->headers->get('content-type'))->toContain('text/csv')
         ->and($response->streamedContent())->toContain('streamed-agent');
 });

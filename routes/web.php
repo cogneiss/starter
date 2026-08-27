@@ -14,6 +14,7 @@ use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberBulkController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationSwitchController;
+use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SocialAuthController;
@@ -76,6 +77,16 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
             ->name('organization-invitation.store');
         Route::delete('settings/invitations/{invitation}', [OrganizationInvitationController::class, 'destroy'])
             ->name('organization-invitation.destroy');
+
+        // Saved Searches...
+        Route::post('settings/saved-searches', [SavedSearchController::class, 'store'])
+            ->name('saved-search.store');
+        Route::get('settings/saved-searches/{search}', [SavedSearchController::class, 'show'])
+            ->name('saved-search.show');
+        Route::patch('settings/saved-searches/{search}', [SavedSearchController::class, 'update'])
+            ->name('saved-search.update');
+        Route::delete('settings/saved-searches/{search}', [SavedSearchController::class, 'destroy'])
+            ->name('saved-search.destroy');
 
         // Organization Switch...
         Route::put('organization-switch', [OrganizationSwitchController::class, 'update'])

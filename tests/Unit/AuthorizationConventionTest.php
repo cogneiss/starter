@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Gate;
  * `Class@method` entry here with a comment saying why, never a blanket skip.
  */
 $exceptions = [
-    //
+    // A saved search is one person's own note about a list. Ownership is the
+    // whole of the question, so there is no permission to hold and none to
+    // check — the method still checks the organization.
+    'App\Policies\SavedSearchPolicy@manage',
 ];
 
 it('gives every organization-scoped model a policy', function (): void {

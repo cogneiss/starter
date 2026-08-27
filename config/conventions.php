@@ -11,6 +11,7 @@ use App\Models\ImpersonationLog;
 use App\Models\LoginHistory;
 use App\Models\Role;
 use App\Models\RoleTemplate;
+use App\Models\SavedSearch;
 use App\Models\SocialAccount;
 
 return [
@@ -30,6 +31,7 @@ return [
         LoginHistory::class => 'Append-only audit table, read through UserData, never linked.',
         Role::class => 'pending resource adapter',
         RoleTemplate::class => 'Seed data for new organizations, not a user-facing record.',
+        SavedSearch::class => "One person's kept views of a list, offered by the list itself, never listed as records of their own.",
         SocialAccount::class => 'Provider link shown on the profile page, never listed on its own.',
     ],
 ];

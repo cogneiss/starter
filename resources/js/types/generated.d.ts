@@ -71,6 +71,7 @@ ip_address: string | null,
 last_active_diff: string,
 current: boolean,
 };
+export type BulkMembershipAction = 'suspend' | 'reactivate' | 'remove';
 export type FilterType = 'select' | 'multi-select' | 'boolean' | 'range' | 'date-range';
 export type Impersonator = {
 id: string,
@@ -134,6 +135,7 @@ total: number,
 pages: number,
 query: ResourceQuery,
 filters: ResourceFilter[],
+searches: SavedSearch[],
 };
 export type ResourceQuery = {
 q: string,
@@ -142,6 +144,12 @@ dir: 'asc' | 'desc',
 page: number,
 per: number,
 filters: Record<string, string | boolean | Record<string, string | number> | Array<string>>,
+};
+export type SavedSearch = {
+id: string,
+name: string,
+isDefault: boolean,
+query: ResourceQuery,
 };
 export type SearchGroup = {
 key: string,

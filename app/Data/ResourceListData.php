@@ -23,6 +23,7 @@ final class ResourceListData extends Data
     /**
      * @param  list<Data>  $rows
      * @param  list<ResourceFilterData>  $filters
+     * @param  list<SavedSearchData>  $searches  This person's kept views of this list.
      */
     public function __construct(
         #[LiteralTypeScriptType('Array<unknown>')]
@@ -31,5 +32,6 @@ final class ResourceListData extends Data
         public int $pages,
         public ResourceQuery $query,
         public array $filters = [],
+        public array $searches = [],
     ) {}
 }

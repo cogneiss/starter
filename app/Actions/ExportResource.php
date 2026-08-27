@@ -43,7 +43,7 @@ final readonly class ExportResource
         return response()->streamDownload(function () use ($columns, $rows): void {
             $handle = fopen('php://output', 'w') ?: throw new RuntimeException('Cannot open the response stream.');
 
-            fputcsv($handle, array_column($columns, 'label'));
+            fputcsv($handle, array_column($columns, 'label'), escape: '\\');
 
             foreach ($rows->lazyById(self::CHUNK) as $record) {
                 $fields = [];
@@ -52,7 +52,7 @@ final readonly class ExportResource
                     $fields[] = $column->valueFor($record);
                 }
 
-                fputcsv($handle, $fields);
+                fputcsv($handle, $fields, escape: '\\');
             }
 
             fclose($handle);

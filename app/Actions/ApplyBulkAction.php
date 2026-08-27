@@ -59,8 +59,11 @@ final readonly class ApplyBulkAction
         $results = [];
 
         foreach ($records as $record) {
+            $key = $record->getKey();
+            assert(is_string($key) || is_int($key));
+
             $results[] = [
-                'id' => (string) $record->getKey(),
+                'id' => (string) $key,
                 'label' => $resource->recordLabel($record),
                 'status' => $this->apply($record, $ability, $act, $user),
             ];

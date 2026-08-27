@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Resources\ResourceRegistry;
 use Illuminate\Database\Eloquent\Model;
@@ -44,6 +45,25 @@ it('sends a record to an in-app path', function (ResourceContract $resource): vo
 
 it('names real columns to search and labels a record', function (ResourceContract $resource): void {
     expect(resourceSearchDefects($resource))->toBe([]);
+})->with('shipped resources');
+
+/**
+ * An export is written from these columns, so a resource with none of them
+ * exports empty rows, and one that names the same key twice writes the same
+ * value into two headings.
+ */
+it('names each export column once and labels it', function (ResourceContract $resource): void {
+    $columns = $resource->columns();
+
+    $keys = array_map(fn (ResourceColumn $column): string => $column->key, $columns);
+
+    expect($columns)->not->toBeEmpty()
+        ->and($keys)->toBe(array_values(array_unique($keys)));
+
+    foreach ($columns as $column) {
+        expect(mb_trim($column->key))->not->toBe('')
+            ->and(mb_trim($column->label))->not->toBe('');
+    }
 })->with('shipped resources');
 
 it('points at a policy that exists, or at nothing', function (ResourceContract $resource): void {

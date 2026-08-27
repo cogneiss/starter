@@ -9,6 +9,10 @@ import {
 import { ArrowDown, ArrowUp, ChevronsUpDown, Columns3 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { DataTableFilters } from '@/components/data-table-filters';
+import {
+    DataTableViews,
+    type QueryParameters,
+} from '@/components/data-table-views';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -123,6 +127,11 @@ type DataTableProps<TRow extends RowData> = {
     exportable?: boolean;
     /** The actions a selection can be put through, and where to send them. */
     bulk?: BulkConfiguration;
+    /**
+     * The resource key views are saved against. Given, the table offers to keep
+     * the current query by name; omitted, it does not.
+     */
+    saveable?: string;
 };
 
 /**
@@ -148,6 +157,7 @@ export function DataTable<TRow extends RowData>({
     empty = 'Nothing matches that search.',
     exportable = false,
     bulk,
+    saveable,
 }: DataTableProps<TRow>) {
     const page = usePage();
     const path = page.url.split('?')[0];
@@ -352,6 +362,14 @@ export function DataTable<TRow extends RowData>({
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+                {saveable !== undefined && (
+                    <DataTableViews
+                        searches={list.searches}
+                        resource={saveable}
+                        current={parameters(list.query)}
+                    />
+                )}
 
                 {exportable && (
                     <Button
@@ -822,11 +840,6 @@ function parameters(query: ResourceQuery): QueryParameters {
 
     return parameters;
 }
-
-type QueryParameters = Record<
-    string,
-    string | number | Record<string, string | string[] | Record<string, string>>
->;
 
 /**
  * One filter value as the server writes it back out: booleans as `1`/`0`, bounds

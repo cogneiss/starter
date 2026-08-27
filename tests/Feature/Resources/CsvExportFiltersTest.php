@@ -6,11 +6,12 @@ use App\Models\AiAuditLog;
 use App\Models\Organization;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\Fixtures\Resources\Filters\AuditLogFixture;
 use Tests\Fixtures\Resources\Filters\ExportedList;
 
 beforeEach(function (): void {
-    Route::get('/audit-logs.csv', fn () => ExportedList::for(request()->query()));
+    Route::get('/audit-logs.csv', fn (): StreamedResponse => ExportedList::for(request()->query()));
 
     $this->organization = Organization::factory()->create();
 

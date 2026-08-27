@@ -6,10 +6,14 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Actions\ExportResource;
 use App\Data\ResourceListData;
+use App\Data\SavedSearchData;
+use App\Models\SavedSearch;
+use App\Resources\ResourceContract;
 use App\Resources\ResourceRegistry;
 use App\Support\ResourceQuery;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Spatie\LaravelData\Data;
@@ -42,7 +46,12 @@ trait ListsResources
             $shape($query);
         }
 
-        $listQuery = ResourceQuery::fromRequest($request, $resource);
+        $searches = SavedSearch::ownedBy($request->user())
+            ->where('resource', $resource->key())
+            ->orderBy('name')
+            ->get();
+
+        $listQuery = $this->listQuery($request, $resource, $searches);
 
         // Counted before the filters narrow the query, so a facet can say what
         // an option would leave rather than what the current one already left.
@@ -59,6 +68,9 @@ trait ListsResources
             pages: $page->lastPage(),
             query: $listQuery,
             filters: $facets,
+            searches: array_values($searches->map(
+                fn (SavedSearch $search): SavedSearchData => SavedSearchData::fromModel($search, $resource),
+            )->all()),
         );
     }
 
@@ -95,5 +107,29 @@ trait ListsResources
     protected function findListed(string $key, string $id): Model
     {
         return resolve(ResourceRegistry::class)->get($key)->scopedQuery()->findOrFail($id);
+    }
+
+    /**
+     * What this request asked for, or — on a first visit — what the person said
+     * they usually want.
+     *
+     * A default only speaks when the URL is silent. The moment the address bar
+     * carries any of the list's own parameters the person has said something
+     * about this list, and a stored preference must not talk over it; that is
+     * also what stops a default from snapping the list back on every sort click.
+     *
+     * @param  Collection<int, SavedSearch>  $searches
+     */
+    private function listQuery(Request $request, ResourceContract $resource, Collection $searches): ResourceQuery
+    {
+        if (! $request->hasAny(ResourceQuery::PARAMETERS)) {
+            $default = $searches->first(fn (SavedSearch $search): bool => $search->is_default);
+
+            if ($default instanceof SavedSearch) {
+                return ResourceQuery::fromParameters($default->query, $resource);
+            }
+        }
+
+        return ResourceQuery::fromRequest($request, $resource);
     }
 }

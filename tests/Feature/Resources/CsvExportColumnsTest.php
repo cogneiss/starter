@@ -8,10 +8,11 @@ use App\Models\User;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\Fixtures\Resources\Filters\ExportedList;
 
 beforeEach(function (): void {
-    Route::get('/audit-logs.csv', fn () => ExportedList::for(request()->query()));
+    Route::get('/audit-logs.csv', fn (): StreamedResponse => ExportedList::for(request()->query()));
 
     $organization = Organization::factory()->create();
 

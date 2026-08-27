@@ -101,6 +101,7 @@ export default function Edit({ members, roles = [] }: Props) {
                         rowId={(member) => member.id}
                         empty="No member matches that search."
                         exportable
+                        saveable="organization-members"
                         bulk={{
                             actions: bulkActions,
                             submit: (action, ids, all) =>

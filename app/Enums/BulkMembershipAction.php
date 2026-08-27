@@ -25,14 +25,4 @@ enum BulkMembershipAction: string
             self::Remove => 'delete',
         };
     }
-
-    /**
-     * Whether undoing this needs someone to be re-invited. The screen asks for a
-     * confirmation before a destructive action; the server does not care, which
-     * is why this says nothing about authorisation.
-     */
-    public function destructive(): bool
-    {
-        return $this === self::Remove;
-    }
 }

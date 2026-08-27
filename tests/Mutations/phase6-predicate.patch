@@ -1,0 +1,13 @@
+diff --git a/app/Models/SavedSearch.php b/app/Models/SavedSearch.php
+index 6bb8d13..0d6e3f2 100644
+--- a/app/Models/SavedSearch.php
++++ b/app/Models/SavedSearch.php
+@@ -53,7 +53,7 @@ final class SavedSearch extends Model
+      */
+     public static function ownedBy(?Authenticatable $user): Builder
+     {
+-        return self::query()->where('user_id', $user?->getAuthIdentifier());
++        return self::query()->withoutGlobalScopes(); // control disabled
+     }
+ 
+     /**
