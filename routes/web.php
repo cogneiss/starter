@@ -11,6 +11,7 @@ use App\Http\Controllers\OrganizationAiUsageController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
 use App\Http\Controllers\OrganizationInvitationController;
+use App\Http\Controllers\OrganizationMemberBulkController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\SearchController;
@@ -59,7 +60,7 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
         // Organization Members...
         Route::get('settings/members', [OrganizationMemberController::class, 'edit'])
             ->name('organization-member.edit');
-        Route::post('settings/members/bulk', [OrganizationMemberController::class, 'bulk'])
+        Route::post('settings/members/bulk', OrganizationMemberBulkController::class)
             ->name('organization-member.bulk');
         Route::patch('settings/members/{membership}', [OrganizationMemberController::class, 'update'])
             ->name('organization-member.update');

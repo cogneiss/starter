@@ -56,7 +56,7 @@ it('applies a bulk action to the records the policy allows and names the ones it
     expect($refused)->toBe([
         'id' => (string) $this->ownMembership->id,
         'label' => 'Ada',
-        'status' => 'unauthorized',
+        'status' => 'refused',
     ]);
 
     expect($flash['toast']['message'])->toContain('Ada');

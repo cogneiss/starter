@@ -7,6 +7,7 @@ namespace {{ namespace }}\Resources\Definitions;
 use App\Data\{{ class }}Data;
 use App\Models\{{ class }};
 use App\Policies\{{ class }}Policy;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Support\FilterType;
 use App\Support\ResourceFilter;
@@ -89,6 +90,20 @@ final class {{ class }}Resource implements ResourceContract
             //     column: 'status',
             //     options: ['draft', 'published'],
             // ),
+        ];
+    }
+
+    /**
+     * The columns an export writes, in order. A column may name the ability a
+     * person needs to see it, so a CSV cannot hand out a field the table would
+     * have withheld.
+     *
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [
+            new ResourceColumn(key: 'name', label: __('Name')),
         ];
     }
 
