@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Resources\Filters;
 use App\Enums\AiAuditStatus;
 use App\Enums\FilterType;
 use App\Models\AiAuditLog;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -110,6 +111,23 @@ final class AuditLogResource implements ResourceContract
                 type: FilterType::DateRange,
                 column: 'created_at',
             ),
+        ];
+    }
+
+    /**
+     * Four columns anyone listing may see, and one behind an ability: a token
+     * count is a cost figure, and not every member is shown costs.
+     *
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [
+            new ResourceColumn(key: 'agent', label: 'Agent'),
+            new ResourceColumn(key: 'status', label: 'Status'),
+            new ResourceColumn(key: 'created_at', label: 'Used'),
+            new ResourceColumn(key: 'user.name', label: 'Person'),
+            new ResourceColumn(key: 'total_tokens', label: 'Tokens', ability: 'audit-logs.view-tokens'),
         ];
     }
 

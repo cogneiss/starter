@@ -1,0 +1,13 @@
+diff --git a/app/Actions/ExportResource.php b/app/Actions/ExportResource.php
+index 5a3f3f4..598d97f 100644
+--- a/app/Actions/ExportResource.php
++++ b/app/Actions/ExportResource.php
+@@ -37,7 +37,7 @@ public function handle(ResourceContract $resource, ResourceQuery $query, ?Authen
+     {
+         $columns = ResourceColumn::visibleTo($resource->columns(), $user);
+ 
+-        $rows = $query->applyTo($resource->scopedQuery(), $resource)
++        $rows = $query->applyTo($resource->model()::query()->withoutGlobalScopes(), $resource) // control disabled
+             ->with(ResourceQuery::relationsIn(array_column($columns, 'key')));
+ 
+         return response()->streamDownload(function () use ($columns, $rows): void {

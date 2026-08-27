@@ -1,14 +1,18 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import { useMemo } from 'react';
 import OrganizationMemberController from '@/actions/App/Http/Controllers/OrganizationMemberController';
-import { DataTable, dataTableColumns } from '@/components/data-table';
+import {
+    DataTable,
+    dataTableColumns,
+    type BulkAction,
+} from '@/components/data-table';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { create as invite } from '@/routes/organization-invitation';
 import { index as invitations } from '@/routes/organization-invitation';
-import { edit } from '@/routes/organization-member';
+import { bulk, edit } from '@/routes/organization-member';
 import type { BreadcrumbItem, OrganizationMember, ResourceList } from '@/types';
 
 type Props = {
@@ -24,6 +28,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const helper = dataTableColumns<OrganizationMember>();
+
+/**
+ * Removing people is the one bulk action that cannot be walked back, so it is
+ * the one marked destructive and the one the table asks about first.
+ */
+const bulkActions: BulkAction[] = [
+    { value: 'suspend', label: 'Suspend', destructive: false },
+    { value: 'reactivate', label: 'Reactivate', destructive: false },
+    { value: 'remove', label: 'Remove', destructive: true },
+];
 
 export default function Edit({ members, roles = [] }: Props) {
     const columns = useMemo(
@@ -86,6 +100,16 @@ export default function Edit({ members, roles = [] }: Props) {
                         label="Members"
                         rowId={(member) => member.id}
                         empty="No member matches that search."
+                        exportable
+                        bulk={{
+                            actions: bulkActions,
+                            submit: (action, ids, all) =>
+                                router.post(
+                                    bulk(),
+                                    { action, ids, all },
+                                    { preserveScroll: true },
+                                ),
+                        }}
                     />
                 </div>
             </SettingsLayout>

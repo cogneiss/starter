@@ -59,6 +59,8 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
         // Organization Members...
         Route::get('settings/members', [OrganizationMemberController::class, 'edit'])
             ->name('organization-member.edit');
+        Route::post('settings/members/bulk', [OrganizationMemberController::class, 'bulk'])
+            ->name('organization-member.bulk');
         Route::patch('settings/members/{membership}', [OrganizationMemberController::class, 'update'])
             ->name('organization-member.update');
         Route::delete('settings/members/{membership}', [OrganizationMemberController::class, 'destroy'])

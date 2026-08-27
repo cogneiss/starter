@@ -10,6 +10,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\Role;
 use App\Policies\OrganizationInvitationPolicy;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Support\OrganizationContext;
 use App\Support\ResourceFilter;
@@ -96,6 +97,18 @@ final class OrganizationInvitationResource implements ResourceContract
                 type: FilterType::DateRange,
                 column: 'expires_at',
             ),
+        ];
+    }
+
+    /**
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [
+            new ResourceColumn(key: 'email', label: __('Email')),
+            new ResourceColumn(key: 'role', label: __('Role')),
+            new ResourceColumn(key: 'expires_at', label: __('Expires')),
         ];
     }
 

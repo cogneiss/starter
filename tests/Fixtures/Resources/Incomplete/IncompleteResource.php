@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Resources\Incomplete;
 
 use App\Data\UserData;
 use App\Models\User;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -78,6 +79,17 @@ final class IncompleteResource implements ResourceContract
      * @return list<ResourceFilter>
      */
     public function filters(): array
+    {
+        return [];
+    }
+
+    /**
+     * Declares nothing to export, which is the same kind of stub the search
+     * methods are: present because PHP demands it, saying nothing true.
+     *
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
     {
         return [];
     }

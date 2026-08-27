@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Actions\ExportResource;
 use App\Data\ResourceListData;
 use App\Resources\ResourceRegistry;
 use App\Support\ResourceQuery;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Spatie\LaravelData\Data;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Search, sort and pagination for a listed resource, once.
@@ -57,6 +59,30 @@ trait ListsResources
             pages: $page->lastPage(),
             query: $listQuery,
             filters: $facets,
+        );
+    }
+
+    /**
+     * Whether this request asked for the list as a spreadsheet rather than a
+     * screen. The same URL with the same query string answers both, so an export
+     * cannot drift away from the filters the person is looking at.
+     */
+    protected function exportsCsv(Request $request): bool
+    {
+        return in_array('text/csv', $request->getAcceptableContentTypes(), true);
+    }
+
+    /**
+     * The list this request describes, streamed as CSV.
+     */
+    protected function exportResource(string $key, Request $request): StreamedResponse
+    {
+        $resource = resolve(ResourceRegistry::class)->get($key);
+
+        return resolve(ExportResource::class)->handle(
+            $resource,
+            ResourceQuery::fromRequest($request, $resource),
+            $request->user(),
         );
     }
 

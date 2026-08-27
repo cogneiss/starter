@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Resources\Duplicate;
 
 use App\Data\UserData;
 use App\Models\User;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,6 +66,14 @@ final class AlphaResource implements ResourceContract
     public function filters(): array
     {
         return [];
+    }
+
+    /**
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [new ResourceColumn(key: 'name', label: 'Name')];
     }
 
     public function recordLabel(Model $record): string

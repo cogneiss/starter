@@ -7,6 +7,7 @@ namespace App\Resources\Definitions;
 use App\Data\OrganizationData;
 use App\Models\Organization;
 use App\Policies\OrganizationPolicy;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Resources\ScopedToOrganization;
 use App\Support\ResourceFilter;
@@ -75,6 +76,18 @@ final class OrganizationResource implements ResourceContract
     public function filters(): array
     {
         return [];
+    }
+
+    /**
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [
+            new ResourceColumn(key: 'name', label: __('Name')),
+            new ResourceColumn(key: 'slug', label: __('Slug')),
+            new ResourceColumn(key: 'created_at', label: __('Created')),
+        ];
     }
 
     public function recordLabel(Model $record): string

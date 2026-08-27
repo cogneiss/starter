@@ -10,6 +10,7 @@ use App\Enums\MembershipStatus;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Policies\OrganizationMembershipPolicy;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Resources\ScopedToOrganization;
 use App\Support\ResourceFilter;
@@ -98,6 +99,19 @@ final class OrganizationMemberResource implements ResourceContract
                 type: FilterType::DateRange,
                 column: 'joined_at',
             ),
+        ];
+    }
+
+    /**
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [
+            new ResourceColumn(key: 'user.name', label: __('Name')),
+            new ResourceColumn(key: 'user.email', label: __('Email')),
+            new ResourceColumn(key: 'status', label: __('Status')),
+            new ResourceColumn(key: 'joined_at', label: __('Joined')),
         ];
     }
 

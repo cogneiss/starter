@@ -7,6 +7,7 @@ namespace App\Resources\Definitions;
 use App\Data\AiConfirmTokenData;
 use App\Models\AiConfirmToken;
 use App\Policies\AiConfirmTokenPolicy;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
 use App\Support\ResourceFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -72,6 +73,18 @@ final class AiConfirmTokenResource implements ResourceContract
     public function filters(): array
     {
         return [];
+    }
+
+    /**
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array
+    {
+        return [
+            new ResourceColumn(key: 'summary', label: __('Summary')),
+            new ResourceColumn(key: 'action', label: __('Action')),
+            new ResourceColumn(key: 'created_at', label: __('Raised')),
+        ];
     }
 
     public function recordLabel(Model $record): string

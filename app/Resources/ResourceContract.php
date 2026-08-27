@@ -77,6 +77,15 @@ interface ResourceContract
     public function filters(): array;
 
     /**
+     * The columns an export writes, in order. A column may name the ability a
+     * person needs to see it, so a CSV cannot hand out a field the table would
+     * have withheld.
+     *
+     * @return list<ResourceColumn>
+     */
+    public function columns(): array;
+
+    /**
      * One-line title for a record in a result list.
      */
     public function recordLabel(Model $record): string;
