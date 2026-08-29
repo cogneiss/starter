@@ -1,6 +1,12 @@
-import type { RequestPayload } from '@inertiajs/core';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+
+/**
+ * The body a patch carries, taken from the router's own signature rather than
+ * from `@inertiajs/core`: the core package is a transitive install, and reaching
+ * past the adapter into it is a dependency this application never declared.
+ */
+export type PatchPayload = NonNullable<Parameters<typeof router.patch>[1]>;
 
 /**
  * Inline edits that answer immediately and put themselves right if they fail.
@@ -17,7 +23,7 @@ import { useState } from 'react';
  */
 export function usePendingPatch<T>(): {
     pending: Record<string, T>;
-    patch: (key: string, value: T, url: string, data: RequestPayload) => void;
+    patch: (key: string, value: T, url: string, data: PatchPayload) => void;
 } {
     const [pending, setPending] = useState<Record<string, T>>({});
 
@@ -30,7 +36,7 @@ export function usePendingPatch<T>(): {
         });
     }
 
-    function patch(key: string, value: T, url: string, data: RequestPayload) {
+    function patch(key: string, value: T, url: string, data: PatchPayload) {
         setPending((current) => ({ ...current, [key]: value }));
 
         router.patch(url, data, {

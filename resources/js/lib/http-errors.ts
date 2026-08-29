@@ -1,4 +1,3 @@
-import type { Method, PendingVisit } from '@inertiajs/core';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { csrfToken } from '@/routes';
@@ -21,8 +20,12 @@ const SENTENCES: Record<number, string> = {
     429: 'That was a lot of requests at once. Wait a moment and try again.',
 };
 
+type VisitOptions = NonNullable<Parameters<typeof router.visit>[1]>;
+type Method = NonNullable<VisitOptions['method']>;
+type PendingVisit = Parameters<NonNullable<VisitOptions['onStart']>>[0];
+
 /** The sentence for a status, never a bare code and never a class name. */
-export function friendlyMessage(status: number): string {
+function friendlyMessage(status: number): string {
     if (SENTENCES[status]) {
         return SENTENCES[status];
     }

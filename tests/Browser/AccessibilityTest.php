@@ -138,3 +138,24 @@ it('is accessible while waiting on email verification', function (): void {
 
     assertAccessible('/verify-email', 'Email verification - Laravel');
 });
+
+/**
+ * The drawer is a layer over a list, and the announcer is a region every signed
+ * in page carries, so both are audited in place: axe checks the dialog role and
+ * its focus trap, and the announcer has to be there to announce anything.
+ */
+it('is accessible with the detail drawer open, alongside the route announcer', function (): void {
+    $organization = Organization::factory()->create();
+
+    $this->actingAs(User::factory()->forOrganization($organization)->create());
+
+    $member = User::factory()->forOrganization($organization, 'Member')->create(['name' => 'Marguerite Blythe']);
+    $membership = $organization->memberships()->where('user_id', $member->id)->sole();
+
+    visit('/settings/members?peek='.$membership->id)
+        ->wait(1)
+        ->assertPresent('[data-test="detail-drawer"]')
+        ->assertPresent('[data-test="route-announcer"]')
+        ->assertNoAccessibilityIssues(level: 3)
+        ->assertNoJavaScriptErrors();
+});

@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { ImpersonationBanner } from '@/components/impersonation-banner';
+import { RouteAnnouncer } from '@/components/route-announcer';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
 
@@ -16,6 +17,7 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
         return (
             <div className="flex min-h-screen w-full flex-col">
                 <ImpersonationBanner />
+                <RouteAnnouncer />
                 {children}
             </div>
         );
@@ -24,6 +26,7 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
     return (
         <div className="flex min-h-screen w-full flex-col">
             <ImpersonationBanner />
+            <RouteAnnouncer />
             <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>
         </div>
     );

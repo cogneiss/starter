@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Laravel\Ai\Ai;
 use Laravel\Ai\Contracts\Agent;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Process as SymfonyProcess;
 use Tests\TestCase;
 
 pest()->tia()->locally();
@@ -251,4 +252,54 @@ function resourceSearchDefects(ResourceContract $resource): array
     }
 
     return $defects;
+}
+
+/**
+ * Runs the shipped motion module and reports what it emits.
+ *
+ * The module is TypeScript with no PHP counterpart, so it is executed rather
+ * than read: Bun imports the same file the bundle imports and prints the style
+ * for every named transition. `$reduced` installs the `matchMedia` answer a
+ * browser gives when the operating system is asking for reduced motion, which
+ * is the only input the module takes.
+ *
+ * Symfony's process is used directly because the facade is faked for every
+ * test in this suite, and this one genuinely has to run a program.
+ *
+ * @return array<string, array<string, string>>
+ */
+function motionStyles(bool $reduced): array
+{
+    $script = str_replace(
+        ['__REDUCED__', '__MODULE__'],
+        [$reduced ? 'true' : 'false', base_path('resources/js/lib/motion.ts')],
+        <<<'JS'
+        globalThis.matchMedia = () => ({ matches: __REDUCED__ });
+
+        const { motionTransitions, transitionStyle } = await import('__MODULE__');
+
+        console.log(
+            JSON.stringify(
+                Object.fromEntries(
+                    Object.keys(motionTransitions).map((name) => [
+                        name,
+                        transitionStyle(name),
+                    ]),
+                ),
+            ),
+        );
+        JS
+    );
+
+    $process = new SymfonyProcess(['bun', '-e', $script], base_path());
+    $process->run();
+
+    if (! $process->isSuccessful()) {
+        throw new RuntimeException('bun could not run the motion module: '.$process->getErrorOutput());
+    }
+
+    /** @var array<string, array<string, string>> $styles */
+    $styles = json_decode(mb_trim($process->getOutput()), true, flags: JSON_THROW_ON_ERROR);
+
+    return $styles;
 }

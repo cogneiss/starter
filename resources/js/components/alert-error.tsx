@@ -9,7 +9,10 @@ export default function AlertError({
     title?: string;
 }) {
     return (
-        <Alert variant="destructive">
+        // Assertive, because an error interrupts what the reader was doing and
+        // is the one thing in this application allowed to. `AriaLiveGuardTest`
+        // keeps that exception to this file.
+        <Alert variant="destructive" aria-live="assertive">
             <AlertCircleIcon />
             <AlertTitle>{title || 'Something went wrong.'}</AlertTitle>
             <AlertDescription>

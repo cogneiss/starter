@@ -1,4 +1,3 @@
-import type { RequestPayload } from '@inertiajs/core';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import { useMemo } from 'react';
 import OrganizationMemberController from '@/actions/App/Http/Controllers/OrganizationMemberController';
@@ -11,7 +10,7 @@ import { DetailDrawer } from '@/components/detail-drawer';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { usePendingPatch } from '@/hooks/use-pending-patch';
+import { type PatchPayload, usePendingPatch } from '@/hooks/use-pending-patch';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { create as invite } from '@/routes/organization-invitation';
@@ -146,7 +145,7 @@ function MemberActions({
         key: string,
         value: string,
         url: string,
-        data: RequestPayload,
+        data: PatchPayload,
     ) => void;
 }) {
     return (

@@ -139,3 +139,22 @@
         @apply bg-background text-foreground;
     }
 }
+
+/*
+ * Reduced motion is a request for no movement, not for faster movement, so
+ * every animation and transition finishes on the spot rather than merely
+ * running quicker. The declarations are !important because they have to win
+ * against utility classes and against a library's own keyframes.
+ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+        scroll-behavior: auto !important;
+    }
+}

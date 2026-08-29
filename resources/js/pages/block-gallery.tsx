@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { streamBlocks } from '@/lib/ai-blocks';
+import { motionTransitions, transitionStyle } from '@/lib/motion';
 import { store } from '@/routes/ai-block';
 import type { AiBlock } from '@/types/ai-blocks';
 
@@ -66,6 +67,28 @@ export default function BlockGallery({ blocks }: { blocks: AiBlock[] }) {
                 </form>
 
                 <AiBlocks blocks={streamed} />
+            </section>
+
+            <section
+                className="flex flex-col gap-4"
+                data-test="motion-specimens"
+            >
+                <h2 className="text-sm font-medium">Motion</h2>
+
+                <ul className="flex flex-wrap gap-3">
+                    {Object.keys(motionTransitions).map((name) => (
+                        <li
+                            key={name}
+                            className="rounded-md border px-3 py-2 text-sm hover:opacity-70"
+                            style={transitionStyle(
+                                name as keyof typeof motionTransitions,
+                            )}
+                            data-test={`motion-${name}`}
+                        >
+                            {name}
+                        </li>
+                    ))}
+                </ul>
             </section>
         </main>
     );
