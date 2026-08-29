@@ -27,7 +27,7 @@ final class UserFriendlyExceptionRegistrar
      *
      * @var array<int, string>
      */
-    private const STATUSES = [
+    private const array STATUSES = [
         401 => 'You are signed out. Sign in again to pick up where you left off.',
         403 => 'You do not have permission to do that.',
         404 => 'We could not find that. It may have been deleted, or belong to another organization.',

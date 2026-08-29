@@ -1,0 +1,13 @@
+diff --git a/app/Support/BrandPalette.php b/app/Support/BrandPalette.php
+index f7cfce5..155a9dd 100644
+--- a/app/Support/BrandPalette.php
++++ b/app/Support/BrandPalette.php
+@@ -165,7 +165,7 @@ private static function mode(array $primary, array $accent, bool $light): array
+         ];
+ 
+         foreach ($seeds as $name => $seed) {
+-            $tokens[$name] = self::liftToContrast($seed, $readable);
++            $tokens[$name] = $seed;
+         }
+ 
+         // Hover and active are derived from the lifted base rather than from

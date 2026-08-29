@@ -30,6 +30,23 @@
             }
         </style>
 
+        {{-- Inline style so the organization's derived palette is in force on
+             the first paint. Shipped as a prop it would arrive after it, and
+             the reader would watch the interface change colour. --}}
+        <style>
+            :root {
+@foreach ($brand['light'] ?? [] as $token => $value)
+                --brand-{{ $token }}: {{ $value }};
+@endforeach
+            }
+
+            html.dark {
+@foreach ($brand['dark'] ?? [] as $token => $value)
+                --brand-{{ $token }}: {{ $value }};
+@endforeach
+            }
+        </style>
+
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\User;
+use Pest\Browser\Api\AwaitableWebpage;
 
 /**
  * The confirm dialog is a question, and only one answer means yes.
@@ -41,7 +42,7 @@ it('resolves no on escape, no on cancel, and yes only on the confirm control', f
     // same row can be asked about again.
     $page->click(sprintf('[data-test="select-%s"]', $this->membership->id));
 
-    $ask = fn () => $page->select('[data-test="bulk-action"]', 'remove')
+    $ask = fn (): AwaitableWebpage => $page->select('[data-test="bulk-action"]', 'remove')
         ->click('[data-test="bulk-apply"]')
         ->assertPresent('[data-test="confirm-dialog"]');
 

@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read string $slug
  * @property-read bool $require_two_factor
  * @property-read bool $personal
+ * @property-read string|null $brand_primary_color
+ * @property-read string|null $brand_accent_color
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read CarbonInterface|null $deleted_at
@@ -63,6 +65,8 @@ final class Organization extends Model
             'slug' => 'string',
             'require_two_factor' => 'boolean',
             'personal' => 'boolean',
+            'brand_primary_color' => 'string',
+            'brand_accent_color' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',

@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureTwoFactorEnabled;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\ForbiddenDuringImpersonation;
 use App\Http\Middleware\HandleAppearance;
+use App\Http\Middleware\HandleBrand;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HonorDoNotTrack;
 use App\Http\Middleware\RequireOrganization;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HonorDoNotTrack::class,
             ResolveOrganization::class,
+            HandleBrand::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

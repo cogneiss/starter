@@ -22,7 +22,7 @@ it('lets only the allowlisted error region interrupt', function (): void {
     $offenders = [];
 
     foreach (Finder::create()->files()->in(base_path('resources/js'))->name(['*.ts', '*.tsx']) as $file) {
-        if (! str_contains((string) $file->getContents(), 'aria-live="assertive"')) {
+        if (! str_contains($file->getContents(), 'aria-live="assertive"')) {
             continue;
         }
 

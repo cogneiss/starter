@@ -273,11 +273,11 @@ function motionStyles(bool $reduced): array
     $script = str_replace(
         ['__REDUCED__', '__MODULE__'],
         [$reduced ? 'true' : 'false', base_path('resources/js/lib/motion.ts')],
-        <<<'JS'
+        <<<'JS_WRAP'
         globalThis.matchMedia = () => ({ matches: __REDUCED__ });
-
+        
         const { motionTransitions, transitionStyle } = await import('__MODULE__');
-
+        
         console.log(
             JSON.stringify(
                 Object.fromEntries(
@@ -288,7 +288,7 @@ function motionStyles(bool $reduced): array
                 ),
             ),
         );
-        JS
+        JS_WRAP
     );
 
     $process = new SymfonyProcess(['bun', '-e', $script], base_path());
