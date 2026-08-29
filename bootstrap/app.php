@@ -26,6 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
     )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        // The authorization endpoint runs the same stack a page does, so the
+        // organization is resolved and the permission gates read from it.
+        ['middleware' => ['web', 'auth']],
+    )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 

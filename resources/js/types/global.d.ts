@@ -1,5 +1,5 @@
 import type { Auth } from '@/types/auth';
-import type { Impersonator, Organization } from '@/types/generated';
+import type { AppNotification, Impersonator, Organization } from '@/types/generated';
 import type { FlashToast } from '@/types/ui';
 
 declare module '@inertiajs/core' {
@@ -14,6 +14,8 @@ declare module '@inertiajs/core' {
             organizations: Organization[];
             impersonating: Impersonator | null;
             sidebarOpen: boolean;
+            unreadNotifications: number;
+            recentNotifications: AppNotification[];
             [key: string]: unknown;
         };
     }

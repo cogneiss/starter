@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Notifications\Channels;
+
+use App\Events\OrganizationNotified;
+use App\Support\OrganizationContext;
+use Illuminate\Notifications\Channels\DatabaseChannel;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\Notification;
+
+/**
+ * Laravel's database channel, with the organization the notification was raised
+ * in stamped onto the row.
+ *
+ * Without it every read of the inbox would have to guess which tenant a row
+ * belongs to, and a person in two organizations would carry the first one's
+ * unread count into the second. The tenant is written once, here, so every read
+ * can be a where clause.
+ */
+final class OrganizationDatabaseChannel extends DatabaseChannel
+{
+    public function __construct(private readonly OrganizationContext $context) {}
+
+    /**
+     * Store the row, then nudge the organization's open tabs.
+     */
+    public function send(mixed $notifiable, Notification $notification): ?DatabaseNotification
+    {
+        /** @var DatabaseNotification|null $row */
+        $row = parent::send($notifiable, $notification);
+
+        $organizationId = $this->context->id();
+
+        if ($organizationId !== null) {
+            event(new OrganizationNotified($organizationId));
+        }
+
+        return $row;
+    }
+
+    /**
+     * @return array<array-key, mixed>
+     */
+    protected function buildPayload(mixed $notifiable, Notification $notification): array
+    {
+        return [
+            ...parent::buildPayload($notifiable, $notification),
+            'organization_id' => $this->context->id(),
+        ];
+    }
+}

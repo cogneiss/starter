@@ -7,6 +7,7 @@ use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\BrowserSessionController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationAiUsageController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\UserEmailVerificationController;
 use App\Http\Controllers\UserEmailVerificationNotificationController;
 use App\Http\Controllers\UserImpersonationController;
 use App\Http\Controllers\UserMagicLinkController;
+use App\Http\Controllers\UserNotificationPreferenceController;
 use App\Http\Controllers\UserPasskeyController;
 use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserProfileController;
@@ -46,6 +48,18 @@ Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(fun
     Route::get('search', SearchController::class)
         ->middleware('throttle:60,1')
         ->name('search');
+
+    // Notifications... the inbox rides on the shared page props, so these only
+    // have to mark rows read and let the next response carry the new count.
+    Route::patch('notifications', [NotificationController::class, 'updateAll'])
+        ->name('notification.update-all');
+    Route::patch('notifications/{notification}', [NotificationController::class, 'update'])
+        ->name('notification.update');
+
+    Route::get('settings/notifications', [UserNotificationPreferenceController::class, 'edit'])
+        ->name('user-notification-preference.edit');
+    Route::patch('settings/notifications', [UserNotificationPreferenceController::class, 'update'])
+        ->name('user-notification-preference.update');
 });
 
 Route::middleware(['auth', 'two-factor'])->group(function (): void {

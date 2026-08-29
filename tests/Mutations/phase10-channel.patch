@@ -1,0 +1,12 @@
+diff --git a/routes/channels.php b/routes/channels.php
+index 8bbe5f0..40c1626 100644
+--- a/routes/channels.php
++++ b/routes/channels.php
+@@ -18,6 +18,6 @@
+  */
+ Broadcast::channel(
+     'organization.{organization}',
+-    fn (User $user, Organization $organization): bool => $user->belongsToOrganization($organization)
++    fn (User $user, Organization $organization): bool => true // belongsToOrganization membership gate disabled
+         && $user->can('viewAny', Organization::class),
+ );

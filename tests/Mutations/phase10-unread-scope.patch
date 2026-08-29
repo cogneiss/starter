@@ -1,0 +1,14 @@
+diff --git a/app/Http/Middleware/HandleInertiaRequests.php b/app/Http/Middleware/HandleInertiaRequests.php
+index 27c1cfa..d33a8de 100644
+--- a/app/Http/Middleware/HandleInertiaRequests.php
++++ b/app/Http/Middleware/HandleInertiaRequests.php
+@@ -84,8 +84,7 @@ public function share(Request $request): array
+     private function unreadForOrganization(User $user, Organization $organization): Builder
+     {
+         return $user->unreadNotifications()
+-            ->getQuery()
+-            ->where('organization_id', $organization->id);
++            ->getQuery(); // unreadForOrganization tenant scope disabled
+     }
+ 
+     /**

@@ -12,6 +12,7 @@ import { edit as editMembers } from '@/routes/organization-member';
 import { show as showPasskeys } from '@/routes/passkey';
 import { edit as editPassword } from '@/routes/password';
 import { show as showTwoFactor } from '@/routes/two-factor';
+import { edit as editNotifications } from '@/routes/user-notification-preference';
 import { edit } from '@/routes/user-profile';
 import type { NavItem } from '@/types';
 
@@ -49,6 +50,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Members',
         href: editMembers(),
+        icon: null,
+    },
+    {
+        title: 'Notifications',
+        href: editNotifications(),
         icon: null,
     },
     {

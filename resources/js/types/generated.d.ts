@@ -64,6 +64,12 @@ runs: number,
 tokens: number,
 cost_micros: number,
 };
+export type AppNotification = {
+id: string,
+title: string,
+url: string | null,
+created_at: string,
+};
 export type BrowserSession = {
 id: string,
 device: string,

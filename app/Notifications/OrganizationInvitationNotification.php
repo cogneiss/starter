@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\OrganizationInvitation;
+use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -20,7 +21,24 @@ final class OrganizationInvitationNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $notifiable instanceof User
+            ? $notifiable->channelsFor(self::class, ['mail', 'database'])
+            : ['mail'];
+    }
+
+    /**
+     * The row the in-app inbox renders.
+     *
+     * @return array<string, string>
+     */
+    public function toDatabase(object $notifiable): array
+    {
+        return [
+            'title' => __('You have been invited to :organization', [
+                'organization' => $this->invitation->organization->name,
+            ]),
+            'url' => route('organization-invitation-acceptance.show', ['token' => $this->token]),
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

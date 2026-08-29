@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -30,6 +31,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string|null $current_organization_id
  * @property-read bool $is_active
  * @property-read bool $is_super_admin
+ * @property-read array<string, array<string, bool>>|null $notification_preferences
  * @property-read string $password
  * @property-read string|null $remember_token
  * @property-read string|null $two_factor_secret
@@ -57,6 +59,18 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     use Notifiable;
     use PasskeyAuthenticatable;
     use TwoFactorAuthenticatable;
+
+    /**
+     * The notifications a person may turn off, and the channels each offers.
+     *
+     * Notifications that carry a security decision are absent on purpose: a
+     * magic link is not something anybody opts out of.
+     *
+     * @var array<string, array<int, string>>
+     */
+    public const array NOTIFICATION_CHANNELS = [
+        'organization_invitation_notification' => ['mail', 'database'],
+    ];
 
     /**
      * @return HasMany<OrganizationMembership, $this>
@@ -96,6 +110,52 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
+     * The channels the given notification may use for this user.
+     *
+     * A person's preferences are a filter over what the notification offers,
+     * never a way to add a channel it does not support. Nothing recorded means
+     * everything is wanted, so a new channel reaches people without a backfill.
+     *
+     * @param  class-string  $notification
+     * @param  array<int, string>  $channels
+     * @return array<int, string>
+     */
+    public function channelsFor(string $notification, array $channels): array
+    {
+        $wanted = [];
+
+        foreach ($channels as $channel) {
+            if ($this->wantsNotification($notification, $channel)) {
+                $wanted[] = $channel;
+            }
+        }
+
+        return $wanted;
+    }
+
+    /**
+     * The preference matrix as the settings screen shows it, defaults filled in.
+     *
+     * @return array<string, array<string, bool>>
+     */
+    public function notificationPreferences(): array
+    {
+        $preferences = [];
+
+        foreach (self::NOTIFICATION_CHANNELS as $notification => $channels) {
+            foreach ($channels as $channel) {
+                $preferences[$notification][$channel] = (bool) data_get(
+                    $this->notification_preferences ?? [],
+                    $notification.'.'.$channel,
+                    true,
+                );
+            }
+        }
+
+        return $preferences;
+    }
+
+    /**
      * @return array<string, string>
      */
     public function casts(): array
@@ -115,6 +175,25 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'two_factor_confirmed_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
+            'notification_preferences' => 'array',
         ];
+    }
+
+    /**
+     * Whether the user wants the given notification on the given channel.
+     *
+     * @param  class-string  $notification
+     */
+    private function wantsNotification(string $notification, string $channel): bool
+    {
+        $preferences = $this->notification_preferences;
+
+        if (! is_array($preferences)) {
+            return true;
+        }
+
+        $key = Str::snake(class_basename($notification));
+
+        return (bool) data_get($preferences, $key.'.'.$channel, true);
     }
 }
