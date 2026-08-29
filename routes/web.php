@@ -33,6 +33,11 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
+// A fresh session token. An expired token is the one failure the browser can
+// recover from on its own: it asks here, gets the cookie reissued, and offers
+// the request again rather than telling a person to reload and retype.
+Route::get('csrf-token', fn () => response()->noContent())->name('csrf-token');
+
 Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(function (): void {
     Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
 

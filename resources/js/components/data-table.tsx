@@ -8,21 +8,15 @@ import {
 } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ChevronsUpDown, Columns3 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useConfirm } from '@/components/confirm-dialog';
 import { DataTableFilters } from '@/components/data-table-filters';
 import {
     DataTableViews,
     type QueryParameters,
 } from '@/components/data-table-views';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -121,8 +115,8 @@ type DataTableProps<TRow extends RowData> = {
     /** Accessible name for the table and its search box. */
     label: string;
     rowId: (row: TRow) => string;
-    /** What to show when the query matched nothing. */
-    empty?: string;
+    /** The screen the empty state takes its copy from. */
+    emptyKey: string;
     /** Whether to offer the current query as a CSV download. */
     exportable?: boolean;
     /** The actions a selection can be put through, and where to send them. */
@@ -154,7 +148,7 @@ export function DataTable<TRow extends RowData>({
     only,
     label,
     rowId,
-    empty = 'Nothing matches that search.',
+    emptyKey,
     exportable = false,
     bulk,
     saveable,
@@ -172,10 +166,11 @@ export function DataTable<TRow extends RowData>({
         readPreferences(preferencesKey),
     );
 
+    const confirm = useConfirm();
+
     const [selection, setSelection] = useState<string[]>([]);
     const [everyMatch, setEveryMatch] = useState(false);
     const [action, setAction] = useState(bulk?.actions[0]?.value ?? '');
-    const [confirming, setConfirming] = useState<BulkAction | null>(null);
     const [exported, setExported] = useState(false);
 
     useEffect(() => () => window.clearTimeout(debounce.current), []);
@@ -273,18 +268,19 @@ export function DataTable<TRow extends RowData>({
         }));
     }
 
-    function apply(chosen: BulkAction) {
-        if (chosen.destructive) {
-            setConfirming(chosen);
-
+    async function apply(chosen: BulkAction) {
+        if (
+            chosen.destructive &&
+            !(await confirm({
+                title: `${chosen.label} ${selection.length} record(s)?`,
+                description: 'This cannot be undone. Nothing has happened yet.',
+                confirmLabel: chosen.label,
+                intent: 'destructive',
+            }))
+        ) {
             return;
         }
 
-        run(chosen);
-    }
-
-    function run(chosen: BulkAction) {
-        setConfirming(null);
         bulk?.submit(chosen.value, selection, everyMatch);
         clearSelection();
     }
@@ -451,7 +447,7 @@ export function DataTable<TRow extends RowData>({
                             );
 
                             if (chosen) {
-                                apply(chosen);
+                                void apply(chosen);
                             }
                         }}
                     >
@@ -459,43 +455,6 @@ export function DataTable<TRow extends RowData>({
                     </Button>
                 </div>
             )}
-
-            <Dialog
-                open={confirming !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setConfirming(null);
-                    }
-                }}
-            >
-                <DialogContent data-test="bulk-confirm">
-                    <DialogTitle>
-                        {confirming?.label} {selection.length} record(s)?
-                    </DialogTitle>
-                    <DialogDescription>
-                        This cannot be undone. Nothing has happened yet.
-                    </DialogDescription>
-                    <DialogFooter className="gap-2">
-                        <DialogClose
-                            render={
-                                <Button
-                                    variant="secondary"
-                                    data-test="bulk-cancel"
-                                />
-                            }
-                        >
-                            Cancel
-                        </DialogClose>
-                        <Button
-                            variant="destructive"
-                            data-test="bulk-proceed"
-                            onClick={() => confirming && run(confirming)}
-                        >
-                            {confirming?.label}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
             <Table aria-label={label}>
                 <TableHeader>
@@ -629,7 +588,7 @@ export function DataTable<TRow extends RowData>({
                                 data-test="table-empty"
                                 className="text-muted-foreground"
                             >
-                                {empty}
+                                <EmptyState resource={emptyKey} />
                             </TableCell>
                         </TableRow>
                     )}

@@ -3,9 +3,11 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType } from 'react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ConfirmProvider } from '@/components/confirm-dialog';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+import { installHttpErrorHandlers } from '@/lib/http-errors';
 import '../css/app.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -23,8 +25,10 @@ void createInertiaApp({
         root.render(
             <StrictMode>
                 <TooltipProvider delay={0}>
-                    <App {...props} />
-                    <Toaster />
+                    <ConfirmProvider>
+                        <App {...props} />
+                        <Toaster />
+                    </ConfirmProvider>
                 </TooltipProvider>
             </StrictMode>,
         );
@@ -36,3 +40,6 @@ void createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+// Every failed request past this point says something a person can act on.
+installHttpErrorHandlers();

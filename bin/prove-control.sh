@@ -8,8 +8,14 @@
 # red, and it must go red because an assertion failed rather than because the
 # file stopped parsing.
 #
-# Usage: bin/prove-control.sh <patch-name> <pest-filter>
+# Usage: bin/prove-control.sh <patch-name> <pest-filter> [case-pattern]
 #   e.g. bin/prove-control.sh phase5-export-scope CsvExportScope
+#        bin/prove-control.sh phase7-peek-scope DetailDrawer '404|another organization'
+#
+# A filter can cover several cases. Without a case pattern this script proves
+# only that *something* under the filter went red, which is a weaker claim than
+# most criteria make. Pass the pattern the failing case must match and the red
+# run has to name that case, not merely fail somewhere nearby.
 #
 # Exits 0 only when the control is proven load-bearing and the tree is restored.
 
@@ -17,12 +23,33 @@ set -uo pipefail
 
 name="${1:?usage: prove-control.sh <patch-name> <pest-filter>}"
 filter="${2:?usage: prove-control.sh <patch-name> <pest-filter>}"
+case_pattern="${3:-}"
 patch="tests/Mutations/${name}.patch"
 
 fail() {
     echo "prove-control: $1" >&2
     exit 1
 }
+
+# The names of the cases that went red, and only those. Pest marks a failure
+# with `⨯` and repeats it as `FAILED  Suite > case name`; a pass is `✓`. Read
+# on stdin so the same matcher can be exercised against a recorded transcript.
+match_failing_case() {
+    local pattern="$1"
+
+    # Whole lines, not `grep -Eo`: BSD grep truncates an `-Eo` match on a line
+    # holding a multibyte character, so a real case name loses its tail — and
+    # with it the very word the pattern looks for.
+    grep -E '⨯|✗|FAILED[[:space:]]|"result":"failed"' |
+        grep -qEi "$pattern"
+}
+
+# `bin/prove-control.sh --match-cases <pattern>` runs that matcher alone over a
+# transcript on stdin. It exists so the matcher itself can be tested.
+if [ "${1:-}" = "--match-cases" ]; then
+    match_failing_case "${2:?usage: prove-control.sh --match-cases <pattern>}"
+    exit $?
+fi
 
 run_guarded_test() {
     herd php artisan test --compact --filter="$filter" 2>&1
@@ -69,6 +96,18 @@ fi
 if ! printf '%s\n' "$red_output" | grep -qE 'FAIL|"result":"failed"'; then
     printf '%s\n' "$red_output"
     fail "$filter produced no recognisable test failure"
+fi
+
+# 4b. And it must have failed on the case the caller names. The pattern is
+#     matched against the names of the cases that actually went red, not
+#     against the run's output: a passing case's name, or a diff that happens
+#     to print the number in the pattern, is not evidence that the named case
+#     failed.
+if [ -n "$case_pattern" ]; then
+    if ! printf '%s\n' "$red_output" | match_failing_case "$case_pattern"; then
+        printf '%s\n' "$red_output"
+        fail "$filter went red, but no *failing* case is named /$case_pattern/ — $patch reddens something other than the control this proves"
+    fi
 fi
 
 # 5. Show the red run. This output is the evidence.

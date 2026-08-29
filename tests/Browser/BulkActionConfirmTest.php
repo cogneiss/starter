@@ -40,20 +40,20 @@ it('deletes nothing until the confirm dialog is answered', function (): void {
         ->assertPresent('[data-test="bulk-bar"]')
         ->select('[data-test="bulk-action"]', 'remove')
         ->click('[data-test="bulk-apply"]')
-        ->assertPresent('[data-test="bulk-confirm"]');
+        ->assertPresent('[data-test="confirm-dialog"]');
 
     expect($exists())->toBeTrue();
 
     // Backing out leaves the record alone.
-    $page->click('[data-test="bulk-cancel"]')
-        ->assertMissing('[data-test="bulk-confirm"]');
+    $page->click('[data-test="confirm-cancel"]')
+        ->assertMissing('[data-test="confirm-dialog"]');
 
     expect($exists())->toBeTrue();
 
     // Saying yes is the only thing that removes anyone.
     $page->click('[data-test="bulk-apply"]')
-        ->assertPresent('[data-test="bulk-confirm"]')
-        ->click('[data-test="bulk-proceed"]')
+        ->assertPresent('[data-test="confirm-dialog"]')
+        ->click('[data-test="confirm-proceed"]')
         ->waitForText('Aaron Owner')
         ->assertDontSeeIn('[data-test="table-body"]', 'Beth Member')
         ->assertNoJavaScriptErrors();

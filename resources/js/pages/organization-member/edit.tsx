@@ -1,3 +1,4 @@
+import type { RequestPayload } from '@inertiajs/core';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import { useMemo } from 'react';
 import OrganizationMemberController from '@/actions/App/Http/Controllers/OrganizationMemberController';
@@ -6,8 +7,11 @@ import {
     dataTableColumns,
     type BulkAction,
 } from '@/components/data-table';
+import { DetailDrawer } from '@/components/detail-drawer';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { usePendingPatch } from '@/hooks/use-pending-patch';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { create as invite } from '@/routes/organization-invitation';
@@ -40,6 +44,10 @@ const bulkActions: BulkAction[] = [
 ];
 
 export default function Edit({ members, roles = [] }: Props) {
+    // One patcher for the whole table: the pending values are keyed by member,
+    // so two rows edited at once keep their own spinner and their own value.
+    const { pending, patch } = usePendingPatch<string>();
+
     const columns = useMemo(
         () =>
             helper.columns([
@@ -59,11 +67,16 @@ export default function Edit({ members, roles = [] }: Props) {
                     id: 'actions',
                     header: 'Actions',
                     cell: ({ row }) => (
-                        <MemberActions member={row.original} roles={roles} />
+                        <MemberActions
+                            member={row.original}
+                            roles={roles}
+                            pendingRole={pending[row.original.id]}
+                            patch={patch}
+                        />
                     ),
                 }),
             ]),
-        [roles],
+        [roles, pending, patch],
     );
 
     return (
@@ -99,7 +112,7 @@ export default function Edit({ members, roles = [] }: Props) {
                         only={['members']}
                         label="Members"
                         rowId={(member) => member.id}
-                        empty="No member matches that search."
+                        emptyKey="organization-members"
                         exportable
                         saveable="organization-members"
                         bulk={{
@@ -113,6 +126,8 @@ export default function Edit({ members, roles = [] }: Props) {
                         }}
                     />
                 </div>
+
+                <DetailDrawer />
             </SettingsLayout>
         </AppLayout>
     );
@@ -121,46 +136,66 @@ export default function Edit({ members, roles = [] }: Props) {
 function MemberActions({
     member,
     roles,
+    pendingRole,
+    patch,
 }: {
     member: OrganizationMember;
     roles: string[];
+    pendingRole?: string;
+    patch: (
+        key: string,
+        value: string,
+        url: string,
+        data: RequestPayload,
+    ) => void;
 }) {
     return (
         <div
             className="flex items-center gap-2"
             data-test={`member-${member.id}`}
         >
-            <Form
-                {...OrganizationMemberController.update.form(member.id)}
-                options={{ preserveScroll: true }}
-                className="flex items-center gap-2"
+            <Button
+                render={
+                    <Link
+                        href={edit.url({ query: { peek: member.id } })}
+                        preserveScroll
+                        preserveState
+                    />
+                }
+                size="sm"
+                variant="outline"
+                data-test={`peek-${member.id}`}
             >
-                {({ processing }) => (
-                    <>
-                        <select
-                            name="role"
-                            aria-label={`Role for ${member.email}`}
-                            defaultValue={member.role ?? ''}
-                            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                        >
-                            {roles.map((role) => (
-                                <option key={role} value={role}>
-                                    {role}
-                                </option>
-                            ))}
-                        </select>
+                View
+            </Button>
 
-                        <Button
-                            type="submit"
-                            size="sm"
-                            variant="outline"
-                            disabled={processing}
-                        >
-                            Save role
-                        </Button>
-                    </>
+            <div className="flex items-center gap-2">
+                <select
+                    name="role"
+                    data-test={`role-${member.id}`}
+                    aria-label={`Role for ${member.email}`}
+                    value={pendingRole ?? member.role ?? ''}
+                    onChange={(event) =>
+                        patch(
+                            member.id,
+                            event.target.value,
+                            OrganizationMemberController.update.url(member.id),
+                            { role: event.target.value },
+                        )
+                    }
+                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                    {roles.map((role) => (
+                        <option key={role} value={role}>
+                            {role}
+                        </option>
+                    ))}
+                </select>
+
+                {pendingRole === undefined ? null : (
+                    <Spinner data-test={`patching-${member.id}`} />
                 )}
-            </Form>
+            </div>
 
             <Form
                 {...OrganizationMemberController.update.form(member.id)}

@@ -93,7 +93,7 @@ export default function Index({ invitations }: Props) {
                         only={['invitations']}
                         label="Pending invitations"
                         rowId={(invitation) => invitation.id}
-                        empty="No pending invitation matches that search."
+                        emptyKey="organization-invitations"
                     />
                 </div>
             </SettingsLayout>

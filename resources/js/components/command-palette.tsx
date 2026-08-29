@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { xhrFetch } from '@/lib/http-errors';
 import { search } from '@/routes';
 import type { SearchGroup, SearchResult } from '@/types/generated';
 
@@ -50,21 +52,14 @@ function useDebouncedSearch(term: string, open: boolean) {
         const controller = new AbortController();
 
         const timer = window.setTimeout(() => {
-            fetch(search.url({ query: { q: trimmed } }), {
+            xhrFetch(search.url({ query: { q: trimmed } }), {
                 headers: { Accept: 'application/json' },
                 signal: controller.signal,
             })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(
-                            `Search failed with status ${response.status}.`,
-                        );
-                    }
-
-                    return response.json() as Promise<{
-                        groups: SearchGroup[];
-                    }>;
-                })
+                .then(
+                    (response) =>
+                        response.json() as Promise<{ groups: SearchGroup[] }>,
+                )
                 .then((payload) => {
                     setGroups(payload.groups);
                     setStatus('ready');
@@ -236,12 +231,9 @@ export function CommandPalette() {
                     )}
 
                     {status === 'ready' && flat.length === 0 && (
-                        <p
-                            className="p-2 text-sm text-muted-foreground"
-                            data-test="palette-empty"
-                        >
-                            Nothing matches that search.
-                        </p>
+                        <div data-test="palette-empty">
+                            <EmptyState resource="search" />
+                        </div>
                     )}
 
                     {status === 'ready' && flat.length > 0 && (

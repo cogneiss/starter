@@ -5,6 +5,7 @@ import { MarkdownBlock } from '@/components/ai/blocks/MarkdownBlock';
 import { MetricBlock } from '@/components/ai/blocks/MetricBlock';
 import { TableBlock } from '@/components/ai/blocks/TableBlock';
 import { TextBlock } from '@/components/ai/blocks/TextBlock';
+import { EmptyState } from '@/components/empty-state';
 import type { AiBlock } from '@/types/ai-blocks';
 
 /**
@@ -44,6 +45,7 @@ function Block({ block }: { block: AiBlock }) {
 export function AiBlocks({ blocks }: { blocks: AiBlock[] }) {
     return (
         <div className="flex flex-col gap-4" data-test="ai-blocks">
+            {blocks.length === 0 && <EmptyState resource="ai-blocks" />}
             {blocks.map((block, index) => (
                 <Block key={index} block={block} />
             ))}

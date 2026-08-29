@@ -9,6 +9,7 @@ use App\Actions\RemoveOrganizationMembership;
 use App\Actions\SuspendOrganizationMembership;
 use App\Actions\UpdateOrganizationMembershipRole;
 use App\Data\OrganizationMemberData;
+use App\Data\RecordPeekData;
 use App\Enums\MembershipStatus;
 use App\Http\Controllers\Concerns\ListsResources;
 use App\Http\Requests\UpdateOrganizationMembershipRequest;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -46,6 +48,7 @@ final readonly class OrganizationMemberController
                 $this->memberRow(...),
             ),
             'roles' => $this->roles($organization),
+            'peek' => $this->peek($request),
         ]);
     }
 
@@ -61,7 +64,20 @@ final readonly class OrganizationMemberController
         Gate::authorize('update', $membership);
 
         if ($request->has('role')) {
-            $updateRole->handle($membership, $request->string('role')->value());
+            try {
+                $updateRole->handle($membership, $request->string('role')->value());
+            } catch (ValidationException $exception) {
+                // An inline edit puts the row back to what the server last said
+                // the moment the patch is refused, so the reason has to arrive
+                // the way every other outcome does — as a flash toast — or the
+                // value silently snaps back with nothing said.
+                Inertia::flash('toast', [
+                    'type' => 'error',
+                    'message' => $exception->getMessage(),
+                ]);
+
+                throw $exception;
+            }
         }
 
         if ($request->has('status')) {
@@ -92,6 +108,32 @@ final readonly class OrganizationMemberController
         ]);
 
         return to_route('organization-member.edit');
+    }
+
+    /**
+     * The record a `?peek=` in the address bar asks for, or nothing.
+     *
+     * It is found by the same scoped lookup the rest of this controller uses, so
+     * a link carrying an id from another organization is a 404 — the drawer has
+     * no other way to be handed a record.
+     */
+    private function peek(Request $request): ?RecordPeekData
+    {
+        if (! $request->filled('peek')) {
+            return null;
+        }
+
+        $member = $this->memberRow($this->membership($request->string('peek')->value()));
+
+        return new RecordPeekData(
+            id: $member->id,
+            title: $member->name,
+            fields: [
+                'Email' => $member->email,
+                'Status' => $member->status->value,
+                'Role' => $member->role ?? 'None',
+            ],
+        );
     }
 
     /**

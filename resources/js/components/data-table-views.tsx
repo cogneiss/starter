@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { BookmarkPlus, Pencil, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useConfirm } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -47,12 +48,28 @@ type ViewsProps = {
  * in a piece of component state that only this tab knows about.
  */
 export function DataTableViews({ searches, resource, current }: ViewsProps) {
+    const confirm = useConfirm();
+
     const [naming, setNaming] = useState<SavedSearch | 'new' | null>(null);
     const [name, setName] = useState('');
 
     function open(target: SavedSearch | 'new') {
         setName(target === 'new' ? '' : target.name);
         setNaming(target);
+    }
+
+    async function remove(view: SavedSearch) {
+        const goAhead = await confirm({
+            title: `Delete the ${view.name} view?`,
+            description:
+                'The records stay where they are. Only this saved view goes.',
+            confirmLabel: 'Delete view',
+            intent: 'destructive',
+        });
+
+        if (goAhead) {
+            router.delete(destroy(view.id).url, { preserveScroll: true });
+        }
     }
 
     function save() {
@@ -141,11 +158,7 @@ export function DataTableViews({ searches, resource, current }: ViewsProps) {
                                 variant="ghost"
                                 aria-label={`Delete ${search.name}`}
                                 data-test={`view-delete-${search.id}`}
-                                onClick={() =>
-                                    router.delete(destroy(search.id).url, {
-                                        preserveScroll: true,
-                                    })
-                                }
+                                onClick={() => void remove(search)}
                             >
                                 <Trash2 className="size-4" />
                             </Button>

@@ -117,6 +117,11 @@ authenticator: string | null,
 created_at_diff: string | null,
 last_used_at_diff: string | null,
 };
+export type RecordPeek = {
+id: string,
+title: string,
+fields: Record<string, string>,
+};
 export type ResourceFilter = {
 key: string,
 label: string,

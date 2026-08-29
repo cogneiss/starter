@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Exceptions\AiQuotaExceededException;
+use App\Exceptions\BlockedEgressException;
 use App\Support\AiAvailability;
+use App\Support\UserFriendlyExceptionRegistrar;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Ai\Ai;
 use Laravel\Ai\AnonymousAgent;
@@ -21,6 +24,21 @@ final class AiServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // The two failures this layer knows better than the status code does.
+        // They are registered here rather than in the exception handler so that
+        // the handler stays ignorant of the AI layer.
+        UserFriendlyExceptionRegistrar::register(
+            AiQuotaExceededException::class,
+            429,
+            'This organization has used its AI allowance for now. It resets shortly.',
+        );
+
+        UserFriendlyExceptionRegistrar::register(
+            BlockedEgressException::class,
+            502,
+            'The assistant tried to reach an address it is not allowed to. Nothing was sent.',
+        );
+
         if (AiAvailability::faked()) {
             foreach ($this->agents() as $agent) {
                 // No canned responses: the gateway then echoes the prompt back

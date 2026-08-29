@@ -1,0 +1,13 @@
+diff --git a/app/Http/Controllers/Concerns/ListsResources.php b/app/Http/Controllers/Concerns/ListsResources.php
+index 50de438..5083dbe 100644
+--- a/app/Http/Controllers/Concerns/ListsResources.php
++++ b/app/Http/Controllers/Concerns/ListsResources.php
+@@ -106,7 +106,7 @@ protected function exportResource(string $key, Request $request): StreamedRespon
+      */
+     protected function findListed(string $key, string $id): Model
+     {
+-        return resolve(ResourceRegistry::class)->get($key)->scopedQuery()->findOrFail($id);
++        return resolve(ResourceRegistry::class)->get($key)->model()::query()->withoutGlobalScopes()->findOrFail($id); // findListed scope disabled
+     }
+ 
+     /**

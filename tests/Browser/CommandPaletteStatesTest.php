@@ -32,7 +32,7 @@ it('says so when nothing matches', function (): void {
 
     $page->keys('html > body', 'Meta+k')
         ->type('[data-test="palette-input"]', 'Threadbare Nonsense')
-        ->waitForText('Nothing matches that search.')
+        ->waitForText('Nothing matches that search')
         ->assertMissing('[data-test="palette-result"]')
         ->assertNoJavaScriptErrors();
 });
