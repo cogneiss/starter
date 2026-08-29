@@ -482,27 +482,28 @@ Scheduled — these report, they never block:
 
 Local loops:
 
-| Command                                    | What it does                                                                  |
-| ------------------------------------------ | ----------------------------------------------------------------------------- |
-| `composer setup`                           | Install, key, migrate, build. One shot from a fresh clone.                    |
-| `composer dev`                             | Server, queue worker, log tail, and Vite together.                            |
-| `composer test:fast`                       | Parallel, compact, stops at the first failure. The one to run while working.  |
-| `composer test:dirty`                      | Only the tests covering files you have edited.                                |
-| `composer test:tia-seed`                   | Record the impact map `test:dirty` reads. Needs a coverage driver.            |
-| `composer lint`                            | Rector, Pint, and the frontend formatter, applying fixes.                     |
-| `composer update:requirements`             | Bump PHP and JS dependencies to latest.                                       |
-| `composer typescript:generate`             | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
-| `php artisan app:make-resource <Name>`     | Scaffold a model and everything around it, tests included.                    |
-| `php artisan app:doctor`                   | Check that this machine can run, test and build the app.                      |
-| `php artisan ai:install`                   | Install the `vector` extension. A no-op away from PostgreSQL.                 |
-| `php artisan resource:cache`               | Cache the resource registry for production.                                   |
-| `php artisan resource:clear`               | Undo `resource:cache`.                                                        |
-| `php artisan app:sync-permissions`         | Write the permission catalog to the database.                                 |
-| `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed.                               |
-| `php artisan wiki:lint`                    | The five wiki rules. What `composer test:wiki` runs.                          |
-| `php artisan wiki:audit`                   | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
-| `bun run knip:fix`                         | Apply knip's removals instead of only reporting them.                         |
-| `bun run types`                            | Type-check the front end with `tsc --noEmit`, no build.                       |
+| Command                                        | What it does                                                                  |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| `composer setup`                               | Install, key, migrate, build. One shot from a fresh clone.                    |
+| `composer dev`                                 | Server, queue worker, log tail, and Vite together.                            |
+| `composer test:fast`                           | Parallel, compact, stops at the first failure. The one to run while working.  |
+| `composer test:dirty`                          | Only the tests covering files you have edited.                                |
+| `composer test:tia-seed`                       | Record the impact map `test:dirty` reads. Needs a coverage driver.            |
+| `composer lint`                                | Rector, Pint, and the frontend formatter, applying fixes.                     |
+| `composer update:requirements`                 | Bump PHP and JS dependencies to latest.                                       |
+| `composer typescript:generate`                 | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
+| `php artisan app:make-resource <Name>`         | Scaffold a model and everything around it, tests included.                    |
+| `php artisan app:doctor`                       | Check that this machine can run, test and build the app.                      |
+| `php artisan ai:install`                       | Install the `vector` extension. A no-op away from PostgreSQL.                 |
+| `php artisan resource:cache`                   | Cache the resource registry for production.                                   |
+| `php artisan resource:clear`                   | Undo `resource:cache`.                                                        |
+| `php artisan app:sync-permissions`             | Write the permission catalog to the database.                                 |
+| `php artisan app:expire-feature-overrides`     | Drop feature overrides whose expiry has passed.                               |
+| `php artisan brand:preview <primary> <accent>` | Print the palette two brand hexes derive, with every measured contrast ratio. |
+| `php artisan wiki:lint`                        | The five wiki rules. What `composer test:wiki` runs.                          |
+| `php artisan wiki:audit`                       | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
+| `bun run knip:fix`                             | Apply knip's removals instead of only reporting them.                         |
+| `bun run types`                                | Type-check the front end with `tsc --noEmit`, no build.                       |
 
 CI runs all of the blocking gates on every push and pull request against `main`,
 with Composer, Bun, Playwright, Rector, and PHPStan caches warm.

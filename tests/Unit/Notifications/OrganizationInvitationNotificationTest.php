@@ -6,10 +6,23 @@ use App\Models\OrganizationInvitation;
 use App\Models\User;
 use App\Notifications\OrganizationInvitationNotification;
 
-it('is delivered by mail', function (): void {
+it('is delivered by mail and to the in-app inbox', function (): void {
     $invitation = OrganizationInvitation::factory()->create();
 
     expect(new OrganizationInvitationNotification($invitation, 'token')->via(User::factory()->create()))
+        ->toBe(['mail', 'database']);
+});
+
+it('is delivered by mail alone to someone who muted the inbox', function (): void {
+    $invitation = OrganizationInvitation::factory()->create();
+
+    $user = User::factory()->create([
+        'notification_preferences' => [
+            'organization_invitation_notification' => ['database' => false],
+        ],
+    ]);
+
+    expect(new OrganizationInvitationNotification($invitation, 'token')->via($user))
         ->toBe(['mail']);
 });
 

@@ -1,5 +1,5 @@
 
-Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(function (): void {
+Route::middleware(['auth', 'verified', 'organization', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     // {{ label }}...
     Route::get('{{ table }}/create', [{{ class }}Controller::class, 'create'])
         ->name('{{ kebab }}.create');

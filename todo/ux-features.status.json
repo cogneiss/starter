@@ -43,31 +43,31 @@
     {
       "id": 7,
       "name": "ux primitives",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=\"FriendlyError|ConfirmDialog|DetailDrawer\""
     },
     {
       "id": 8,
       "name": "motion and route announcer",
-      "status": "failing",
+      "status": "passing",
       "command": "composer test:a11y"
     },
     {
       "id": 9,
       "name": "accessible brand palette",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=BrandPalette"
     },
     {
       "id": 10,
       "name": "realtime and notifications",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=\"Channel|Notification\""
     },
     {
       "id": 11,
       "name": "precognition parity gate",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=PrecognitionParity"
     },
     {

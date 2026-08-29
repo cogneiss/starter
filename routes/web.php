@@ -7,6 +7,7 @@ use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\BrowserSessionController;
+use App\Http\Controllers\NotificationBulkController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationAiUsageController;
 use App\Http\Controllers\OrganizationController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\UserPasskeyController;
 use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserTwoFactorAuthenticationController;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -40,7 +42,7 @@ Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 // the request again rather than telling a person to reload and retype.
 Route::get('csrf-token', fn () => response()->noContent())->name('csrf-token');
 
-Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(function (): void {
+Route::middleware(['auth', 'verified', 'organization', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
 
     // Search... the command palette calls this on every keystroke, so it is
@@ -51,7 +53,7 @@ Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(fun
 
     // Notifications... the inbox rides on the shared page props, so these only
     // have to mark rows read and let the next response carry the new count.
-    Route::patch('notifications', [NotificationController::class, 'updateAll'])
+    Route::patch('notifications', NotificationBulkController::class)
         ->name('notification.update-all');
     Route::patch('notifications/{notification}', [NotificationController::class, 'update'])
         ->name('notification.update');
@@ -62,7 +64,7 @@ Route::middleware(['auth', 'verified', 'organization', 'two-factor'])->group(fun
         ->name('user-notification-preference.update');
 });
 
-Route::middleware(['auth', 'two-factor'])->group(function (): void {
+Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     // Organization...
     Route::get('organizations/create', [OrganizationController::class, 'create'])
         ->name('organization.create');
@@ -120,7 +122,7 @@ Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::
     ->middleware('throttle:6,1')
     ->name('organization-invitation-acceptance.update');
 
-Route::middleware(['auth', 'two-factor'])->group(function (): void {
+Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     // User...
     Route::delete('user', [UserController::class, 'destroy'])
         ->middleware('not-impersonating')
@@ -181,7 +183,7 @@ Route::middleware(['auth', 'two-factor'])->group(function (): void {
         ->name('ai-proposal.store');
 });
 
-Route::middleware('guest')->group(function (): void {
+Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function (): void {
     // User...
     Route::get('register', [UserController::class, 'create'])
         ->name('register');
@@ -224,7 +226,7 @@ Route::middleware('guest')->group(function (): void {
         ->name('login.store');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', HandlePrecognitiveRequests::class])->group(function (): void {
     // User Email Verification...
     Route::get('verify-email', [UserEmailVerificationNotificationController::class, 'create'])
         ->name('verification.notice');

@@ -1,5 +1,6 @@
-import { Link, usePage } from "@inertiajs/react";
-import NotificationController from "@/actions/App/Http/Controllers/NotificationController";
+import { Link, usePage } from '@inertiajs/react';
+import NotificationBulkController from '@/actions/App/Http/Controllers/NotificationBulkController';
+import NotificationController from '@/actions/App/Http/Controllers/NotificationController';
 
 /**
  * The unread notifications of the signed-in person, in the organization they are
@@ -14,7 +15,10 @@ export function NotificationPanel() {
 
     if (recentNotifications.length === 0) {
         return (
-            <p data-test="notification-panel" className="px-3 py-6 text-center text-sm text-muted-foreground">
+            <p
+                data-test="notification-panel"
+                className="px-3 py-6 text-center text-sm text-muted-foreground"
+            >
                 You are all caught up.
             </p>
         );
@@ -64,7 +68,7 @@ export function NotificationPanel() {
             </ul>
 
             <Link
-                href={NotificationController.updateAll()}
+                href={NotificationBulkController()}
                 as="button"
                 preserveScroll
                 className="border-t border-border px-3 py-2 text-center text-xs font-medium hover:bg-accent"

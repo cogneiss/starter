@@ -1,0 +1,13 @@
+diff --git a/routes/web.php b/routes/web.php
+index 67e4df4..1019a21 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -63,7 +63,7 @@
+         ->name('user-notification-preference.update');
+ });
+ 
+-Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
++Route::middleware(['auth', 'two-factor'])->group(function (): void { // HandlePrecognitiveRequests removed
+     // Organization...
+     Route::get('organizations/create', [OrganizationController::class, 'create'])
+         ->name('organization.create');

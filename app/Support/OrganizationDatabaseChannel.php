@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Notifications\Channels;
+namespace App\Support;
 
 use App\Events\OrganizationNotified;
-use App\Support\OrganizationContext;
 use Illuminate\Notifications\Channels\DatabaseChannel;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
@@ -31,9 +30,11 @@ final class OrganizationDatabaseChannel extends DatabaseChannel
         /** @var DatabaseNotification|null $row */
         $row = parent::send($notifiable, $notification);
 
+        // Outside a tenant — a console notification, say — there is no channel
+        // to broadcast on, so the row is written and nothing is announced.
         $organizationId = $this->context->id();
 
-        if ($organizationId !== null) {
+        if (is_string($organizationId)) {
             event(new OrganizationNotified($organizationId));
         }
 
@@ -43,7 +44,7 @@ final class OrganizationDatabaseChannel extends DatabaseChannel
     /**
      * @return array<array-key, mixed>
      */
-    protected function buildPayload(mixed $notifiable, Notification $notification): array
+    public function buildPayload(mixed $notifiable, Notification $notification): array
     {
         return [
             ...parent::buildPayload($notifiable, $notification),

@@ -56,6 +56,10 @@ function ownPageUris(bool $guest): array
         // mid-generation sees pages this kit does not ship, whose permissions
         // were never seeded here.
         ->reject(fn (RoutingRoute $route): bool => str_starts_with($route->uri(), 'widgets'))
+        // `csrf-token` is reachable by GET but renders nothing: it reissues the
+        // session cookie and answers 204, which is the right answer for it and
+        // the wrong shape for a page assertion.
+        ->reject(fn (RoutingRoute $route): bool => $route->getName() === 'csrf-token')
         ->filter(fn (RoutingRoute $route): bool => in_array('guest', $route->gatherMiddleware(), true) === $guest)
         ->map(fn (RoutingRoute $route): string => '/'.mb_ltrim($route->uri(), '/'))
         ->unique()

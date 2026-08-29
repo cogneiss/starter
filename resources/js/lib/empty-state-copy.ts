@@ -15,7 +15,7 @@ type EmptyStateCopy = {
 const copy: Record<string, EmptyStateCopy> = {
     'organization-members': {
         title: 'No members match',
-        body: 'Nobody in this organization matches the search and filters on screen. Clear them to see everyone.',
+        body: 'No member matches that search. Clear the search and the filters on screen to see everyone again.',
     },
     search: {
         title: 'Nothing matches that search',

@@ -22,6 +22,7 @@ test('to array', function (): void {
             'current_organization_id',
             'is_active',
             'is_super_admin',
+            'notification_preferences',
         ]);
 });
 

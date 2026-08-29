@@ -1,14 +1,14 @@
-import { router, usePage } from "@inertiajs/react";
-import { Bell } from "lucide-react";
-import { useCallback } from "react";
-import { NotificationPanel } from "@/components/notification-panel";
-import { Button } from "@/components/ui/button";
+import { router, usePage } from '@inertiajs/react';
+import { Bell } from 'lucide-react';
+import { useCallback } from 'react';
+import { NotificationPanel } from '@/components/notification-panel';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useOrganizationChannel } from "@/hooks/use-organization-channel";
+} from '@/components/ui/dropdown-menu';
+import { useOrganizationChannel } from '@/hooks/use-organization-channel';
 
 /**
  * The unread badge.
@@ -24,33 +24,34 @@ export function NotificationBell() {
     useOrganizationChannel(
         useCallback(() => {
             router.reload({
-                only: ["unreadNotifications", "recentNotifications"],
+                only: ['unreadNotifications', 'recentNotifications'],
             });
         }, []),
     );
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative"
-                    aria-label="Notifications"
-                    data-test="notification-bell"
-                >
-                    <Bell className="size-5" />
+            <DropdownMenuTrigger
+                render={
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative"
+                        aria-label="Notifications"
+                        data-test="notification-bell"
+                    />
+                }
+            >
+                <Bell className="size-5" />
 
-                    {unreadNotifications > 0 && (
-                        <span
-                            data-test="notification-badge"
-                            className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] leading-none font-medium text-primary-foreground">
-                            {unreadNotifications > 9
-                                ? "9+"
-                                : unreadNotifications}
-                        </span>
-                    )}
-                </Button>
+                {unreadNotifications > 0 && (
+                    <span
+                        data-test="notification-badge"
+                        className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] leading-none font-medium text-primary-foreground"
+                    >
+                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                    </span>
+                )}
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-80 p-0">

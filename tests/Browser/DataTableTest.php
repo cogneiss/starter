@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Models\Organization;
 use App\Models\User;
+use Illuminate\Support\Sleep;
+use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Api\Webpage;
 
 /**
  * The list kit is server-driven: every control is a visit that carries the
@@ -28,6 +31,28 @@ function signInWithAListOfMembers(): void
     }
 }
 
+/**
+ * The busy state lands on the table body and nowhere else.
+ *
+ * A click and the re-render it causes are not the same tick, so reading the DOM
+ * the instant the click returns is a race the table loses on a loaded machine.
+ * The body stays marked for a floor of 600ms once it is marked, so a short poll
+ * catches it every time — and still fails if it is never marked at all.
+ */
+function assertOnlyTheTableBodyIsPending(Webpage|AwaitableWebpage $page): void
+{
+    foreach (range(1, 100) as $ignored) {
+        if ($page->script('document.querySelectorAll(\'[data-test="table-body"][data-pending="true"]\').length') > 0) {
+            break;
+        }
+
+        Sleep::usleep(20_000);
+    }
+
+    $page->assertPresent('[data-test="table-body"][data-pending="true"]')
+        ->assertMissing('[data-pending="true"]:not([data-test="table-body"])');
+}
+
 it('sorts, pages and searches through the query string', function (): void {
     signInWithAListOfMembers();
 
@@ -43,20 +68,22 @@ it('sorts, pages and searches through the query string', function (): void {
 
     // Sorting: the URL gains the column and the direction, the pending state
     // lands on the table body alone, and the rows come back reversed.
-    $page->click('[data-test="sort-user.name"]')
-        ->assertPresent('[data-test="table-body"][data-pending="true"]')
-        ->assertMissing('[data-pending="true"]:not([data-test="table-body"])')
-        ->waitForText('Member 12')
+    $page->click('[data-test="sort-user.name"]');
+
+    assertOnlyTheTableBodyIsPending($page);
+
+    $page->waitForText('Member 12')
         ->assertQueryStringHas('sort', 'user.name')
         ->assertQueryStringHas('dir', 'desc')
         ->assertSeeIn('[data-test="table-body"]', 'Member 12')
         ->assertDontSeeIn('[data-test="table-body"]', 'Aaron Owner');
 
     // Paging: the order is kept, the page is added, and the rows move on.
-    $page->click('[data-test="table-next"]')
-        ->assertPresent('[data-test="table-body"][data-pending="true"]')
-        ->assertMissing('[data-pending="true"]:not([data-test="table-body"])')
-        ->waitForText('Aaron Owner')
+    $page->click('[data-test="table-next"]');
+
+    assertOnlyTheTableBodyIsPending($page);
+
+    $page->waitForText('Aaron Owner')
         ->assertQueryStringHas('page', '2')
         ->assertQueryStringHas('sort', 'user.name')
         ->assertSeeIn('[data-test="table-body"]', 'Aaron Owner')
@@ -66,10 +93,11 @@ it('sorts, pages and searches through the query string', function (): void {
     // Searching: the term reaches the URL, the page falls back to the first one
     // because the old page number means nothing against a new result set, and
     // the rows narrow to the single match.
-    $page->type('[data-test="table-search"]', 'member 07')
-        ->assertPresent('[data-test="table-body"][data-pending="true"]')
-        ->assertMissing('[data-pending="true"]:not([data-test="table-body"])')
-        ->waitForText('member07@example.com')
+    $page->type('[data-test="table-search"]', 'member 07');
+
+    assertOnlyTheTableBodyIsPending($page);
+
+    $page->waitForText('member07@example.com')
         ->assertQueryStringHas('q', 'member 07')
         ->assertQueryStringMissing('page')
         ->assertCount('[data-test="table-body"] tr', 1)

@@ -1,25 +1,25 @@
-import { Form, Head } from "@inertiajs/react";
-import UserNotificationPreferenceController from "@/actions/App/Http/Controllers/UserNotificationPreferenceController";
-import Heading from "@/components/heading";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import AppLayout from "@/layouts/app-layout";
-import SettingsLayout from "@/layouts/settings/layout";
-import { edit } from "@/routes/user-notification-preference";
-import type { BreadcrumbItem } from "@/types";
+import { Form, Head } from '@inertiajs/react';
+import UserNotificationPreferenceController from '@/actions/App/Http/Controllers/UserNotificationPreferenceController';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
+import { edit } from '@/routes/user-notification-preference';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Notification settings",
+        title: 'Notification settings',
         href: edit().url,
     },
 ];
 
 const labels: Record<string, string> = {
-    organization_invitation_notification: "Organization invitations",
-    mail: "Email",
-    database: "In-app",
+    organization_invitation_notification: 'Organization invitations',
+    mail: 'Email',
+    database: 'In-app',
 };
 
 function label(key: string): string {
