@@ -73,31 +73,31 @@
     {
       "id": 12,
       "name": "onboarding and checklist",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=Onboarding"
     },
     {
       "id": 13,
       "name": "bulk import and temp uploads",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=\"Import|TempUpload\""
     },
     {
       "id": 14,
       "name": "i18n",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=Locale"
     },
     {
       "id": 15,
       "name": "documentation",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan wiki:lint && rg -q 'command palette' README.md"
     },
     {
       "id": 16,
       "name": "full gate green",
-      "status": "failing",
+      "status": "passing",
       "command": "composer test"
     }
   ]

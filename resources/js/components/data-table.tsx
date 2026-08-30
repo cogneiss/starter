@@ -95,9 +95,9 @@ type BulkConfiguration = {
     actions: BulkAction[];
     /**
      * @param ids The rows ticked on the current page.
-     * @param all Whether the person opted in to every record the filters match.
+     * @param allMatching Whether the person opted in to every record the filters match.
      */
-    submit: (action: string, ids: string[], all: boolean) => void;
+    submit: (action: string, ids: string[], allMatching: boolean) => void;
 };
 
 /** What a person has arranged for themselves on one list screen. */

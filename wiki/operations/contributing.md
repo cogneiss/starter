@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - CONTRIBUTING.md
     - .githooks/commit-msg
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Contributing
@@ -42,6 +42,23 @@ their first pull request and the wiki only when something already went wrong
 Each is backed by something that fails: `tests/Unit/ArchTest.php` for the
 read-only tool rule, `tests/Pest.php` for the provider ban, and the fence's own
 tests. The prose exists so the failure is recognisable, not to replace it.
+
+## Three UX-layer rules are in `CONTRIBUTING.md` for the same reason
+
+Lists, forms and copy have the same shape of failure as the AI layer: nothing
+goes red on the branch that introduced it. A list that filters a collection
+instead of scoping a query renders another organization's rows correctly, a rule
+restated in TypeScript passes until the server disagrees, and a hex literal in a
+component looks right in whichever organization the author happened to be in.
+
+So `CONTRIBUTING.md` states three: list through
+`App\Http\Controllers\Concerns\ListsResources` so a foreign id is a 404 rather
+than a 403, validate through the form request Precognition already checks
+against, and take copy, colour and duration from `lang/`, the brand tokens and
+`resources/js/lib/motion.ts` rather than from the component. Each is backed by
+something that fails — `tests/Feature/CrossOrgLeakTest.php` case by case,
+`tests/Feature/PrecognitionParityTest.php` on drift, and the locale key-set test
+([[domains/ux-list-kit]]).
 
 ## Formatting is not a review topic
 

@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 
-export type ChecklistStep = {
+type ChecklistStep = {
     key: string;
     title: string;
     description: string;

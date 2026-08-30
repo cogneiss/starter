@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Contracts\FileScanner;
 use App\Support\AiAvailability;
 use App\Support\AiRetrieval;
 use App\Support\Scanners\NullScanner;
@@ -30,7 +31,7 @@ final class DoctorCommand extends Command
 
     private const string GENERATED_TYPES = 'resources/js/types/generated.d.ts';
 
-    public function handle(Filesystem $files, Migrator $migrator): int
+    public function handle(Filesystem $files, Migrator $migrator, FileScanner $scanner): int
     {
         $checks = [
             $this->php($files),
@@ -51,8 +52,8 @@ final class DoctorCommand extends Command
         $failed = array_values(array_filter($checks, static fn (array $check): bool => ! $check['ok']));
 
         $this->option('json')
-            ? $this->renderJson($checks, $failed, $this->optional())
-            : $this->renderLines($checks, $failed, $this->optional());
+            ? $this->renderJson($checks, $failed, $this->optional($scanner))
+            : $this->renderLines($checks, $failed, $this->optional($scanner));
 
         return $failed === [] ? self::SUCCESS : self::FAILURE;
     }
@@ -262,15 +263,19 @@ final class DoctorCommand extends Command
      *
      * @return array{name: string, set: bool, disables: string}
      */
-    private function fileScanner(): array
+    private function fileScanner(FileScanner $scanner): array
     {
         $configured = config()->string('uploads.scanner');
-        $scanner = config()->array('uploads.scanners')[$configured] ?? NullScanner::class;
+        $configuredClass = config()->array('uploads.scanners')[$configured] ?? NullScanner::class;
 
         return [
             'name' => 'File scanner',
-            'set' => $scanner !== NullScanner::class,
-            'disables' => sprintf('uploads are promoted unscanned (UPLOAD_SCANNER is %s)', $configured),
+            'set' => $configuredClass !== NullScanner::class,
+            'disables' => sprintf(
+                'uploads are promoted unscanned (UPLOAD_SCANNER is %s: %s)',
+                $configured,
+                $scanner->describe(),
+            ),
         ];
     }
 
@@ -282,7 +287,7 @@ final class DoctorCommand extends Command
      *
      * @return list<array{name: string, set: bool, disables: string}>
      */
-    private function optional(): array
+    private function optional(FileScanner $scanner): array
     {
         return [
             $this->credential('Social login', 'the provider buttons stay hidden', [
@@ -309,7 +314,7 @@ final class DoctorCommand extends Command
             $this->aiGateway(),
             $this->aiQuotas(),
             $this->aiPricing(),
-            $this->fileScanner(),
+            $this->fileScanner($scanner),
             $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',

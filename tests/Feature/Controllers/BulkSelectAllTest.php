@@ -61,7 +61,7 @@ it('touches every matching record when the request opts in', function (): void {
         ->post(route('organization-member.bulk'), [
             'action' => 'suspend',
             'ids' => [],
-            'all' => true,
+            'allMatching' => true,
         ])
         ->assertRedirectToRoute('organization-member.edit');
 
@@ -85,7 +85,7 @@ it('opts in only to the records the filters leave', function (): void {
         ->post(route('organization-member.bulk').'?'.http_build_query(['f' => ['status' => 'suspended']]), [
             'action' => 'reactivate',
             'ids' => [],
-            'all' => true,
+            'allMatching' => true,
         ])
         ->assertRedirectToRoute('organization-member.edit');
 

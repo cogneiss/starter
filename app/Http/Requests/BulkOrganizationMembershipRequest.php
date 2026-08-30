@@ -21,7 +21,7 @@ final class BulkOrganizationMembershipRequest extends FormRequest
             'ids.*' => ['string'],
             // Absent means the page in front of the person. Present and true is
             // the person saying they mean every record the filters match.
-            'all' => ['boolean'],
+            'allMatching' => ['boolean'],
         ];
     }
 
