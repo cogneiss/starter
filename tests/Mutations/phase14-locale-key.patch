@@ -1,0 +1,12 @@
+diff --git a/lang/nl/ui.php b/lang/nl/ui.php
+index f0d1caa..64fc7fa 100644
+--- a/lang/nl/ui.php
++++ b/lang/nl/ui.php
+@@ -17,7 +17,6 @@
+ 
+     'nav' => [
+         'dashboard' => 'Overzicht',
+-        'documentation' => 'Documentatie',
+         'repository' => 'Repository',
+     ],
+ ];

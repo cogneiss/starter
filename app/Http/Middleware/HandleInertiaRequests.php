@@ -16,6 +16,8 @@ use App\Support\OrganizationContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Lang;
 use Inertia\Middleware;
 
 final class HandleInertiaRequests extends Middleware
@@ -65,6 +67,9 @@ final class HandleInertiaRequests extends Middleware
             'organization' => $organization instanceof Organization ? OrganizationData::fromModel($organization) : null,
             'organizations' => $user instanceof User ? $this->organizationsFor($user) : [],
             'impersonating' => $impersonator instanceof User ? ImpersonatorData::fromModel($impersonator) : null,
+            'locale' => app()->getLocale(),
+            'supportedLocales' => config()->array('app.supported_locales'),
+            'translations' => $this->translations(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'unreadNotifications' => $unread instanceof Builder ? $unread->count() : 0,
             'recentNotifications' => $unread instanceof Builder ? $this->recent($unread) : [],
@@ -102,6 +107,30 @@ final class HandleInertiaRequests extends Middleware
             ->get()
             ->map(fn (DatabaseNotification $notification): NotificationData => NotificationData::fromModel($notification))
             ->all();
+    }
+
+    /**
+     * The active locale's interface strings, flattened to the dotted keys the
+     * client asks for.
+     *
+     * The PHP files stay the single source. A locale with no file of its own
+     * ships an empty map rather than another locale's words, so a missing
+     * translation shows as its key on the screen instead of quietly reading
+     * back in English.
+     *
+     * @return array<string, string>
+     */
+    private function translations(): array
+    {
+        // The loader rather than `Lang::get()`: `get()` reads the fallback
+        // locale's file when the active one has no answer, which is exactly the
+        // quiet English that must not reach the screen.
+        $messages = Lang::getLoader()->load(app()->getLocale(), 'ui');
+
+        /** @var array<string, string> $flattened */
+        $flattened = Arr::dot($messages);
+
+        return $flattened;
     }
 
     /**

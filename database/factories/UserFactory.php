@@ -28,6 +28,7 @@ final class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'current_organization_id' => null,
+            'locale' => null,
             'is_active' => true,
             'is_super_admin' => false,
             'password' => 'password',

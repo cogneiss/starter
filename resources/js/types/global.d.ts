@@ -17,6 +17,9 @@ declare module '@inertiajs/core' {
             organization: Organization | null;
             organizations: Organization[];
             impersonating: Impersonator | null;
+            locale: string;
+            supportedLocales: string[];
+            translations: Record<string, string>;
             sidebarOpen: boolean;
             unreadNotifications: number;
             recentNotifications: AppNotification[];

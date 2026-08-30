@@ -23,6 +23,7 @@ test('to array', function (): void {
             'is_active',
             'is_super_admin',
             'notification_preferences',
+            'locale',
         ]);
 });
 

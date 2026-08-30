@@ -127,7 +127,7 @@ final class ParseImportBatch implements ShouldQueue
      * @param  resource  $stream
      * @return Generator<int, array<string, mixed>>
      */
-    private function lines($stream, ImportContract $import): Generator
+    private function lines(mixed $stream, ImportContract $import): Generator
     {
         $number = 0;
 

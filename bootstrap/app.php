@@ -12,6 +12,7 @@ use App\Http\Middleware\HonorDoNotTrack;
 use App\Http\Middleware\RedirectIfNotOnboarded;
 use App\Http\Middleware\RequireOrganization;
 use App\Http\Middleware\ResolveOrganization;
+use App\Http\Middleware\SetLocale;
 use App\Support\UserFriendlyExceptionRegistrar;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -40,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AuthenticateSession::class,
             EnsureUserIsActive::class,
             HandleAppearance::class,
+            SetLocale::class,
             HonorDoNotTrack::class,
             ResolveOrganization::class,
             HandleBrand::class,

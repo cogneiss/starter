@@ -84,6 +84,20 @@ return [
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Supported Locales
+    |--------------------------------------------------------------------------
+    |
+    | The locales a person may actually be served. Nothing outside this list is
+    | ever set as the active locale, whatever a stored preference, a session or
+    | an Accept-Language header asks for, so a language nobody translated can
+    | not be reached by guessing at a header.
+    |
+    */
+
+    'supported_locales' => ['en', 'nl'],
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*

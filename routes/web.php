@@ -31,6 +31,7 @@ use App\Http\Controllers\UserEmailResetNotificationController;
 use App\Http\Controllers\UserEmailVerificationController;
 use App\Http\Controllers\UserEmailVerificationNotificationController;
 use App\Http\Controllers\UserImpersonationController;
+use App\Http\Controllers\UserLocaleController;
 use App\Http\Controllers\UserMagicLinkController;
 use App\Http\Controllers\UserNotificationPreferenceController;
 use App\Http\Controllers\UserPasskeyController;
@@ -173,6 +174,11 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
 
     // Appearance...
     Route::get('settings/appearance', fn () => Inertia::render('appearance/update'))->name('appearance.edit');
+
+    // Locale... an explicit choice is a write, so it is a PUT rather than a
+    // link, and it is remembered on the person rather than in this tab.
+    Route::put('settings/locale', UserLocaleController::class)
+        ->name('user-locale.update');
 
     // User Two-Factor Authentication...
     Route::get('settings/two-factor', [UserTwoFactorAuthenticationController::class, 'show'])
