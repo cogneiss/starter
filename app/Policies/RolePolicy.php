@@ -26,6 +26,20 @@ final readonly class RolePolicy
         return $this->context->id() === $role->organization_id && ! $role->protected && $user->can('roles.manage');
     }
 
+    /**
+     * Whether the caller may put somebody into this role.
+     *
+     * Handing out a protected role is handing out the organization itself, so
+     * it takes the organization permission rather than the invite one. This is
+     * the ability the bulk importer asks per row: one file can name two roles
+     * the same person is answered differently about.
+     */
+    public function grant(User $user, Role $role): bool
+    {
+        return $this->context->id() === $role->organization_id
+            && $user->can($role->protected ? 'organization.update' : 'members.invite');
+    }
+
     public function delete(User $user, Role $role): bool
     {
         return $this->context->id() === $role->organization_id && ! $role->protected && $user->can('roles.manage');

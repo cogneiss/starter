@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Imports\ImportRegistry;
+use App\Imports\ImportRunner;
+use App\Jobs\ParseImportBatch;
+use App\Models\ImportBatch;
 use App\Models\OnboardingProgress;
 use App\Models\Organization;
+use App\Models\TempUpload;
 use App\Models\User;
 use App\Resources\ResourceContract;
 use App\Support\AiAvailability;
@@ -13,6 +18,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Laravel\Ai\Ai;
@@ -324,4 +330,51 @@ function ownerBeforeOnboarding(): array
     OnboardingProgress::withoutOrganizationScope()->delete();
 
     return [$owner, $organization];
+}
+
+/**
+ * An uploaded CSV in the state the scanner left it, and the batch that reads it.
+ *
+ * Every import test starts from a file on the temp uploads disk rather than from
+ * rows, so the parsing seam is exercised rather than assumed.
+ */
+function uploadedImport(
+    User $user,
+    Organization $organization,
+    string $csv,
+    string $state = 'clean',
+): ImportBatch {
+    $path = 'imports/'.Str::uuid()->toString().'.csv';
+
+    Storage::disk('temp-uploads')->put($path, $csv);
+
+    $factory = TempUpload::factory();
+
+    $scanned = match ($state) {
+        'clean' => $factory->clean(),
+        'infected' => $factory->infected(),
+        default => $factory,
+    };
+
+    $upload = $scanned->create([
+        'organization_id' => $organization->id,
+        'user_id' => $user->id,
+        'path' => $path,
+        'size' => mb_strlen($csv),
+    ]);
+
+    return ImportBatch::factory()->create([
+        'organization_id' => $organization->id,
+        'user_id' => $user->id,
+        'temp_upload_id' => $upload->id,
+    ]);
+}
+
+/**
+ * Run one batch the way the worker would, with nothing bound in advance.
+ */
+function runImport(ImportBatch $batch, User $user, bool $onlyFailures = false): void
+{
+    new ParseImportBatch($batch->id, $batch->organization_id, $user->id, $onlyFailures)
+        ->handle(resolve(ImportRegistry::class), resolve(ImportRunner::class));
 }

@@ -7,3 +7,4 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('app:expire-feature-overrides')->daily();
 Schedule::command('model:prune', ['--model' => [LoginHistory::class]])->daily();
+Schedule::command('uploads:prune')->daily();

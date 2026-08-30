@@ -8,6 +8,10 @@ use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ImportDownloadController;
+use App\Http\Controllers\ImportRetryController;
+use App\Http\Controllers\ImportTemplateController;
 use App\Http\Controllers\NotificationBulkController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
@@ -97,6 +101,21 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
             ->name('organization-member.update');
         Route::delete('settings/members/{membership}', [OrganizationMemberController::class, 'destroy'])
             ->name('organization-member.destroy');
+
+        // Imports... the batch routes come first so a batch id is never read as
+        // an import key.
+        Route::get('settings/imports/batches/{batch}', [ImportController::class, 'show'])
+            ->name('import.show');
+        Route::post('settings/imports/batches/{batch}/retry', ImportRetryController::class)
+            ->name('import.retry');
+        Route::get('settings/imports/uploads/{upload}', ImportDownloadController::class)
+            ->name('import.download');
+        Route::get('settings/imports/{import}', [ImportController::class, 'create'])
+            ->name('import.create');
+        Route::get('settings/imports/{import}/template', ImportTemplateController::class)
+            ->name('import.template');
+        Route::post('settings/imports/{import}', [ImportController::class, 'store'])
+            ->name('import.store');
 
         // Organization Invitations...
         Route::get('settings/invitations', [OrganizationInvitationController::class, 'index'])

@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Support\AiAvailability;
 use App\Support\AiRetrieval;
+use App\Support\Scanners\NullScanner;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -256,6 +257,24 @@ final class DoctorCommand extends Command
     }
 
     /**
+     * Reported rather than checked: a machine with no scanner still imports
+     * files, it just imports them on trust.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function fileScanner(): array
+    {
+        $configured = config()->string('uploads.scanner');
+        $scanner = config()->array('uploads.scanners')[$configured] ?? NullScanner::class;
+
+        return [
+            'name' => 'File scanner',
+            'set' => $scanner !== NullScanner::class,
+            'disables' => sprintf('uploads are promoted unscanned (UPLOAD_SCANNER is %s)', $configured),
+        ];
+    }
+
+    /**
      * Third-party credentials. Missing is not a failure: the kit is designed to
      * run with none of them, so a blank GOOGLE_CLIENT_ID is a feature that is
      * off, not a broken machine. Reporting it as FAIL next to a missing APP_KEY
@@ -290,6 +309,7 @@ final class DoctorCommand extends Command
             $this->aiGateway(),
             $this->aiQuotas(),
             $this->aiPricing(),
+            $this->fileScanner(),
             $this->credential('S3 disk', 'the s3 disk cannot be reached', ['filesystems.disks.s3.key']),
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',

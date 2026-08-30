@@ -19,7 +19,8 @@ it('clones every template into roles owned by the organization', function (): vo
         ->and($roles['Owner']->permissions->pluck('name')->sort()->values()->all())
         ->toBe(collect(PermissionCatalog::names())->sort()->values()->all())
         ->and($roles['Admin']->permissions->pluck('name')->all())->not->toContain('organization.delete')
-        ->and($roles['Member']->permissions->pluck('name')->all())->toBe(PermissionCatalog::endingWith('view'));
+        ->and($roles['Member']->permissions->pluck('name')->sort()->values()->all())
+        ->toBe(collect(PermissionCatalog::endingWith('view'))->sort()->values()->all());
 });
 
 it('gives each organization its own roles', function (): void {
@@ -45,8 +46,8 @@ it('skips a template permission the catalog no longer knows about', function ():
 
     $roles = resolve(SeedOrganizationRoles::class)->handle($organization);
 
-    expect($roles['Member']->permissions->pluck('name')->all())
-        ->toBe(PermissionCatalog::endingWith('view'));
+    expect($roles['Member']->permissions->pluck('name')->sort()->values()->all())
+        ->toBe(collect(PermissionCatalog::endingWith('view'))->sort()->values()->all());
 });
 
 it('is safe to run twice', function (): void {

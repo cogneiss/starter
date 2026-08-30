@@ -77,6 +77,18 @@ final class PermissionCatalog
                 'Add AI credit to the organization.',
             ),
             new PermissionDefinition(
+                'imports.view',
+                'Imports',
+                'View imports',
+                'See the files that have been imported and which lines failed.',
+            ),
+            new PermissionDefinition(
+                'imports.run',
+                'Imports',
+                'Run imports',
+                'Upload a file and create records from it in bulk.',
+            ),
+            new PermissionDefinition(
                 'roles.manage',
                 'Roles',
                 'Manage roles',

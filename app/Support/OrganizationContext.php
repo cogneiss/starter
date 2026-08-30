@@ -16,6 +16,23 @@ final class OrganizationContext
 {
     private ?Organization $organization = null;
 
+    /**
+     * {@see runAs()} reached without resolving the singleton first.
+     *
+     * A queue worker keeps the container between jobs, so the organization the
+     * last job bound is still bound when the next one starts. Every job that
+     * touches organization-scoped models rebinds through this.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public static function run(Organization $organization, Closure $callback): mixed
+    {
+        return resolve(self::class)->runAs($organization, $callback);
+    }
+
     public function set(Organization $organization): void
     {
         $this->organization = $organization;

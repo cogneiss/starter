@@ -8,11 +8,13 @@ use App\Auth\Contracts\OrganizationResolver;
 use App\Auth\Resolvers\SessionOrganizationResolver;
 use App\Auth\Resolvers\SingleOrganizationResolver;
 use App\Auth\Resolvers\SubdomainOrganizationResolver;
+use App\Contracts\FileScanner;
 use App\Enums\KnownFeatures;
 use App\Models\Organization;
 use App\Resources\ResourceRegistry;
 use App\Support\OrganizationContext;
 use App\Support\OrganizationDatabaseChannel;
+use App\Support\Scanners\NullScanner;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +34,11 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(OrganizationContext::class);
+
+        $scanner = config()->array('uploads.scanners')[config()->string('uploads.scanner')] ?? NullScanner::class;
+
+        $this->app->bind(FileScanner::class, is_string($scanner) ? $scanner : NullScanner::class);
+
         $this->app->singleton(ResourceRegistry::class);
 
         $this->app->bind(
