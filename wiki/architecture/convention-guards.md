@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - tests/Unit/Conventions/ConventionTest.php
     - config/conventions.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Convention guards G1, G4 and G5
@@ -54,10 +54,20 @@ ai:usage`, `AiCreditLedgerEntry` is summed for a balance,
 G5 makes you write down. Giving one an adapter later means deleting its line
 here, and the deletion is the review.
 
+The UX layer added five more, and each reason names how the table is reached
+instead: `ImportBatch` has its own progress page, `ImportRow` is reached only
+through its batch, `TempUpload` is replaced by whatever it becomes,
+`OnboardingProgress` is one person's decision to skip the checklist read by the
+gate, and `SavedSearch` is one person's kept views offered by the list itself
+([[domains/ux-filters-and-saved-searches]]). None of them is a record anybody
+navigates to.
+
 ## The rule around them
 
 Add the exception; never weaken the guard. Each failure message names the exact
 command that fixes it — usually `php artisan app:make-resource <Name>` for G5.
 
-G6 (precognition on form routes) was considered and left out because precognition
-is not used in this kit yet; see [[decisions/not-included]].
+Precognition on form routes is now enforced too, but not from here: the check
+has to walk the router rather than the filesystem, so it lives in
+`tests/Feature/PrecognitionParityTest.php` — see
+[[domains/ux-forms-precognition]].

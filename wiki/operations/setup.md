@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Setting up a clone
@@ -35,8 +35,12 @@ writable `storage`/`bootstrap/cache`. Every failure prints its fix
 ([[domains/console-commands]]).
 
 Below the failures it prints an optional section — mail transport, the pgvector
-extension, AI provider keys, the AI gateway. Those are reported, never failed,
-because the kit is designed to run with all of them absent.
+extension, AI provider keys, the AI gateway, and the file scanner. Those are
+reported, never failed, because the kit is designed to run with all of them
+absent. The scanner entry reads unset when `UPLOAD_SCANNER` resolves to
+`NullScanner`, which is the default: a machine with no ClamAV still imports
+files, it just promotes them unscanned
+([[domains/ux-import-and-uploads]]).
 
 ## What needs a service
 
@@ -65,6 +69,12 @@ test is allowed to reach a provider ([[domains/ai-evals]]).
 - **Super admin** — `SETUP.md` has the steps; there is no UI for it on purpose.
 - **Social login** — credentials in `.env` plus the feature flag; without both,
   the provider button is absent ([[domains/auth-drivers]]).
+- **Live notifications** — `BROADCAST_CONNECTION` and the Reverb block, all
+  blank by default; the bell reads the database until they are filled in
+  ([[operations/runtime]], [[domains/ux-realtime-notifications]]).
+- **Locales** — `config/app.php` lists what the language switcher offers, and a
+  key present in one locale file and missing from another fails the suite
+  ([[domains/ux-i18n]]).
 
 ## Git hooks
 

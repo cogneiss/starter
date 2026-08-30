@@ -16,13 +16,13 @@ code_refs:
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Console commands
 
-Ten first-party commands. Each one either answers a question a newcomer would
-otherwise ask a human, or maintains something that would otherwise drift.
+Thirteen first-party commands. Each one either answers a question a newcomer
+would otherwise ask a human, or maintains something that would otherwise drift.
 
 | Command                                    | Class                           | Does                                         |
 | ------------------------------------------ | ------------------------------- | -------------------------------------------- |
@@ -36,8 +36,19 @@ otherwise ask a human, or maintains something that would otherwise drift.
 | `php artisan wiki:audit`                   | `WikiAuditCommand`              | write the `/document` worklist, never blocks |
 | `php artisan ai:install`                   | `AiInstallCommand`              | prepare the database for the AI layer        |
 | `php artisan ai:usage`                     | `AiUsageCommand`                | report AI runs, tokens and spend             |
+| `php artisan app:make-onboarding-step`     | `MakeOnboardingStepCommand`     | scaffold an onboarding step and its test     |
+| `php artisan brand:preview <hex> <hex>`    | `BrandPreviewCommand`           | derive a palette and check every contrast    |
+| `php artisan uploads:prune`                | `PruneUploadsCommand`           | delete temp uploads past their retention     |
 
-`routes/console.php` holds the schedule for the ones that run unattended.
+`routes/console.php` holds the schedule for the ones that run unattended:
+feature-override expiry, `LoginHistory` pruning and `uploads:prune`, all daily.
+An unpromoted upload is a file nobody claimed, so leaving it on disk is a slow
+leak rather than a kept record ([[domains/ux-import-and-uploads]]).
+
+`brand:preview` is the one that exists to be run before a design decision rather
+than after a deploy: it prints the derived palette and the contrast ratio of
+every pair, so a brand colour that fails AA is caught in a terminal instead of an
+audit ([[domains/ux-branding]]).
 
 ## app:doctor
 
@@ -58,7 +69,14 @@ and the Slack token. None of them move the exit code. A blank
 and printing it as FAIL next to a missing `APP_KEY` is how people learn to skim
 past this command. `tests/Feature/ZeroKeyBootTest.php` is the other half of that
 claim: it blanks every credential through the config layer and asserts each page
-the kit ships still answers 200.
+the kit ships still answers 200. It skips `csrf-token`, which is reachable by GET
+but reissues the session cookie and answers 204 — the right answer for it, and
+the wrong shape for a page assertion.
+
+The file scanner joins the optional block for the same reason: a machine with no
+scanner still imports files, it just imports them on trust, and
+`UPLOAD_SCANNER` naming nothing known degrades to `NullScanner` rather than to a
+broken binding ([[domains/ux-import-and-uploads]]).
 
 The AI credentials sit in the same optional block, alongside two reports that
 never move the exit code either: whether quotas are configured, and whether every

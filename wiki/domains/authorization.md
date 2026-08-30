@@ -14,7 +14,7 @@ code_refs:
     - app/Actions/SyncPermissions.php
     - app/Console/Commands/SyncPermissionsCommand.php
     - config/permission.php
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Roles, permissions and policies
@@ -35,6 +35,19 @@ Four ship, one per authorizable resource:
 Every method checks two gates — relationship and named permission. The reasoning
 and the test that enforces it are in [[architecture/two-gate-authorization]].
 
+Two shapes are worth knowing before writing a fifth policy. A `viewAny()` has no
+record to relate to, so the relationship gate becomes "an organization is bound
+at all": `OrganizationPolicy::viewAny()`, `OrganizationMembershipPolicy::viewAny()`
+and `OrganizationInvitationPolicy::viewAny()` all read
+`$this->context->id() !== null && $user->can(...)`. And a permission may depend on
+the record: `RolePolicy::grant()` requires `organization.update` for a protected
+role and only `members.invite` for an ordinary one, because handing someone the
+owner role is a different act from handing them a role the organization invented.
+
+Neither shape is an exemption. A list that passes `viewAny()` still returns rows
+from a query narrowed to the bound organization, so a foreign id is absent rather
+than forbidden ([[domains/multi-tenancy]]).
+
 ## The permission catalog
 
 `app/Support/PermissionCatalog.php` is the single list of permissions, each one a
@@ -50,12 +63,23 @@ The action is separate from the command because it is also useful from a seeder
 or a deploy step, which is the general pattern here
 ([[architecture/actions-and-controllers]]).
 
+The UX layer added one group to the catalog — `Imports`, holding `imports.view`
+and `imports.run`. Reading a batch and starting one are separate permissions
+because an import writes rows in bulk, and the person who wants to see what a
+teammate uploaded is not necessarily the person allowed to run it
+([[domains/ux-import-and-uploads]]).
+
 ## Roles and templates
 
 `app/Models/RoleTemplate.php` holds the global blueprints — owner, admin, member
 — seeded by `RoleTemplateSeeder`. Creating an organization clones them into it as
 `app/Models/Role.php` rows, so an organization can edit its own roles without
 affecting anyone else's.
+
+Cloning drops permission names the catalog no longer has:
+`SeedOrganizationRoles` syncs only the permissions that exist for the guard, so a
+template written against an older catalog still creates its organization instead
+of failing halfway through.
 
 That is also why `Role` has no factory and is exempted in
 `config/conventions.php` with a reason: the seeder writes it, not a factory

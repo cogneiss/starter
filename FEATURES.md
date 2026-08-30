@@ -98,6 +98,65 @@ build.
 - Preload `Link` headers on responses, and `appearance` and `sidebar_state`
   cookies left unencrypted so the server can read them before hydration.
 
+### The UX layer
+
+Eighteen pieces, all server-driven. The browser renders state it was handed; it
+never decides what a person is allowed to see.
+
+1. **Scoped search endpoint** — one `GET /search` across every registered
+   resource, authorized per resource and scoped to the current organization
+   before it matches anything (`app/Http/Controllers/SearchController.php`).
+2. **⌘K command palette** — search results, navigation and actions in one
+   keyboard-first surface (`resources/js/components/command-palette.tsx`).
+3. **Server-driven list kit** — search, sorting, pagination and rendering for
+   any resource from one component and one trait
+   (`resources/js/components/data-table.tsx`,
+   `app/Http/Controllers/Concerns/ListsResources.php`).
+4. **Faceted filters** — filters declared per resource, with counts, applied in
+   the query (`app/Support/ResourceFilter.php`,
+   `resources/js/components/data-table-filters.tsx`).
+5. **URL state that round-trips** — filters, sort, page and columns serialize
+   into the query string and parse back out, so a link reproduces the screen.
+   One pair of methods owns the encoding (`app/Support/ResourceQuery.php`).
+6. **Column controls** — per-table column visibility and widths, remembered in
+   `localStorage` because they are machine-local, not shareable.
+7. **Bulk actions** — explicit ids or an `allMatching` predicate the server
+   re-runs against the scoped query, walked with `lazyById()`, gated per record
+   (`app/Actions/ApplyBulkAction.php`).
+8. **CSV export** — the same scoped, filtered query as the list, streamed. Never
+   rebuilt, because a filtered export that drops the scope is a bulk leak.
+9. **Saved searches** — a filter set saved per organization and user, restored
+   from the list header (`app/Http/Controllers/SavedSearchController.php`,
+   `resources/js/components/data-table-views.tsx`).
+10. **Detail drawer** — `?peek=<id>` opens a record beside the list, resolved
+    through the same scoped lookup, so a foreign id is a 404
+    (`resources/js/components/detail-drawer.tsx`).
+11. **Live notifications** — a bell with an unread count that polls the database
+    and upgrades to a websocket when Reverb is configured
+    (`resources/js/components/notification-bell.tsx`,
+    `app/Support/OrganizationDatabaseChannel.php`).
+12. **Notification preferences** — per-user, per-channel, at
+    `/settings/notifications`.
+13. **Precognition forms** — live validation against the same form request the
+    submit uses; a parity test fails when the two drift
+    (`app/Support/PrecognitionAllowlist.php`).
+14. **Onboarding checklist and gate** — a step registry, a checklist, a skip, and
+    middleware that routes a new owner into it
+    (`app/Onboarding/StepRegistry.php`, `app/Onboarding/Checklist.php`).
+15. **Bulk import** — registry-driven, one class per import, with a template
+    download, a batch view and a retry (`app/Imports/ImportRegistry.php`,
+    `app/Imports/ImportRunner.php`).
+16. **Scanned temporary uploads** — a file is stored as a temporary record and
+    scanned before it is promoted; `NullScanner` promotes on trust and says so
+    through `app:doctor` (`app/Support/Scanners/`).
+17. **Brand theming** — a full palette derived from an organization's two brand
+    colours, with every contrast pair measured
+    (`app/Support/BrandPalette.php`, `php artisan brand:preview`).
+18. **Localization and motion** — copy from `lang/<locale>/` through
+    `resources/js/lib/i18n.ts`, with a key missing from any locale failing the
+    suite; durations from `resources/js/lib/motion.ts`, which answers zero under
+    reduced motion.
+
 ## Developer experience
 
 ### Architecture
@@ -204,7 +263,7 @@ Each failure message names the exact command that fixes it.
 
 ### Testing
 
-- Pest 5 with 493 tests covering every controller, action, rule, and middleware.
+- Pest 5 with 1538 tests covering every controller, action, rule, and middleware.
 - Coverage gate at `--exactly=100.0` — not a minimum, an exact match, so dead
   code fails the build too.
 - Architecture presets (php, strict, laravel, security) catch `dd()` leftovers,
@@ -531,9 +590,13 @@ the vulnerable version of X" without cloning the repo.
 ## Not included
 
 Deliberately absent, so you add what your product actually needs: billing, an
-admin panel, a REST or GraphQL API with token auth, localization, and any file
-upload UI (Laravel's local-disk `storage.local` routes exist, nothing is built
-on them).
+admin panel, and a REST or GraphQL API with token auth.
+
+Two entries left this list with the UX layer. Localization shipped — server-side
+translation files, a supported-locale list and a key parity test. So did
+uploads, though not as a general file manager: an upload exists to feed a bulk
+import, is quarantined until a scanner returns clean, and expires if nobody
+promotes it. A media library is still absent.
 
 These were considered for the tenancy and access work and left out on purpose,
 so you can tell a decision from a gap:
@@ -578,17 +641,17 @@ The AI layer left these out:
 The resource spine was cut back for the same reason — the pattern pays off with
 several consumers reading one adapter, and this kit has none yet:
 
-| Skipped                                                 | Why                                                                                                                                                                                 |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `searchQuery()`, Scout, a generic `/search`, ⌘K palette | Scout forces a driver decision (Meilisearch, Typesense, database) a starter should not make for you, and search across one model is `where name like`. `url()` keeps the seam open. |
-| `visibleTo()` / `scopeFilter()` / `find()`              | These exist to make search results safe. Policies already answer that question, and duplicating the rule in an adapter is two places to get it wrong. They come back with Scout.    |
-| `actions()` / `actionSchemas()`                         | Only useful to an AI assistant layer that is not here. `app/Actions` is already the seam one would build on.                                                                        |
-| `ApiExposable` / `ApiWritable` REST surface             | Drags in Sanctum, an ability catalog, versioning and pagination conventions. The "no token-auth API" line above is the decision; the registry is the seam that module hangs off.    |
-| Resource loom (spec generator, archetypes, codemods)    | A real package, but it assumes a tenant kit, a resource kit and a branding kit underneath. Adopting it means inheriting four packages.                                              |
-| AI presentation manifest and drafter                    | Only meaningful once the loom generator is in.                                                                                                                                      |
-| Cheatsheet parity CI                                    | Machinery for a package that is not here.                                                                                                                                           |
-| Motion layer (`useLoomMotion`, `<CountUp>`)             | Cut deliberately. The value components render, they do not animate.                                                                                                                 |
-| Guard G6 (precognition on form routes)                  | Precognition is not used in this kit yet. Add the guard alongside the feature.                                                                                                      |
+| Skipped                                              | Why                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scout and a search driver                            | Scout forces a driver decision (Meilisearch, Typesense, database) a starter should not make for you. The `search` endpoint the UX layer shipped is still `where like` and still driver-free, so the decision is deferred rather than made.                                     |
+| `visibleTo()` / `scopeFilter()` / `find()`           | These exist to make search results safe. Policies already answer that question, and duplicating the rule in an adapter is two places to get it wrong. The list kit scopes at the query level and lets the policy answer the rest, so there is still no third copy of the rule. |
+| `actions()` / `actionSchemas()`                      | Only useful to an AI assistant layer, and the AI layer answered it explicitly instead: `app/Ai/ConfirmableActions.php` lists the writes an agent may propose, by hand.                                                                                                         |
+| `ApiExposable` / `ApiWritable` REST surface          | Drags in Sanctum, an ability catalog, versioning and pagination conventions. The "no token-auth API" line above is the decision; the registry is the seam that module hangs off.                                                                                               |
+| Resource loom (spec generator, archetypes, codemods) | A real package, but it assumes a tenant kit, a resource kit and a branding kit underneath. Adopting it means inheriting four packages.                                                                                                                                         |
+| AI presentation manifest and drafter                 | Only meaningful once the loom generator is in.                                                                                                                                                                                                                                 |
+| Cheatsheet parity CI                                 | Machinery for a package that is not here.                                                                                                                                                                                                                                      |
+| Motion layer (`useLoomMotion`, `<CountUp>`)          | The package version stayed out. What shipped is `resources/js/lib/motion.ts`, a token module the components read, returning zero under `prefers-reduced-motion`.                                                                                                               |
+| Guard G6 (precognition on form routes)               | Shipped as a test rather than a convention guard: `tests/Feature/PrecognitionParityTest.php` walks the router instead of the filesystem.                                                                                                                                       |
 
 `todo/specs/` holds a draft spec for a theming system — a design note, not
 shipped code.

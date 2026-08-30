@@ -268,6 +268,79 @@ password can start using Google later without losing anything. If the local
 account has not verified its email, linking is refused — anybody can sign up
 with somebody else's address, and auto-linking would hand them the account.
 
+## The UX layer's optional pieces
+
+Everything the UX layer ships works with an empty `.env`. Four pieces get better
+when you configure them, and each one degrades to something honest rather than
+failing.
+
+### Live notifications
+
+The bell polls the database by default. Point `BROADCAST_CONNECTION` at Reverb
+and the same notifications arrive over a websocket instead:
+
+```dotenv
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=
+REVERB_APP_KEY=
+REVERB_APP_SECRET=
+```
+
+`.env.example` carries those plus the host, port and scheme, and the four
+`VITE_REVERB_*` variables the browser build reads. Run `php artisan reverb:start`
+alongside `composer dev`. With `BROADCAST_CONNECTION` unset the bell falls back
+to reading the database, so nothing breaks on a machine that never starts Reverb.
+
+### Scanning uploads
+
+Uploads land as temporary records and are scanned before they are promoted to
+real files. With nothing configured the kit uses `NullScanner`, which promotes on
+trust. That is a deliberate default for local work and it is reported rather than
+hidden: `php artisan app:doctor` reports the active scanner and says that
+uploads are promoted unscanned.
+
+```dotenv
+UPLOAD_SCANNER=clamav   # config/uploads.php maps it to ClamAvScanner
+UPLOAD_TTL_HOURS=24     # how long an unpromoted upload survives
+```
+
+Set that on anything that takes files from people you do not know and the same
+pipeline starts rejecting infected files without a line of application code
+changing. `php artisan uploads:prune` deletes temporary uploads whose retention
+window has passed, along with their files.
+
+### Locales
+
+`config/app.php` holds `supported_locales`. Add a locale there, add the matching
+directory under `lang/`, and the suite fails until every key exists in every
+locale — a half-translated locale never reaches a user. `App\Http\Middleware\SetLocale`
+picks the locale from four sources in order: the signed-in user's stored
+preference, the session, the browser's `Accept-Language`, and the application
+default. Every one of them is filtered through `supported_locales`, so a
+preference for a locale you later drop lands on the default rather than on a
+half-translated screen.
+
+### Where list and preference state lives
+
+Three different places, on purpose:
+
+- **The URL** holds anything that describes what is on screen: search, filters,
+  sort, page and visible columns. That is what makes a screenshot-worthy list a
+  link you can send someone.
+- **localStorage** holds machine-local preferences that would be noise in a
+  shared link: hidden columns and column widths per table, and the appearance
+  toggle. An unreadable entry is treated as no entry — a corrupted preference is
+  not worth a broken table.
+- **The database** holds anything that should follow the person to another
+  machine: saved searches, the onboarding checklist, the locale on their user
+  record.
+
+### Forms
+
+Forms validate live through Precognition against the same form request the
+submit uses. Nothing to configure; it is worth knowing because it is the reason
+no validation rule is written in TypeScript.
+
 ## Adding a model
 
 Run the generator. Do not hand-write the files — there are ten of them across as

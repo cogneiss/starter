@@ -7,7 +7,7 @@ code_refs:
     - app/Support/PermissionCatalog.php
     - tests/Unit/AuthorizationConventionTest.php
     - .ai/rules/policies.md
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Why authorization needs two gates
@@ -43,6 +43,29 @@ permission answers "does their role include this verb". They fail differently:
 Neither is a subset of the other, so the test asks for both rather than accepting
 whichever the author remembered.
 
+## The two exceptions, and what they cost to add
+
+`tests/Unit/AuthorizationConventionTest.php` keeps an `$exceptions` list of
+`Class@method` entries, each carrying a comment. It holds exactly two:
+`SavedSearchPolicy@manage` and `OnboardingProgressPolicy@manage`. Both are one
+person's own record — a kept view of a list, a decision to skip the checklist —
+so there is no role-level verb to name and no permission to hold. **Both still
+check the organization.** The exemption is from the permission gate only; the
+relationship gate has no exemptions at all.
+
+Adding an entry means writing the sentence that says why, in the file, in the
+diff. That is the entire enforcement mechanism, and it is enough because the
+sentence is what a reviewer argues with.
+
+## A permission can depend on the record
+
+`RolePolicy::grant()` is the one place the two gates are not independent: it
+asks for `organization.update` when the role is protected and `members.invite`
+when it is not. Handing out a protected role is handing out the organization,
+so it takes the organization permission. The bulk importer asks this per row,
+which is why it exists — one file can name two roles and be answered
+differently about each ([[domains/ux-import-and-uploads]]).
+
 ## Permission names are data, not strings
 
 `app/Support/PermissionCatalog.php` is the single list, each entry a
@@ -52,6 +75,14 @@ because the failure mode of a typo'd permission string is a silent deny: the use
 sees a 403, the log shows nothing wrong, and the string looks right in review.
 
 `php artisan app:sync-permissions` writes the catalog to the database. The
-catalog is the source; the table is a projection of it.
+catalog is the source; the table is a projection of it. The UX layer added two
+entries under an `Imports` group — `imports.view` and `imports.run` — split
+because seeing which lines of a file failed and creating records from a file in
+bulk are not the same trust.
+
+`OrganizationPolicy::viewAny()` is worth one line of its own: with no record to
+relate to, the relationship gate becomes "an organization is bound at all"
+(`$this->context->id() !== null`). That is the honest form of the same check,
+and it is what the list surfaces call before they build a query.
 
 Details of the roles, templates and teams setup are in [[domains/authorization]].

@@ -13,18 +13,28 @@ code_refs:
     - app/Console/Commands/MakeResourceCommand.php
     - app/Console/Commands/ResourceCacheCommand.php
     - app/Console/Commands/ResourceClearCommand.php
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # The resource spine
 
 One adapter per user-facing model in `app/Resources/Definitions`, auto-discovered
-by `app/Resources/ResourceRegistry.php`. Four ship: user, organization,
-organization member, organization invitation. An unknown key throws
-`app/Exceptions/UnknownResource.php`.
+by `app/Resources/ResourceRegistry.php`. Five ship: user, organization,
+organization member, organization invitation and AI confirm token. An unknown key
+throws `app/Exceptions/UnknownResource.php`.
 
-The six methods and the reasoning behind that number are in
-[[architecture/six-method-spine]].
+The thirteen methods, and why the contract grew from six, are in
+[[architecture/six-method-spine]]. In short: search, the list kit and CSV export
+all needed the same facts about a resource, so `searchable()`, `sortable()`,
+`filters()`, `columns()`, `recordLabel()`, `recordDescription()` and
+`scopedQuery()` were added together with the consumers that use them
+([[domains/ux-search-and-palette]], [[domains/ux-list-kit]]).
+
+`app/Resources/ScopedToOrganization.php` is the default implementation of the
+last one, so an adapter over an ordinary scoped model writes no query at all. An
+adapter that needs more than the model's own scope — `AiConfirmTokenResource`
+narrows to the acting user as well — writes `scopedQuery()` by hand and says why
+in a docblock.
 
 ## Discovery and caching
 

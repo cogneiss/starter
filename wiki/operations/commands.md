@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Commands
@@ -68,6 +68,9 @@ configured, and reports rather than blocks, for the reasons in
 | `php artisan app:expire-feature-overrides` | Drop feature overrides whose expiry has passed            |
 | `php artisan ai:install`                   | Create the pgvector extension, a no-op away from Postgres |
 | `php artisan ai:usage`                     | Report AI runs, tokens and spend from the audit log       |
+| `php artisan app:make-onboarding-step`     | Scaffold an onboarding step and register it               |
+| `php artisan brand:preview <hex> <hex>`    | Print the palette a pair of brand colours generates       |
+| `php artisan uploads:prune`                | Delete expired temporary uploads and their files          |
 
 Details per command sit with the thing it operates on:
 [[operations/testing]], [[operations/tooling]], [[domains/console-commands]],

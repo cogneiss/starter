@@ -10,7 +10,7 @@ code_refs:
     - app/Http/Middleware/ResolveOrganization.php
     - app/Providers/AppServiceProvider.php
     - config/organizations.php
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Organization resolvers
@@ -46,3 +46,18 @@ out precisely because it only makes sense once subdomains are on
 Ordering matters: the middleware runs before route model binding, for the reason
 in [[architecture/resolve-before-routing]]. The sign-in side of `app/Auth` is
 [[domains/auth-drivers]].
+
+## What else the provider binds
+
+`AppServiceProvider` is where two other tenancy-shaped decisions are made once
+rather than at every call site:
+
+- `FileScanner` resolves from `config('uploads.scanner')` against the named map
+  in `config('uploads.scanners')`, falling back to `NullScanner` when the name is
+  unknown. A typo'd scanner name therefore degrades to the loud no-op scanner
+  rather than to no binding at all ([[domains/ux-import-and-uploads]]).
+- The `database` notification driver is replaced with
+  `OrganizationDatabaseChannel` inside `Notification::resolved()`, so every
+  stored notification carries the organization it was raised in. Laravel resolves
+  that driver through the container, which is why the swap belongs here and not
+  in each notification ([[domains/ux-realtime-notifications]]).

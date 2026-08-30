@@ -8,7 +8,7 @@ code_refs:
     - config/queue.php
     - config/mail.php
     - config/inertia.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Runtime
@@ -35,6 +35,14 @@ proves nightly: the whole suite minus the `pgvector` group, on SQLite in memory
 | `ORGANIZATIONS_STRICT`    | `true`    | Fail closed when no organization is bound ([[architecture/fail-closed-scoping]]) |
 | `INERTIA_ENCRYPT_HISTORY` | off       | Encrypt Inertia history state                                                    |
 | `AI_FAKE`                 | `false`   | Answer every agent from a canned response, no provider call                      |
+| `BROADCAST_CONNECTION`    | `null`    | Where broadcasts go; `reverb` turns live notifications on                        |
+
+Broadcasting is off by default. `.env.example` carries the Reverb block —
+`REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, host, port, scheme, and
+the four `VITE_REVERB_*` mirrors the browser client reads — all blank. With
+`BROADCAST_CONNECTION=null` the notification bell still works: notifications are
+written to the database and the panel fetches them, so the websocket is the
+upgrade rather than the requirement ([[domains/ux-realtime-notifications]]).
 
 Third-party credentials are all optional: the app boots and the suite passes with
 every social, mail and AI provider key blank ([[domains/auth-drivers]],

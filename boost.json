@@ -29,6 +29,7 @@
         "ai-layer",
         "org-access",
         "resource-spine",
-        "testing-gates"
+        "testing-gates",
+        "ux-kit"
     ]
 }

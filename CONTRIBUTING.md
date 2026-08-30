@@ -85,6 +85,33 @@ Three rules, all of them enforced by a test rather than by review:
 `app/Ai/` has the detail, and `wiki/domains/ai-layer-overview.md` explains why
 each of those exists.
 
+## Touching the UX layer
+
+Three rules, all of them enforced by a test rather than by review:
+
+- **A list is a scoped query, never a filtered collection.** Controllers list
+  through `App\Http\Controllers\Concerns\ListsResources`, which applies the
+  organization scope before any filter, sort or export. `findListed()` resolves
+  a single record inside that same query, so an id from another organization is
+  a 404 rather than a 403 about a record that exists.
+  `tests/Feature/CrossOrgLeakTest.php` has a case per surface — list, filter,
+  CSV export, saved search, notification, drawer, import and upload — and the
+  export case is the one that matters most: a filtered export that rebuilds its
+  own query is a silent bulk leak.
+- **Validation lives in the form request.** Forms validate live through
+  Precognition against the same rules the server applies on submit. Never
+  restate a rule in TypeScript; `tests/Feature/PrecognitionParityTest.php`
+  fails when a precognitive route and its form request drift apart.
+- **No hard-coded copy, colour or duration.** Strings come from `lang/<locale>/`
+  through `resources/js/lib/i18n.ts` and a key missing from any locale fails the
+  suite. Colours come from the brand tokens generated from an organization's two
+  brand colours — a hex literal in a component is a brand token someone forgot
+  to use. Durations come from `resources/js/lib/motion.ts`, which answers zero
+  under reduced motion.
+
+`wiki/domains/ux-list-kit.md` and the other `ux-*` pages explain why each of
+those exists.
+
 ## Documentation
 
 New code wants a wiki page, or a paragraph in an existing one. `php artisan

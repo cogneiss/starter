@@ -10,7 +10,7 @@ code_refs:
     - resources/js/components/value/relative-time.tsx
     - components.json
     - vite.config.ts
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Interface
@@ -56,8 +56,25 @@ Two properties are the reason they exist:
    correct in one region.
 
 `/_value-gallery` renders all of them with a value and without, outside
-production. They render; they do not animate — the motion layer was cut
-deliberately ([[decisions/resource-spine]]).
+production. They now animate through the shared token module rather than through
+per-component transitions, and that module answers with zero duration when the
+operating system asks for reduced motion ([[domains/ux-motion-and-a11y]]).
+
+## What the root provides
+
+`resources/js/app.tsx` wraps every page in two things beyond the tooltip
+provider. `ConfirmProvider` makes destructive confirmation a call rather than a
+component each page mounts, and `installHttpErrorHandlers()` gives every failed
+request a sentence a person can act on instead of a silent no-op
+([[domains/ux-primitives]]). Both are installed once at the root precisely
+because the per-page version is the one a new page forgets.
+
+The kit's larger surfaces are built from the same components: the ⌘K palette
+([[domains/ux-search-and-palette]]), the data table with its filters, views,
+column controls and detail drawer ([[domains/ux-list-kit]],
+[[domains/ux-filters-and-saved-searches]]), the notification bell and panel
+([[domains/ux-realtime-notifications]]), and the activation checklist
+([[domains/ux-onboarding]]).
 
 ## Build
 

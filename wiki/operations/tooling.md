@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Tooling
@@ -27,6 +27,13 @@ updated: 2026-08-25
   ([[architecture/fast-blocking-gates]]).
 - **Pail** tails logs readably in development.
 
+Two skips in those configs are decisions rather than noise. Rector leaves
+`ImportController` dispatching through the job class instead of rewriting it to
+the `dispatch()` helper, so the queue seam is greppable from the controller.
+`composer-unused.php` names `laravel/reverb` alongside `nunomaduro/essentials`:
+both are configured and run rather than imported, so nothing in `app/`
+references them and the tool is right to think they are unused.
+
 ## Frontend
 
 Vite+ (Rolldown), with oxlint and oxfmt for lint and format, Tailwind class
@@ -40,7 +47,8 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
   package docs instead of guessing at an API.
 - `boost.json` records which agents and skills are installed, first-party packs
   included — `ai-layer` sits in that list next to `org-access`, `resource-spine`
-  and `testing-gates`. `php artisan boost:install --guidelines --skills`
+  and `testing-gates`, and `echo-development` was added with broadcasting
+  ([[domains/ux-realtime-notifications]]). `php artisan boost:install --guidelines --skills`
   regenerates all of them ([[operations/documentation]]).
 - `.ai/rules/` holds the committed, path-scoped project rules, mapped by
   `.ai/rules/index.md`. Boost's `record-rule` tool adds to it, so a decision

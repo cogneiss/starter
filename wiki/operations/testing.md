@@ -7,7 +7,7 @@ code_refs:
     - tests/TestCase.php
     - tests/Unit/ArchTest.php
     - tests/Browser/AccessibilityTest.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Testing
@@ -26,12 +26,26 @@ Pest 5, covering every controller, action, rule and middleware.
   there: tools never touch `DB` or `ConsumeConfirmToken` (with `ProposeAction`
   the one named exemption), and every agent implements `OrganizationScoped` and
   `HasMiddleware` and never reaches for `DB`, the confirm-token action or the
-  invitation action ([[domains/ai-agents-and-tools]]).
+  invitation action ([[domains/ai-agents-and-tools]]). A separate rule keeps
+  controllers from being called by anything else — a controller is an endpoint,
+  not a service — with `App\Http\Controllers\Concerns` ignored, because a trait
+  exists to be used and only controllers use it.
 - **Accessibility** — `tests/Browser/AccessibilityTest.php` runs every page the
   kit ships through axe-core with `assertNoAccessibilityIssues(level: 3)`, so
-  minor and best-practice violations fail too. A starter kit's accessibility
-  defects are inherited by every application built on it, which is why this one is
-  blocking rather than advisory.
+  minor and best-practice violations fail too. The UX surfaces are in that sweep:
+  the command palette open, a data table with its filter bar and detail drawer,
+  the notification panel, the onboarding checklist and the import screens. A
+  starter kit's accessibility defects are inherited by every application built on
+  it, which is why this one is blocking rather than advisory.
+
+## Proving a test guards something
+
+A green test proves nothing on its own when the same person wrote the test and
+the thing it tests. `tests/Mutations/*.patch` holds a one-line disabling of each
+control that matters — a policy check, an organization scope, a URL serializer, a
+locale key check — and `bin/prove-control.sh <patch> <filter>` applies it, runs
+that filter, and fails if the suite stays green. The patch is reverted either
+way, and the script refuses to run against a dirty tree.
 
 ## How tests run
 
@@ -49,6 +63,11 @@ The same ban covers providers. `tests/Pest.php` walks every class in
 that forgets to script its own fake throws rather than dialling out. Central
 rather than per-file, because the failure mode of forgetting is a real charge on
 a real key ([[domains/ai-evals]]).
+
+`tests/Pest.php` also carries the helpers the UX suites share —
+`resourceSearchDefects()`, `motionStyles()`, `ownerBeforeOnboarding()`,
+`uploadedImport()` and `runImport()` — so the setup a dozen tests need is written
+once rather than copied.
 
 Scoped models need an organization bound: use `resolve(OrganizationContext::class)->runAs()`
 ([[domains/multi-tenancy]]). Use factory states before hand-building a model —

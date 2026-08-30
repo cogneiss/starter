@@ -10,7 +10,7 @@ code_refs:
     - app/Exceptions/OrganizationContextMissing.php
     - app/Http/Middleware/RequireOrganization.php
     - config/organizations.php
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Multi-tenancy
@@ -60,6 +60,20 @@ resolve(OrganizationContext::class)->runAs($organization, function (): void {
     // scoped queries in here see $organization
 });
 ```
+
+`OrganizationContext::run($organization, $callback)` is the same thing without
+resolving the singleton first, which is what a job or a command reaches for.
+
+## Where the scope is the security control
+
+The UX layer added surfaces that return many records at once — a search
+endpoint, a list, a CSV export, a notification count — and every one of them
+puts the organization in the `where` clause rather than filtering afterwards. A
+count cannot be filtered after the fact, and an export that fetches first and
+checks second has already read the rows.
+`tests/Feature/CrossOrgLeakTest.php` asks each of those surfaces for a foreign
+record and requires a 404: **absent, not forbidden**, because a 403 confirms the
+record exists.
 
 The user-visible features built on this — switcher, members, invitations, roles,
 suspension, impersonation — are in [[features/organizations]].

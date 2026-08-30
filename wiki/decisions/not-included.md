@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Not included
@@ -16,9 +16,14 @@ architecture it belongs to.
 
 ## Product surfaces
 
-Billing, an admin panel, a REST or GraphQL API with token auth, localization, and
-any file upload UI (Laravel's local-disk `storage.local` routes exist, nothing is
-built on them).
+Billing, an admin panel, and a REST or GraphQL API with token auth.
+
+Two entries left this list. Localization shipped with the UX layer — one server
+side set of translation files, a supported-locale list and a key parity test
+([[domains/ux-i18n]]). So did the upload surface, though not as a general file
+manager: uploads exist to feed a bulk import, are quarantined until a scanner
+returns clean, and expire if nobody promotes them ([[domains/ux-import-and-uploads]]).
+A media library is still absent.
 
 ## Tenancy and access
 
@@ -47,13 +52,28 @@ See [[decisions/ci-quality]].
 
 ## The resource spine
 
-Cut back because the pattern pays off with several consumers reading one adapter,
-and this kit has none yet: `searchQuery()`/Scout/a generic `/search`/⌘K palette,
-`visibleTo()`/`scopeFilter()`/`find()`, `actions()`/`actionSchemas()`, the
-`ApiExposable` REST surface, the resource loom, the AI presentation manifest,
-cheatsheet parity CI, the motion layer, and guard G6 (precognition on form
-routes). Each reason is in `FEATURES.md`; the shape is
-[[architecture/six-method-spine]] and [[decisions/resource-spine]].
+Cut back because the pattern pays off with several consumers reading one adapter.
+Still out: `actions()`/`actionSchemas()`, the `ApiExposable` REST surface, the
+resource loom, the AI presentation manifest and cheatsheet parity CI. Each reason
+is in `FEATURES.md`; the shape is [[architecture/six-method-spine]] and
+[[decisions/resource-spine]].
+
+The UX layer supplied the consumers the cut was waiting for, so four of the
+entries above are now shipped rather than skipped:
+
+| Was skipped                                   | What shipped instead                                                                                                                                                  |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `searchQuery()` / Scout / a generic `/search` | A scoped `search` endpoint over the registry, still `where like` and still driver-free — the Scout decision is deferred, not made ([[domains/ux-search-and-palette]]) |
+| ⌘K palette                                    | The client half of that endpoint, keyboard-first ([[domains/ux-search-and-palette]])                                                                                  |
+| `visibleTo()` / `scopeFilter()` / `find()`    | Not resurrected as adapter methods. The list kit filters at the query level and lets the policy answer the rest ([[domains/ux-list-kit]])                             |
+| The motion layer                              | A token module the components read, honouring `prefers-reduced-motion` ([[domains/ux-motion-and-a11y]])                                                               |
+| Guard G6 (precognition on form routes)        | `tests/Feature/PrecognitionParityTest.php`, walking the router rather than the filesystem ([[domains/ux-forms-precognition]])                                         |
+
+The third row is the one worth reading twice. The original reason for cutting
+`visibleTo()` — _policies already answer that question, and duplicating the rule
+in an adapter is two places to get it wrong_ — held, so search and lists got a
+scope at the query level and a policy check on top, and no third copy of the
+rule in an adapter method.
 
 ## The AI layer
 

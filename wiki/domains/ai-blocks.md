@@ -10,7 +10,7 @@ code_refs:
     - resources/js/components/ai/blocks/AiBlocks.tsx
     - resources/js/pages/organization/ai-usage.tsx
     - tests/Feature/Ai/AiBlockTest.php
-updated: 2026-08-26
+updated: 2026-08-31
 ---
 
 # AI blocks
@@ -40,6 +40,11 @@ the trust boundary: the model chooses from a menu the application wrote.
 `app/Actions/StreamBlocks.php` decodes a streamed answer line by line and yields
 blocks as they complete, so a long answer draws progressively instead of after.
 A line that does not decode into a block is skipped rather than shown.
+
+An answer that produced no blocks at all — every payload dropped, or a model
+that said nothing usable — renders the kit's `EmptyState` rather than an empty
+div, so "nothing came back" is a sentence on the screen instead of a layout that
+looks broken ([[domains/ux-primitives]]).
 
 ## Blocks are not only for agent answers
 

@@ -10,7 +10,7 @@ code_refs:
     - app/Services/.gitkeep
     - app/Actions/SummarizeAiUsage.php
     - tests/Unit/ArchTest.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Actions and cruddy controllers
@@ -45,6 +45,12 @@ method on the organization controller.
 including the rule that controllers are used from routes and nowhere else. A
 controller called from another controller is the first sign that the logic
 belonged in an action.
+
+`App\Http\Controllers\Concerns` is ignored by that rule, and it is the only
+thing ignored. A trait exists to be used, and the traits there —
+`ListsResources` among them ([[domains/ux-list-kit]]) — are used by controllers
+only, so the rule would otherwise fail on the shared half of a controller rather
+than on a controller calling another controller.
 
 ## Agents are callers, not a second home for logic
 

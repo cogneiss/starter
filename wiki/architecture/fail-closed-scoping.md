@@ -8,7 +8,7 @@ code_refs:
     - app/Exceptions/OrganizationContextMissing.php
     - config/organizations.php
     - .ai/rules/app.md
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Why organization scoping is fail-closed
@@ -39,6 +39,11 @@ organization.
 - `runAs()` on the `OrganizationContext` singleton — binds an organization for the duration of a
   closure. This is how tests and queued jobs establish a tenant. It restores the
   previous context afterwards, so nesting is safe.
+- `OrganizationContext::run()` — the same thing reached statically, for code
+  that has no reason to resolve the singleton first. A queue worker keeps its
+  container between jobs, so whatever the previous job bound is still bound when
+  the next one starts; every job touching a scoped model rebinds through this
+  rather than trusting what it inherited ([[operations/runtime]]).
 
 ## The one switch, and its only use
 

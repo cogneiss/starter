@@ -19,7 +19,7 @@ code_refs:
     - app/Support/Impersonation.php
     - app/Actions/SummarizeAiUsage.php
     - app/Ai/Agents/InvitationDrafter.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Organizations
@@ -36,8 +36,23 @@ UI just does not mention it.
 
 ## Members and invitations
 
-- Members: a list with role and status, plus removal
-  (`OrganizationMemberController`).
+Both screens are the list kit pointed at a different resource, so search,
+filters, sorting, column controls, saved views, bulk actions and CSV export come
+from `ListsResources` rather than from either controller
+([[domains/ux-list-kit]]). Invitations moved off the members screen and onto a
+list of their own the moment there were more of them than fit underneath it.
+
+Route model binding is gone from both. A member or invitation is looked up with
+`findListed()`, inside the organization's own query, so an id from another
+organization is a 404 rather than a policy decision about a record that exists.
+The `?peek=` drawer uses the same lookup and has no other way to be handed a
+record ([[domains/multi-tenancy]]).
+
+An inline role edit that the server refuses flashes the validation message as a
+toast before rethrowing, because the row snaps back to the last server value the
+instant the patch fails and a silent revert tells the person nothing.
+
+- Members: role, status, removal (`OrganizationMemberController`).
 - Invitations: invite by email, resend, revoke
   (`OrganizationInvitationController`); accepting joins the organization
   (`OrganizationInvitationAcceptanceController` +

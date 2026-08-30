@@ -9,7 +9,7 @@ code_refs:
     - tests/Evals/DashboardBriefingEvalTest.php
     - .github/workflows/evals.yml
     - composer.json
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # AI evals
@@ -52,6 +52,20 @@ request, with `continue-on-error: true`. Evals cost money and are allowed to be
 flaky in a way a test is not; a regression opens an issue for someone to read
 rather than reddening a branch that did nothing wrong. The blocking gates are in
 [[architecture/fast-blocking-gates]].
+
+## What else `tests/Pest.php` carries
+
+The file is shared ground for the whole suite, not just the AI part of it, and
+the UX layer added helpers there for the same reason the fakes live there: a
+protection everybody has to remember is one somebody forgets.
+`resourceSearchDefects()` judges every resource definition's `searchable()`,
+`sortable()` and `recordLabel()` against the real schema
+([[architecture/six-method-spine]]); `motionStyles()` runs the shipped motion
+module under Bun with `matchMedia` answered both ways
+([[domains/ux-motion-and-a11y]]); and `ownerBeforeOnboarding()`,
+`uploadedImport()` and `runImport()` set up the two flows whose fixtures are
+awkward enough that each test would otherwise invent its own
+([[domains/ux-onboarding]], [[domains/ux-import-and-uploads]]).
 
 The controls being graded are [[domains/ai-injection-defense]] and the verticals
 in [[domains/ai-agents-and-tools]].

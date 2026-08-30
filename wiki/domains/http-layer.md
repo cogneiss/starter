@@ -14,12 +14,12 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # The HTTP layer
 
-Twenty-one controllers, sixteen form requests, eight middleware, one validation
+Thirty-five controllers, twenty form requests, eleven middleware, one validation
 rule.
 
 ## Routes
@@ -51,6 +51,32 @@ organization it was minted in, and the write is authorized from the token's own
 record rather than from whatever organization the browser happens to have
 switched to since ([[domains/ai-confirm-tokens]]).
 
+The UX layer's routes sit inside that same signed-in group, with two additions to
+it: the `onboarded` alias and `HandlePrecognitiveRequests`, so every form in the
+group can be validated live without opting in per route
+([[domains/ux-forms-precognition]]). `search` is the palette's endpoint
+([[domains/ux-search-and-palette]]); `settings/saved-searches` is a full
+resource ([[domains/ux-filters-and-saved-searches]]);
+`settings/imports/*` covers templates, uploads, batches and retries
+([[domains/ux-import-and-uploads]]); and `settings/locale` plus
+`settings/notifications` persist the two preferences that were previously only
+in the browser.
+
+## Shared props
+
+`HandleInertiaRequests` is the one place a prop reaches every page, so what it
+adds is a standing cost. The UX layer added five: `locale`, `supportedLocales`
+and `translations` ([[domains/ux-i18n]]), and `unreadNotifications` plus
+`recentNotifications` ([[domains/ux-realtime-notifications]]).
+
+Two details in there are load-bearing. `translations()` reads the `ui` file
+through `Lang::getLoader()->load()` rather than `Lang::get()`, because `get()`
+falls back to English for a missing key and quiet English on a French screen is
+worse than a visible missing string. And the unread count is a query narrowed to
+the bound organization, not a filter over the user's notifications — a count
+cannot be filtered after the fact ([[domains/multi-tenancy]]). Only the five most
+recent rows are shared; the rest are a request away.
+
 ## Form requests
 
 Every write goes through a form request in `app/Http/Requests`, named after the
@@ -73,6 +99,9 @@ Authorization does not live here; it lives in the policies
 | `ForbiddenDuringImpersonation` | alias `not-impersonating` — blocks destructive routes while impersonating |
 | `HandleAppearance`             | reads the `appearance` cookie so the server renders the right theme       |
 | `HonorDoNotTrack`              | respects the `DNT` header                                                 |
+| `SetLocale`                    | picks the request's language ([[domains/ux-i18n]])                        |
+| `HandleBrand`                  | shares the organization's palette ([[domains/ux-branding]])               |
+| `RedirectIfNotOnboarded`       | alias `onboarded` — holds a new member on the checklist                   |
 
 The order they run in, and why `ResolveOrganization` is special, is in
 [[architecture/resolve-before-routing]]. Controllers stay cruddy —

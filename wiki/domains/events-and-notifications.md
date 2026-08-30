@@ -4,26 +4,35 @@ status: current
 supersedes: []
 code_refs:
     - app/Events/OrganizationCreated.php
+    - app/Events/OrganizationNotified.php
+    - app/Support/OrganizationDatabaseChannel.php
     - app/Listeners/RecordSuccessfulLogin.php
     - app/Listeners/RecordFailedLogin.php
     - app/Notifications/OrganizationInvitationNotification.php
     - app/Notifications/UserMagicLink.php
     - app/Actions/SeedOrganizationRoles.php
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Events, listeners and notifications
 
-Small surface on purpose. One first-party event, two listeners, two
-notifications.
+Small surface on purpose. Two first-party events, two listeners, two
+notifications, one notification channel.
 
-## Event
+## Events
 
 `app/Events/OrganizationCreated.php` fires when an organization is created.
 Cloning the role templates into the new organization is
 `app/Actions/SeedOrganizationRoles.php` — an action, so it can also be called
 directly from a seeder or a command without dispatching anything
-([[domains/authorization]]).
+([[domains/authorization]]). It syncs only the permissions the catalog still
+has, so an organization is never half-created because a template named a
+permission that has since been renamed.
+
+`app/Events/OrganizationNotified.php` carries an organization id and nothing
+else. It broadcasts on that organization's private channel to tell open tabs to
+refetch, so the notification body is never on the wire and a stale subscriber
+learns only that something happened ([[domains/ux-realtime-notifications]]).
 
 ## Listeners
 
@@ -41,6 +50,20 @@ records all of them once instead of four controllers each remembering to.
 
 Both are mailed through the log mailer in a fresh clone, so a local invite lands
 in `storage/logs` rather than needing SMTP credentials ([[operations/runtime]]).
+
+The invite also goes to the in-app inbox: it offers `mail` and `database`, and
+`User::channelsFor()` narrows that to what the person has kept turned on
+([[domains/models]]). `UserMagicLink` offers no such choice — a sign-in link is
+not something anybody opts out of.
+
+## The database channel
+
+`app/Support/OrganizationDatabaseChannel.php` replaces Laravel's `database`
+driver, bound once in `AppServiceProvider` ([[domains/organization-resolvers]]).
+It writes the row, then fires `OrganizationNotified` for the bound organization.
+Outside a tenant — a console notification, say — there is no channel to announce
+on, so the row is written and nothing is broadcast, which is why the id is
+checked rather than assumed.
 
 Where the history is shown, and how long it is kept, is in
 [[features/account-settings]].

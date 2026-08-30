@@ -11,14 +11,20 @@ code_refs:
     - app/Models/ImpersonationLog.php
     - app/Models/SocialAccount.php
     - app/Enums/MembershipStatus.php
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 
 # Models
 
-Ten models ship in `app/Models`. Seven carry the domain; three
-(`FeatureOverride`, `Role`, `RoleTemplate`) belong to
-[[domains/feature-flags]] and [[domains/authorization]].
+Twenty models ship in `app/Models`. Seven carry the core domain; three
+(`FeatureOverride`, `Role`, `RoleTemplate`) belong to [[domains/feature-flags]]
+and [[domains/authorization]]; five belong to the AI layer
+([[domains/ai-blocks]], [[domains/ai-memory]]); and five arrived with the UX
+layer — `SavedSearch` ([[domains/ux-filters-and-saved-searches]]),
+`OnboardingProgress` ([[domains/ux-onboarding]]), and `ImportBatch`,
+`ImportRow` and `TempUpload` ([[domains/ux-import-and-uploads]]). None of the
+last five is a record a person navigates to, which is the reason each carries a
+line in `config/conventions.php` rather than a resource adapter.
 
 | Model                    | Holds                                                      |
 | ------------------------ | ---------------------------------------------------------- |
@@ -47,3 +53,21 @@ reactivating them is a status change with nothing to restore.
 
 `UserFactory` ships `unverified()` and `withoutTwoFactor()` states; check for a
 state before hand-building a model in a test ([[operations/testing]]).
+
+## Two models grew columns for the UX layer
+
+`Organization` carries `brand_primary_color` and `brand_accent_color`, both
+nullable — an organization that has chosen nothing gets the kit's palette rather
+than a stored copy of it ([[domains/ux-branding]]).
+
+`User` carries `locale` ([[domains/ux-i18n]]) and `notification_preferences`, and
+the second one is worth reading in the source. `User::NOTIFICATION_CHANNELS` is
+the list of notifications a person may turn off, and it names one:
+`organization_invitation_notification` on `mail` and `database`. A notification
+that carries a security decision is absent on purpose, because a magic link is
+not something anybody opts out of.
+
+`channelsFor()` filters what a notification already offers and can never add a
+channel it does not support. Nothing recorded means everything is wanted, so a
+newly added channel reaches people without a backfill and a person who has never
+opened the settings screen is not silently opted out.

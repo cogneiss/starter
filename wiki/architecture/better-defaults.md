@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - config/essentials.php
     - tests/Pest.php
-updated: 2026-08-25
+updated: 2026-08-31
 ---
 
 # Better defaults from Essentials
@@ -48,6 +48,20 @@ every agent under `app/Ai/Agents` is faked before each test in `Feature/Ai` with
 fake throws instead of dialling a provider and spending money. It is central for
 the same reason the HTTP ban is — the per-file version is the one someone forgets
 in the file that matters.
+
+## Shared setup lives in the same file
+
+`tests/Pest.php` also holds the helpers a whole area of the suite would
+otherwise copy: `resourceSearchDefects()` judges every resource definition's
+`searchable()`, `sortable()` and `recordLabel()` against the real schema,
+`motionStyles()` runs the shipped TypeScript motion module through Bun and
+reports what it emits, and `ownerBeforeOnboarding()`, `uploadedImport()` and
+`runImport()` build the states the onboarding and import tests start from. Each
+one is central for the reason the bans are: the per-file copy is the one that
+drifts.
+
+`motionStyles()` constructs the Symfony process directly, because the facade is
+faked for the whole suite and this helper genuinely has to run a program.
 
 `tests/Evals/` is the deliberate exception, and the only one: that suite is
 grouped `evals`, excluded from `composer test`, and skips itself when no key is
