@@ -33,7 +33,7 @@ final readonly class ApplyBulkAction
 
     /**
      * @param  list<string>  $ids  The rows the person ticked.
-     * @param  bool  $all  Whether they opted in to every record the filters match.
+     * @param  bool  $allMatching  Whether they opted in to every record the filters match.
      * @param  Closure(Model): void  $act
      * @return list<array{id: string, label: string, status: string}>
      */
@@ -41,14 +41,14 @@ final readonly class ApplyBulkAction
         ResourceContract $resource,
         ResourceQuery $query,
         array $ids,
-        bool $all,
+        bool $allMatching,
         string $ability,
         Closure $act,
         ?Authenticatable $user,
     ): array {
         $scoped = $query->applyTo($resource->scopedQuery(), $resource);
 
-        $records = $all
+        $records = $allMatching
             // Chunked by key: "everything the filters match" is not a number the
             // request gets to choose, so it must not be a number held in memory.
             ? $scoped->lazyById(self::CHUNK)

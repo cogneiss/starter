@@ -11,6 +11,7 @@ use App\Onboarding\Checklist;
 use App\Support\OrganizationContext;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
@@ -43,6 +44,13 @@ final readonly class OnboardingController
     public function store(#[CurrentUser] User $user): RedirectResponse
     {
         $progress = $this->checklist->decision($user) ?? new OnboardingProgress;
+
+        // A stored decision was found inside this person's own scope, so this is
+        // the second lock on a door already locked — and the one that keeps the
+        // policy honest as new callers appear.
+        if ($progress->exists) {
+            Gate::authorize('manage', $progress);
+        }
 
         $progress->user()->associate($user);
         $progress->skipped_at = now();

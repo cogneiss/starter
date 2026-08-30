@@ -116,10 +116,10 @@ export default function Edit({ members, roles = [] }: Props) {
                         saveable="organization-members"
                         bulk={{
                             actions: bulkActions,
-                            submit: (action, ids, all) =>
+                            submit: (action, ids, allMatching) =>
                                 router.post(
                                     bulk(),
-                                    { action, ids, all },
+                                    { action, ids, allMatching },
                                     { preserveScroll: true },
                                 ),
                         }}

@@ -79,8 +79,8 @@ final readonly class ImportController
 
         $organizationId = (string) $context->id();
 
-        ScanTempUpload::dispatch($upload->id, $organizationId);
-        ParseImportBatch::dispatch($batch->id, $organizationId, $user->id);
+        dispatch(new ScanTempUpload($upload->id, $organizationId));
+        dispatch(new ParseImportBatch($batch->id, $organizationId, $user->id));
 
         return to_route('import.show', $batch->id);
     }

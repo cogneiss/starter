@@ -8,7 +8,6 @@ use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\Php85\Rector\Property\AddOverrideAttributeToOverriddenPropertiesRector;
 use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
-use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
 use RectorLaravel\Set\LaravelSetList;
 use RectorLaravel\Set\LaravelSetProvider;
 
@@ -44,9 +43,6 @@ return RectorConfig::configure()
         __DIR__.'/tests',
     ])
     ->withSkip([
-        // The import controller dispatches through the job class rather than the
-        // helper, so the queue seam is greppable from the controller itself.
-        DispatchToHelperFunctionsRector::class => [__DIR__.'/app/Http/Controllers/ImportController.php'],
         // Roles are cloned from role templates, never faked.
         AddHasFactoryToModelsRector::class => [__DIR__.'/app/Models/Role.php'],
         AddOverrideAttributeToOverriddenMethodsRector::class,

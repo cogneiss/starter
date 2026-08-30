@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -26,6 +27,19 @@ it('stores a saved search with the columns its scope depends on', function (): v
 });
 
 it('keeps the query as json rather than a string', function (): void {
+    // SQLite has one storage class for text and json and reports the column as
+    // `text`, so the declaration is what has to be asserted there: it is what
+    // every other engine turns into a real json column.
+    if (DB::connection()->getDriverName() === 'sqlite') {
+        $migration = array_values(array_filter(
+            (array) glob(database_path('migrations/*_create_saved_searches_table.php')),
+        ));
+
+        expect(file_get_contents((string) $migration[0]))->toContain("json('query')");
+
+        return;
+    }
+
     expect(Schema::getColumnType('saved_searches', 'query'))->toContain('json');
 });
 

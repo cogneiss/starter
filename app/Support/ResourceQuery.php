@@ -6,9 +6,11 @@ namespace App\Support;
 
 use App\Data\ResourceFilterData;
 use App\Resources\ResourceContract;
+use Illuminate\Contracts\Database\Query\Expression as ExpressionContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Grammar;
 use Illuminate\Http\Request;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
@@ -318,15 +320,19 @@ final class ResourceQuery extends Data
             return;
         }
 
-        // The wildcards are ours; the ones the person typed are literal.
-        $like = '%'.addcslashes($this->q, '%_\\').'%';
+        // The wildcards are ours; the ones the person typed are literal. The
+        // escape character is a tilde rather than a backslash because a
+        // backslash is itself escaped inside a string literal on some engines
+        // and not on others, and this clause has to read the same on all of
+        // them.
+        $like = mb_strtolower('%'.str_replace(['~', '%', '_'], ['~~', '~%', '~_'], $this->q).'%');
 
         $query->where(function (Builder $inner) use ($columns, $like): void {
             foreach ($columns as $column) {
-                // Case-insensitive: a person typing "ada" means Ada, and on
-                // Postgres a plain LIKE would not agree.
                 if (! str_contains($column, '.')) {
-                    $inner->orWhereLike($column, $like, caseSensitive: false);
+                    $inner->orWhere(function (Builder $one) use ($column, $like): void {
+                        $one->getQuery()->whereRaw($this->likeClause($one, $column), [$like]);
+                    });
 
                     continue;
                 }
@@ -334,10 +340,39 @@ final class ResourceQuery extends Data
                 [$name, $field] = explode('.', $column, 2);
 
                 $inner->orWhereHas($name, function (Builder $related) use ($field, $like): void {
-                    $related->whereLike($field, $like, caseSensitive: false);
+                    $related->getQuery()->whereRaw($this->likeClause($related, $field), [$like]);
                 });
             }
         });
+    }
+
+    /**
+     * A case-insensitive LIKE that means the characters the person typed.
+     *
+     * `whereLike` sends no ESCAPE clause, and SQLite gives a backslash no
+     * meaning without one, so an escaped underscore would be searched for as a
+     * backslash. Lowering both sides is what makes it case-insensitive
+     * everywhere, including Postgres, where plain LIKE is not.
+     *
+     * @param  Builder<covariant Model>  $query
+     */
+    private function likeClause(Builder $query, string $column): ExpressionContract
+    {
+        // The column is wrapped by the connection's own grammar and never comes
+        // from the request — a list only searches the columns its resource
+        // named. It is still not a literal string to a static analyser, which is
+        // why this is an expression object rather than a raw string.
+        $sql = sprintf("lower(%s) like ? escape '~'", $query->getQuery()->getGrammar()->wrap($column));
+
+        return new readonly class($sql) implements ExpressionContract
+        {
+            public function __construct(private string $sql) {}
+
+            public function getValue(Grammar $grammar): string
+            {
+                return $this->sql;
+            }
+        };
     }
 
     /**

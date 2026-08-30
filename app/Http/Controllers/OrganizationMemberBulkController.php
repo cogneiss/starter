@@ -49,7 +49,7 @@ final readonly class OrganizationMemberBulkController
             $resource,
             ResourceQuery::fromRequest($request, $resource),
             $request->ids(),
-            $request->boolean('all'),
+            $request->boolean('allMatching'),
             $action->ability(),
             function (Model $record) use ($action, $actor, $suspend, $reactivate, $remove): void {
                 assert($record instanceof OrganizationMembership);

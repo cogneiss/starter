@@ -6,10 +6,7 @@ import { usePage } from '@inertiajs/react';
  * There is no second copy of any string on the client. The PHP translation
  * files are canonical; this module only reads what the page prop carries.
  */
-export function translate(
-    translations: Record<string, string>,
-    key: string,
-): string {
+function translate(translations: Record<string, string>, key: string): string {
     const message = translations[key];
 
     // A key nobody has translated yet renders as itself. Blank would be worse:
