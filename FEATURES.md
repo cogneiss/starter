@@ -493,6 +493,7 @@ Local loops:
 | `composer update:requirements`                 | Bump PHP and JS dependencies to latest.                                       |
 | `composer typescript:generate`                 | Rewrite `resources/js/types/generated.d.ts` from the `#[TypeScript]` classes. |
 | `php artisan app:make-resource <Name>`         | Scaffold a model and everything around it, tests included.                    |
+| `php artisan app:make-onboarding-step <Name>`  | Scaffold an onboarding step the registry picks up.                            |
 | `php artisan app:doctor`                       | Check that this machine can run, test and build the app.                      |
 | `php artisan ai:install`                       | Install the `vector` extension. A no-op away from PostgreSQL.                 |
 | `php artisan resource:cache`                   | Cache the resource registry for production.                                   |

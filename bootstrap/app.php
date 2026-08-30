@@ -9,6 +9,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleBrand;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HonorDoNotTrack;
+use App\Http\Middleware\RedirectIfNotOnboarded;
 use App\Http\Middleware\RequireOrganization;
 use App\Http\Middleware\ResolveOrganization;
 use App\Support\UserFriendlyExceptionRegistrar;
@@ -57,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'organization' => RequireOrganization::class,
             'not-impersonating' => ForbiddenDuringImpersonation::class,
             'two-factor' => EnsureTwoFactorEnabled::class,
+            'onboarded' => RedirectIfNotOnboarded::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

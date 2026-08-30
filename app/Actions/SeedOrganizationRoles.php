@@ -7,7 +7,9 @@ namespace App\Actions;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\RoleTemplate;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
 
 final readonly class SeedOrganizationRoles
 {
@@ -37,12 +39,30 @@ final readonly class SeedOrganizationRoles
                     'protected' => $template->protected,
                 ]);
 
-                $role->syncPermissions($template->permissions);
+                $role->syncPermissions($this->existing($template->permissions, $guard));
 
                 $roles[$template->name] = $role;
             }
 
             return $roles;
         });
+    }
+
+    /**
+     * The permissions among these names that the application still has.
+     *
+     * A template written against an older catalog still names a permission that
+     * no longer exists, and one stale entry must not stop an organization being
+     * created.
+     *
+     * @param  list<string>  $names
+     * @return Collection<int, Permission>
+     */
+    private function existing(array $names, string $guard): Collection
+    {
+        return Permission::query()
+            ->where('guard_name', $guard)
+            ->whereIn('name', $names)
+            ->get();
     }
 }

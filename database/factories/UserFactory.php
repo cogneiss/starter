@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Actions\SeedOrganizationRoles;
+use App\Models\OnboardingProgress;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\User;
@@ -40,11 +41,20 @@ final class UserFactory extends Factory
     /**
      * Create the user as an active member of the given organization, and make
      * it their current organization.
+     *
+     * They arrive past onboarding. An established member is somebody who already
+     * dealt with the checklist, so tests about anything else are not made to walk
+     * through it first; the onboarding tests delete this row to get the gate back.
      */
     public function forOrganization(Organization $organization, string $role = 'Owner'): self
     {
         return $this->afterCreating(function (User $user) use ($organization, $role): void {
             OrganizationMembership::factory()->create([
+                'organization_id' => $organization->id,
+                'user_id' => $user->id,
+            ]);
+
+            OnboardingProgress::factory()->skipped()->create([
                 'organization_id' => $organization->id,
                 'user_id' => $user->id,
             ]);

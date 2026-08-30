@@ -9,6 +9,7 @@ use App\Models\AiMemory;
 use App\Models\FeatureOverride;
 use App\Models\ImpersonationLog;
 use App\Models\LoginHistory;
+use App\Models\OnboardingProgress;
 use App\Models\Role;
 use App\Models\RoleTemplate;
 use App\Models\SavedSearch;
@@ -29,6 +30,7 @@ return [
         FeatureOverride::class => 'pending resource adapter',
         ImpersonationLog::class => 'Append-only audit table, never listed or linked.',
         LoginHistory::class => 'Append-only audit table, read through UserData, never linked.',
+        OnboardingProgress::class => "One person's decision to skip the activation checklist, read by the gate, never listed as a record.",
         Role::class => 'pending resource adapter',
         RoleTemplate::class => 'Seed data for new organizations, not a user-facing record.',
         SavedSearch::class => "One person's kept views of a list, offered by the list itself, never listed as records of their own.",

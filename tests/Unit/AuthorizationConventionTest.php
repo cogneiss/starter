@@ -14,6 +14,11 @@ $exceptions = [
     // whole of the question, so there is no permission to hold and none to
     // check — the method still checks the organization.
     'App\Policies\SavedSearchPolicy@manage',
+
+    // Onboarding progress is one person's own decision to skip the checklist.
+    // Nobody else may read or write it whatever role they hold, so ownership is
+    // the whole of the question — the method still checks the organization.
+    'App\Policies\OnboardingProgressPolicy@manage',
 ];
 
 it('gives every organization-scoped model a policy', function (): void {

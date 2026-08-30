@@ -32,25 +32,56 @@ function signInWithAListOfMembers(): void
 }
 
 /**
- * The busy state lands on the table body and nowhere else.
+ * Start recording every element that is marked busy from here on.
  *
- * A click and the re-render it causes are not the same tick, so reading the DOM
- * the instant the click returns is a race the table loses on a loaded machine.
- * The body stays marked for a floor of 600ms once it is marked, so a short poll
- * catches it every time — and still fails if it is never marked at all.
+ * Polling the DOM after the click is a race the table loses on a loaded
+ * machine: the busy state can come and go inside the same call that dispatched
+ * the click. An observer installed beforehand cannot miss it, however short it
+ * was, so the assertion below is about what happened rather than about what is
+ * still on the screen when the test gets a turn.
  */
-function assertOnlyTheTableBodyIsPending(Webpage|AwaitableWebpage $page): void
+function watchWhatGoesPending(Webpage|AwaitableWebpage $page): void
 {
-    foreach (range(1, 100) as $ignored) {
-        if ($page->script('document.querySelectorAll(\'[data-test="table-body"][data-pending="true"]\').length') > 0) {
+    $page->script(<<<'JS'
+        window.__pending = [];
+
+        if (window.__pendingObserver) {
+            window.__pendingObserver.disconnect();
+        }
+
+        window.__pendingObserver = new MutationObserver(() => {
+            for (const element of document.querySelectorAll('[data-pending="true"]')) {
+                window.__pending.push(element.getAttribute('data-test') ?? element.tagName);
+            }
+        });
+
+        window.__pendingObserver.observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+        });
+    JS);
+}
+
+/**
+ * The busy state landed on the table body and nowhere else.
+ */
+function assertOnlyTheTableBodyWentPending(Webpage|AwaitableWebpage $page): void
+{
+    $seen = [];
+
+    foreach (range(1, 250) as $ignored) {
+        /** @var list<string> $seen */
+        $seen = $page->script('window.__pending');
+
+        if ($seen !== []) {
             break;
         }
 
         Sleep::usleep(20_000);
     }
 
-    $page->assertPresent('[data-test="table-body"][data-pending="true"]')
-        ->assertMissing('[data-pending="true"]:not([data-test="table-body"])');
+    expect(array_values(array_unique($seen)))->toBe(['table-body']);
 }
 
 it('sorts, pages and searches through the query string', function (): void {
@@ -68,9 +99,11 @@ it('sorts, pages and searches through the query string', function (): void {
 
     // Sorting: the URL gains the column and the direction, the pending state
     // lands on the table body alone, and the rows come back reversed.
+    watchWhatGoesPending($page);
+
     $page->click('[data-test="sort-user.name"]');
 
-    assertOnlyTheTableBodyIsPending($page);
+    assertOnlyTheTableBodyWentPending($page);
 
     $page->waitForText('Member 12')
         ->assertQueryStringHas('sort', 'user.name')
@@ -79,9 +112,11 @@ it('sorts, pages and searches through the query string', function (): void {
         ->assertDontSeeIn('[data-test="table-body"]', 'Aaron Owner');
 
     // Paging: the order is kept, the page is added, and the rows move on.
+    watchWhatGoesPending($page);
+
     $page->click('[data-test="table-next"]');
 
-    assertOnlyTheTableBodyIsPending($page);
+    assertOnlyTheTableBodyWentPending($page);
 
     $page->waitForText('Aaron Owner')
         ->assertQueryStringHas('page', '2')
@@ -93,9 +128,11 @@ it('sorts, pages and searches through the query string', function (): void {
     // Searching: the term reaches the URL, the page falls back to the first one
     // because the old page number means nothing against a new result set, and
     // the rows narrow to the single match.
+    watchWhatGoesPending($page);
+
     $page->type('[data-test="table-search"]', 'member 07');
 
-    assertOnlyTheTableBodyIsPending($page);
+    assertOnlyTheTableBodyWentPending($page);
 
     $page->waitForText('member07@example.com')
         ->assertQueryStringHas('q', 'member 07')

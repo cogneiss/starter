@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Models\OnboardingProgress;
+use App\Models\Organization;
+use App\Models\User;
 use App\Resources\ResourceContract;
 use App\Support\AiAvailability;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -302,4 +305,23 @@ function motionStyles(bool $reduced): array
     $styles = json_decode(mb_trim($process->getOutput()), true, flags: JSON_THROW_ON_ERROR);
 
     return $styles;
+}
+
+/**
+ * An owner who has not been through onboarding yet.
+ *
+ * The user factory settles the checklist for everybody else — an established
+ * member has already dealt with it — so the onboarding tests take that decision
+ * back off the record and meet the gate the way a new owner does.
+ *
+ * @return array{0: User, 1: Organization}
+ */
+function ownerBeforeOnboarding(): array
+{
+    $organization = Organization::factory()->create();
+    $owner = User::factory()->forOrganization($organization)->create();
+
+    OnboardingProgress::withoutOrganizationScope()->delete();
+
+    return [$owner, $organization];
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\SeedOrganizationRoles;
 use App\Models\Organization;
 use App\Models\Role;
+use App\Models\RoleTemplate;
 use App\Support\PermissionCatalog;
 
 it('clones every template into roles owned by the organization', function (): void {
@@ -33,6 +34,19 @@ it('gives each organization its own roles', function (): void {
     expect($firstRoles['Member']->id)->not->toBe($secondRoles['Member']->id)
         ->and($firstRoles['Member']->fresh()?->permissions)->toBeEmpty()
         ->and($secondRoles['Member']->fresh()?->permissions)->not->toBeEmpty();
+});
+
+it('skips a template permission the catalog no longer knows about', function (): void {
+    $template = RoleTemplate::query()->where('name', 'Member')->firstOrFail();
+
+    $template->forceFill(['permissions' => [...$template->permissions, 'widgets.create']])->save();
+
+    $organization = Organization::factory()->create();
+
+    $roles = resolve(SeedOrganizationRoles::class)->handle($organization);
+
+    expect($roles['Member']->permissions->pluck('name')->all())
+        ->toBe(PermissionCatalog::endingWith('view'));
 });
 
 it('is safe to run twice', function (): void {

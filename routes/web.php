@@ -7,8 +7,10 @@ use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\BrowserSessionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationBulkController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizationAiUsageController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
@@ -42,8 +44,15 @@ Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 // the request again rather than telling a person to reload and retype.
 Route::get('csrf-token', fn () => response()->noContent())->name('csrf-token');
 
-Route::middleware(['auth', 'verified', 'organization', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
-    Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
+Route::middleware(['auth', 'verified', 'organization', 'two-factor', 'onboarded', HandlePrecognitiveRequests::class])->group(function (): void {
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    // Onboarding... the gate lives on this group too, and excludes these two
+    // routes, so the screen it sends people to is reachable from inside it.
+    Route::get('onboarding', [OnboardingController::class, 'show'])
+        ->name('onboarding.show');
+    Route::post('onboarding/skip', [OnboardingController::class, 'store'])
+        ->name('onboarding.skip');
 
     // Search... the command palette calls this on every keystroke, so it is
     // throttled well above a human typing speed and well below a scraper's.

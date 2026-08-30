@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Onboarding\Steps;
+
+use App\Models\Organization;
+use App\Models\User;
+use App\Onboarding\StepContract;
+
+final class {{ class }}Step implements StepContract
+{
+    public function key(): string
+    {
+        return '{{ kebab }}';
+    }
+
+    public function title(): string
+    {
+        return '{{ title }}';
+    }
+
+    public function description(): string
+    {
+        return 'Say here what this step gets the person, in one sentence.';
+    }
+
+    public function route(): string
+    {
+        return 'dashboard';
+    }
+
+    public function isRequired(): bool
+    {
+        return false;
+    }
+
+    public function order(): int
+    {
+        return 100;
+    }
+
+    /**
+     * Answer from the data the step is about, never from a stored flag: a step
+     * finished through its ordinary route has to count without being told.
+     */
+    public function isComplete(User $user, Organization $organization): bool
+    {
+        return false;
+    }
+}
