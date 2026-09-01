@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Models\Activity;
 use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
+use App\Support\OrganizationContext;
 use App\Support\ResourceQuery;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -36,6 +39,21 @@ final readonly class ExportResource
     public function handle(ResourceContract $resource, ResourceQuery $query, ?Authenticatable $user): StreamedResponse
     {
         $columns = ResourceColumn::visibleTo($resource->columns(), $user);
+
+        // Handing over a spreadsheet of an organization's data is itself an
+        // auditable act, recorded before a single row leaves.
+        $organizationId = resolve(OrganizationContext::class)->id();
+
+        if ($organizationId !== null) {
+            Activity::query()->create([
+                'organization_id' => $organizationId,
+                'log_name' => 'audit',
+                'description' => 'exported '.$resource->key(),
+                'event' => 'exported',
+                'causer_type' => $user instanceof Model ? $user->getMorphClass() : null,
+                'causer_id' => $user?->getAuthIdentifier(),
+            ]);
+        }
 
         $rows = $query->applyTo($resource->scopedQuery(), $resource)
             ->with(ResourceQuery::relationsIn(array_column($columns, 'key')));

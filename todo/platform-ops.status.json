@@ -25,7 +25,7 @@
         {
             "id": 4,
             "name": "audit log",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=Audit"
         },
         {

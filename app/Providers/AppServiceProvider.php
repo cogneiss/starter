@@ -10,6 +10,7 @@ use App\Auth\Resolvers\SingleOrganizationResolver;
 use App\Auth\Resolvers\SubdomainOrganizationResolver;
 use App\Contracts\FileScanner;
 use App\Enums\KnownFeatures;
+use App\Listeners\RecordModelActivity;
 use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Resources\ResourceRegistry;
@@ -17,6 +18,7 @@ use App\Support\OrganizationContext;
 use App\Support\OrganizationDatabaseChannel;
 use App\Support\Scanners\NullScanner;
 use Illuminate\Notifications\ChannelManager;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
@@ -52,6 +54,11 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(ApiToken::class);
+
+        Event::listen(
+            ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],
+            RecordModelActivity::class,
+        );
 
         // Every stored notification carries the organization it was raised in.
         // Laravel resolves the `database` driver through the container, so the

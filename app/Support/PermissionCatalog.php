@@ -107,6 +107,12 @@ final class PermissionCatalog
                 'See how much the organization has used the API and by which tokens.',
             ),
             new PermissionDefinition(
+                'audit.view',
+                'Audit',
+                'View the audit log',
+                'See who changed what in the organization, and when.',
+            ),
+            new PermissionDefinition(
                 'roles.manage',
                 'Roles',
                 'Manage roles',

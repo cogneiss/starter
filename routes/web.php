@@ -6,6 +6,7 @@ use App\Ai\Blocks\BlockCollection;
 use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImportController;
@@ -139,6 +140,10 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
             ->name('organization-invitation.store');
         Route::delete('settings/invitations/{invitation}', [OrganizationInvitationController::class, 'destroy'])
             ->name('organization-invitation.destroy');
+
+        // Audit Log...
+        Route::get('settings/audit', [AuditLogController::class, 'index'])
+            ->name('audit-log.index');
 
         // Saved Searches...
         Route::post('settings/saved-searches', [SavedSearchController::class, 'store'])

@@ -1,3 +1,12 @@
+export type Activity = {
+id: string,
+description: string,
+event: string | null,
+subject_type: string | null,
+subject_id: string | null,
+causer: string | null,
+created_at: string,
+};
 export type AiAuditStatus = 'ok' | 'blocked';
 export type AiBlockType = 'text' | 'markdown' | 'table' | 'list' | 'metric' | 'form' | 'confirm';
 export type AiConfirmBlock = {

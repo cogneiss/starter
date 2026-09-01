@@ -7,6 +7,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editApiTokens } from '@/routes/api-token';
 import { edit as editAppearance } from '@/routes/appearance';
+import { index as auditLog } from '@/routes/audit-log';
 import { show as showBrowserSessions } from '@/routes/browser-session';
 import { edit as editOrganization } from '@/routes/organization';
 import { edit as editMembers } from '@/routes/organization-member';
@@ -61,6 +62,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'API Tokens',
         href: editApiTokens(),
+        icon: null,
+    },
+    {
+        title: 'Audit Log',
+        href: auditLog(),
         icon: null,
     },
     {

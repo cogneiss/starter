@@ -10,3 +10,4 @@ Schedule::command('model:prune', ['--model' => [LoginHistory::class]])->daily();
 Schedule::command('uploads:prune')->daily();
 Schedule::command('tokens:prune')->daily();
 Schedule::command('api:prune-logs')->daily();
+Schedule::command('audit:prune')->daily();

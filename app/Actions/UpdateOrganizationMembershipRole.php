@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Models\Activity;
 use App\Models\OrganizationMembership;
 use App\Models\Role;
 use App\Support\OrganizationContext;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 final readonly class UpdateOrganizationMembershipRole
@@ -41,6 +43,20 @@ final readonly class UpdateOrganizationMembershipRole
             $membership->organization,
             fn () => $membership->user->syncRoles([$target]),
         );
+
+        // Role changes land in pivot tables the wildcard audit listener never
+        // sees, so the audit entry is written here.
+        Activity::query()->create([
+            'organization_id' => $membership->organization_id,
+            'log_name' => 'audit',
+            'description' => 'role_changed OrganizationMembership',
+            'subject_type' => $membership->getMorphClass(),
+            'subject_id' => $membership->getKey(),
+            'event' => 'role_changed',
+            'causer_type' => Auth::user()?->getMorphClass(),
+            'causer_id' => Auth::id(),
+            'properties' => ['after' => ['role' => $target->name]],
+        ]);
 
         return $membership;
     }
