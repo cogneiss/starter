@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Jobs\SendWebhookDelivery;
+use App\Listeners\DispatchWebhookEvents;
 use App\Models\Organization;
+use App\Models\SavedSearch;
 use App\Models\User;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
@@ -263,4 +265,34 @@ it('quietly ignores a delivery that no longer exists', function (): void {
     SendWebhookDelivery::dispatch(Str::uuid()->toString(), $this->organization->id);
 
     Http::assertNothingSent();
+});
+
+it('exposes its attempts through the endpoint relation', function (): void {
+    $delivery = WebhookDelivery::factory()->create([
+        'organization_id' => $this->organization->id,
+        'webhook_endpoint_id' => $this->endpoint->id,
+    ]);
+
+    resolve(OrganizationContext::class)->runAs($this->organization, function () use ($delivery): void {
+        expect($this->endpoint->deliveries()->pluck('id')->all())->toBe([$delivery->id]);
+    });
+});
+
+it('dispatches nothing for a model outside the resource registry', function (): void {
+    resolve(OrganizationContext::class)->runAs($this->organization, function (): void {
+        SavedSearch::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->owner->id,
+        ]);
+    });
+
+    expect(WebhookDelivery::withoutOrganizationScope()->count())->toBe(0);
+});
+
+it('ignores an eloquent action outside the event catalogue', function (): void {
+    resolve(OrganizationContext::class)->runAs($this->organization, function (): void {
+        resolve(DispatchWebhookEvents::class)->handle('eloquent.restored: App\Models\User', [$this->owner]);
+    });
+
+    expect(WebhookDelivery::withoutOrganizationScope()->count())->toBe(0);
 });

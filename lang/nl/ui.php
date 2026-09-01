@@ -16,6 +16,7 @@ return [
     ],
 
     'nav' => [
+        'admin' => 'Beheer',
         'dashboard' => 'Overzicht',
         'documentation' => 'Documentatie',
         'repository' => 'Repository',

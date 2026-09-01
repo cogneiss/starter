@@ -18,6 +18,7 @@ return [
     ],
 
     'nav' => [
+        'admin' => 'Admin',
         'dashboard' => 'Dashboard',
         'documentation' => 'Documentation',
         'repository' => 'Repository',

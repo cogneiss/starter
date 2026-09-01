@@ -92,6 +92,9 @@ export function installHttpErrorHandlers(): void {
 
         if (status === 419 && expired) {
             toast.error(friendlyMessage(status), {
+                // The toast is the only way back to the lost submission, so it
+                // stays until the person acts on it or dismisses it.
+                duration: Infinity,
                 action: {
                     label: 'Try again',
                     onClick: () => void retryExpiredVisit(expired),

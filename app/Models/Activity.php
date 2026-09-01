@@ -15,7 +15,7 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  * audit read impossible at the query level, and the creating hook stamps
  * `organization_id` from the bound OrganizationContext at write time.
  *
- * @property-read string $organization_id
+ * @property-read ?string $organization_id
  */
 #[NoTrack]
 final class Activity extends SpatieActivity

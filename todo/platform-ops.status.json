@@ -61,7 +61,7 @@
         {
             "id": 10,
             "name": "admin control plane",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=Admin"
         },
         {

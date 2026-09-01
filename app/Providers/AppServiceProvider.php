@@ -17,6 +17,7 @@ use App\Listeners\RecordAnalyticsEvent;
 use App\Listeners\RecordModelActivity;
 use App\Models\ApiToken;
 use App\Models\Organization;
+use App\Models\User;
 use App\Resources\ResourceRegistry;
 use App\Support\Analytics\NullAnalyticsReporter;
 use App\Support\Analytics\PostHogReporter;
@@ -36,6 +37,7 @@ use App\Webhooks\NativeHostnameResolver;
 use App\Webhooks\ResolvesHostnames;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
@@ -93,6 +95,10 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(ApiToken::class);
+
+        // Platform staff only. A flag on the user record rather than a
+        // permission, so no organization role — however complete — grants it.
+        Gate::define('platform', fn (User $user): bool => $user->is_super_admin);
 
         Event::listen(
             ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],

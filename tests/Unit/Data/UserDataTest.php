@@ -29,6 +29,7 @@ it('builds the shared user payload without leaking credentials', function (): vo
         'email' => 'ada@example.com',
         'email_verified_at' => $user->email_verified_at?->toIso8601String(),
         'two_factor_enabled' => true,
+        'is_super_admin' => false,
         'created_at' => $user->created_at->toIso8601String(),
         'updated_at' => $user->updated_at->toIso8601String(),
     ]);

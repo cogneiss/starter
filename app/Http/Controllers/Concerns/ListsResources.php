@@ -10,6 +10,7 @@ use App\Data\SavedSearchData;
 use App\Models\SavedSearch;
 use App\Resources\ResourceContract;
 use App\Resources\ResourceRegistry;
+use App\Support\OrganizationContext;
 use App\Support\ResourceQuery;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,9 +35,9 @@ trait ListsResources
      * @param  Closure(Model): Data  $row  Turns one record into its Data object.
      * @param  Closure(Builder<covariant Model>): mixed|null  $shape  Eager loads and any list-specific narrowing.
      */
-    protected function listResource(string $key, Request $request, Closure $row, ?Closure $shape = null): ResourceListData
+    protected function listResource(ResourceContract|string $key, Request $request, Closure $row, ?Closure $shape = null): ResourceListData
     {
-        $resource = resolve(ResourceRegistry::class)->get($key);
+        $resource = $key instanceof ResourceContract ? $key : resolve(ResourceRegistry::class)->get($key);
 
         $query = $resource->scopedQuery();
 
@@ -46,10 +47,15 @@ trait ListsResources
             $shape($query);
         }
 
-        $searches = SavedSearch::ownedBy($request->user())
-            ->where('resource', $resource->key())
-            ->orderBy('name')
-            ->get();
+        // Saved views are per-organization; the admin control plane runs with
+        // no organization context, so there it simply has none.
+        /** @var Collection<int, SavedSearch> $searches */
+        $searches = resolve(OrganizationContext::class)->id() === null
+            ? new Collection
+            : SavedSearch::ownedBy($request->user())
+                ->where('resource', $resource->key())
+                ->orderBy('name')
+                ->get();
 
         $listQuery = $this->listQuery($request, $resource, $searches);
 
@@ -87,9 +93,9 @@ trait ListsResources
     /**
      * The list this request describes, streamed as CSV.
      */
-    protected function exportResource(string $key, Request $request): StreamedResponse
+    protected function exportResource(ResourceContract|string $key, Request $request): StreamedResponse
     {
-        $resource = resolve(ResourceRegistry::class)->get($key);
+        $resource = $key instanceof ResourceContract ? $key : resolve(ResourceRegistry::class)->get($key);
 
         return resolve(ExportResource::class)->handle(
             $resource,

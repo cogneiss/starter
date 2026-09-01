@@ -2,6 +2,9 @@
 
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+/* Sonner injects this stylesheet at runtime, which the CSP's nonce-only
+   style-src rejects; bundling it serves the same rules from 'self'. */
+@import 'sonner/dist/styles.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

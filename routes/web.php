@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Ai\Blocks\BlockCollection;
+use App\Http\Controllers\Admin\AdminHealthController;
+use App\Http\Controllers\Admin\AdminResourceController;
 use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
@@ -44,6 +46,7 @@ use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserTwoFactorAuthenticationController;
 use App\Http\Controllers\WebhookDeliveryReplayController;
+use App\Http\Middleware\EnsurePlatformAdmin;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -301,6 +304,17 @@ Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function 
         ->name('login');
     Route::post('login', [SessionController::class, 'store'])
         ->name('login.store');
+});
+
+// Admin control plane... cross-organization by design, so the organization
+// middleware stays off and every query inside reads without the tenant scope.
+// The gate denies with a 404: to anyone without the platform ability, these
+// routes do not exist.
+Route::middleware(['auth', 'two-factor', EnsurePlatformAdmin::class])->group(function (): void {
+    Route::get('admin', AdminHealthController::class)
+        ->name('admin.index');
+    Route::get('admin/{page}', [AdminResourceController::class, 'index'])
+        ->name('admin.pages');
 });
 
 Route::middleware(['auth', HandlePrecognitiveRequests::class])->group(function (): void {

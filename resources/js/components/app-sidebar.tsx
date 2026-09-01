@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FolderGit2, LayoutGrid, ShieldCheck } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -16,10 +16,12 @@ import {
 } from '@/components/ui/sidebar';
 import { useTranslate } from '@/lib/i18n';
 import { dashboard } from '@/routes';
+import { index as adminIndex } from '@/routes/admin';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const t = useTranslate();
+    const { auth } = usePage().props;
 
     const mainNavItems: NavItem[] = [
         {
@@ -27,6 +29,15 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
+        ...(auth.user?.is_super_admin
+            ? [
+                  {
+                      title: t('nav.admin'),
+                      href: adminIndex(),
+                      icon: ShieldCheck,
+                  },
+              ]
+            : []),
     ];
 
     const footerNavItems: NavItem[] = [

@@ -17,6 +17,7 @@ final class UserData extends Data
         public string $email,
         public ?string $email_verified_at,
         public bool $two_factor_enabled,
+        public bool $is_super_admin,
         public string $created_at,
         public string $updated_at,
     ) {}
@@ -29,6 +30,7 @@ final class UserData extends Data
             email: $user->email,
             email_verified_at: $user->email_verified_at?->toIso8601String(),
             two_factor_enabled: $user->hasEnabledTwoFactorAuthentication(),
+            is_super_admin: $user->is_super_admin,
             created_at: $user->created_at->toIso8601String(),
             updated_at: $user->updated_at->toIso8601String(),
         );
