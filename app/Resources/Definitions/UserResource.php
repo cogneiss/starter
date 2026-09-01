@@ -113,7 +113,10 @@ final class UserResource implements ResourceContract
     public function scopedQuery(): Builder
     {
         return $this->scopedToOrganization(
-            fn (Organization $organization): Builder => $organization->users()->getQuery(),
+            // The pivot join would otherwise leak its own id/created_at columns
+            // into the hydrated User, so only the users table is selected.
+            fn (Organization $organization): Builder => $organization->users()->getQuery()
+                ->select((new User)->qualifyColumn('*')),
         );
     }
 }

@@ -92,7 +92,8 @@ final class UserFriendlyExceptionRegistrar
             return $response;
         }
 
-        if ($request->expectsJson()) {
+        // The API answers JSON regardless of the Accept header a client sent.
+        if ($request->expectsJson() || $request->is('api/*')) {
             return new JsonResponse(['message' => $described['message']], $described['status']);
         }
 

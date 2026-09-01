@@ -385,7 +385,9 @@ final class ResourceQuery extends Data
         }
 
         if (! str_contains($this->sort, '.')) {
-            $query->orderBy($this->sort, $this->dir);
+            // Qualified because a scoped query may join (users through the
+            // membership pivot), and both sides can carry the sort column.
+            $query->orderBy($query->qualifyColumn($this->sort), $this->dir);
         } else {
             [$name, $field] = explode('.', $this->sort, 2);
 

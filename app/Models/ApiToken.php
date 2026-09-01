@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 
 /**
@@ -61,9 +62,21 @@ final class ApiToken extends PersonalAccessToken
 
         [$id, $plain] = explode('|', $token, 2);
 
+        // The id column is a uuid; anything else would be a database error
+        // rather than the 401 a garbage credential deserves.
+        if (! Str::isUuid($id)) {
+            return null;
+        }
+
         $instance = self::withoutOrganizationScope()->find($id);
 
         if ($instance instanceof self && hash_equals($instance->token, hash('sha256', $plain))) {
+            // Sanctum reads tokenable before any organization is bound, and
+            // relation autoloading would eager-load it through a query that
+            // carries this model's organization scope. Loading it here, through
+            // the typed morph query, keeps that lookup scope-free too.
+            $instance->setRelation('tokenable', $instance->tokenable()->getResults());
+
             return $instance;
         }
 

@@ -26,7 +26,9 @@ use Symfony\Component\HttpFoundation\Response;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
+        apiPrefix: 'api/v1',
     )
     ->withBroadcasting(
         __DIR__.'/../routes/channels.php',
@@ -64,6 +66,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // The API is JSON no matter what Accept header the client sent: a
+        // failure must never come back as a redirect or an HTML page.
+        $exceptions->shouldRenderJsonWhen(
+            fn (Request $request, Throwable $throwable): bool => $request->is('api/*') || $request->expectsJson(),
+        );
+
         $exceptions->respond(
             fn (Response $response, Throwable $throwable, Request $request): Response => UserFriendlyExceptionRegistrar::respond($response, $throwable, $request),
         );

@@ -51,6 +51,9 @@ function ownPageUris(bool $guest): array
         ->filter(fn (RoutingRoute $route): bool => in_array('GET', $route->methods(), true))
         ->reject(fn (RoutingRoute $route): bool => str_contains($route->uri(), '{'))
         ->filter(fn (RoutingRoute $route): bool => declaredInWebRoutes($route))
+        // The API routes are pages for tokens, not browsers, and an `auth:sanctum`
+        // request mid-sweep would switch the default guard for the rest of it.
+        ->filter(fn (RoutingRoute $route): bool => in_array('web', $route->gatherMiddleware(), true))
         // `MakeResourceEndToEndTest` generates a Widget resource into
         // routes/web.php and takes it out again. A parallel worker that boots
         // mid-generation sees pages this kit does not ship, whose permissions

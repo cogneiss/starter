@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Models\User;
+use App\Resources\ResourceRegistry;
+use App\Support\ApiAbilities;
+use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Support\Str;
 
 it('plaintext appears once in the create response and only in its field', function (): void {
@@ -116,4 +119,54 @@ it('tokens:prune respects retention', function (): void {
     $this->assertDatabaseMissing('personal_access_tokens', ['id' => $oldExpired->id]);
     $this->assertDatabaseHas('personal_access_tokens', ['id' => $freshRevoked->id]);
     $this->assertDatabaseHas('personal_access_tokens', ['id' => $active->id]);
+});
+
+it('revoked token is refused', function (): void {
+    $organization = Organization::factory()->create();
+    [$token, $bearer] = apiBearer($organization);
+
+    $this->withHeader('Authorization', $bearer)->getJson('/api/v1/users')->assertOk();
+
+    ApiToken::withoutOrganizationScope()->whereKey($token->id)->update(['revoked_at' => now()]);
+
+    // Each real request resolves the guard fresh; the test app caches it.
+    resolve(Factory::class)->forgetGuards();
+
+    $this->withHeader('Authorization', $bearer)->getJson('/api/v1/users')->assertUnauthorized();
+});
+
+it('expired token is refused', function (): void {
+    $organization = Organization::factory()->create();
+    [$token, $bearer] = apiBearer($organization);
+
+    ApiToken::withoutOrganizationScope()->whereKey($token->id)->update(['expires_at' => now()->subMinute()]);
+
+    $this->withHeader('Authorization', $bearer)->getJson('/api/v1/users')->assertUnauthorized();
+});
+
+it('ability gates per resource', function (): void {
+    $organization = Organization::factory()->create();
+    [, $bearer] = apiBearer($organization, abilities: ['read:organizations']);
+
+    $this->withHeader('Authorization', $bearer)->getJson('/api/v1/users')->assertForbidden();
+
+    $this->withHeader('Authorization', $bearer)->getJson('/api/v1/organizations')->assertOk();
+});
+
+it('abilities are derived from the resource registry', function (): void {
+    $registryAbilities = array_map(
+        fn (string $key): string => 'read:'.$key,
+        resolve(ResourceRegistry::class)->keys(),
+    );
+
+    expect(ApiAbilities::all())->toBe($registryAbilities);
+
+    $key = withFakeResource();
+
+    expect(ApiAbilities::all())->toContain('read:'.$key);
+
+    $organization = Organization::factory()->create();
+    [, $bearer] = apiBearer($organization, abilities: ['read:'.$key]);
+
+    $this->withHeader('Authorization', $bearer)->getJson('/api/v1/'.$key)->assertOk();
 });

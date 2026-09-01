@@ -5,12 +5,15 @@ declare(strict_types=1);
 use App\Imports\ImportRegistry;
 use App\Imports\ImportRunner;
 use App\Jobs\ParseImportBatch;
+use App\Models\ApiToken;
 use App\Models\ImportBatch;
 use App\Models\OnboardingProgress;
 use App\Models\Organization;
 use App\Models\TempUpload;
 use App\Models\User;
+use App\Resources\Definitions\FakeWidgetResource;
 use App\Resources\ResourceContract;
+use App\Resources\ResourceRegistry;
 use App\Support\AiAvailability;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -284,9 +287,9 @@ function motionStyles(bool $reduced): array
         [$reduced ? 'true' : 'false', base_path('resources/js/lib/motion.ts')],
         <<<'JS_WRAP'
         globalThis.matchMedia = () => ({ matches: __REDUCED__ });
-        
+
         const { motionTransitions, transitionStyle } = await import('__MODULE__');
-        
+
         console.log(
             JSON.stringify(
                 Object.fromEntries(
@@ -311,6 +314,144 @@ function motionStyles(bool $reduced): array
     $styles = json_decode(mb_trim($process->getOutput()), true, flags: JSON_THROW_ON_ERROR);
 
     return $styles;
+}
+
+/**
+ * A live API token for an organization, and the Authorization header a client
+ * would send with it. The plaintext exists only in the returned header string.
+ *
+ * @param  list<string>  $abilities
+ * @return array{0: ApiToken, 1: string}
+ */
+function apiBearer(Organization $organization, array $abilities = ['read:users'], ?User $user = null): array
+{
+    $plain = Str::random(40);
+
+    $token = ApiToken::factory()->create([
+        'organization_id' => $organization->id,
+        'tokenable_id' => ($user ?? User::factory()->forOrganization($organization)->create())->id,
+        'token' => hash('sha256', $plain),
+        'abilities' => $abilities,
+    ]);
+
+    return [$token, 'Bearer '.$token->id.'|'.$plain];
+}
+
+/**
+ * Swaps in a registry that discovered one extra resource nobody shipped.
+ *
+ * The shipped definitions are copied to a scratch directory, a fake definition
+ * is written beside them, and the container's registry is replaced with one
+ * reading that directory — so anything derived from the registry (abilities,
+ * catalogue, routes) must pick the fake up with zero production-code changes.
+ */
+function withFakeResource(): string
+{
+    $directory = storage_path('framework/testing/resource-definitions');
+
+    File::ensureDirectoryExists($directory);
+
+    foreach (glob(app_path('Resources/Definitions/*.php')) ?: [] as $file) {
+        File::copy($file, $directory.'/'.basename($file));
+    }
+
+    File::put($directory.'/FakeWidgetResource.php', <<<'PHP'
+        <?php
+
+        declare(strict_types=1);
+
+        namespace App\Resources\Definitions;
+
+        use App\Data\UserData;
+        use App\Models\Organization;
+        use App\Models\User;
+        use App\Resources\ResourceContract;
+        use App\Resources\ScopedToOrganization;
+        use Illuminate\Database\Eloquent\Builder;
+        use Illuminate\Database\Eloquent\Model;
+
+        final class FakeWidgetResource implements ResourceContract
+        {
+            use ScopedToOrganization;
+
+            public function key(): string
+            {
+                return 'fake-widgets';
+            }
+
+            public function label(): string
+            {
+                return 'Fake widgets';
+            }
+
+            public function model(): string
+            {
+                return User::class;
+            }
+
+            public function dataClass(): string
+            {
+                return UserData::class;
+            }
+
+            public function policy(): ?string
+            {
+                return null;
+            }
+
+            public function url(Model $record): string
+            {
+                return route('user-profile.edit');
+            }
+
+            public function searchable(): array
+            {
+                return ['name', 'email'];
+            }
+
+            public function sortable(): array
+            {
+                return ['created_at', 'name'];
+            }
+
+            public function filters(): array
+            {
+                return [];
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+
+            public function recordLabel(Model $record): string
+            {
+                assert($record instanceof User);
+
+                return $record->name;
+            }
+
+            public function recordDescription(Model $record): ?string
+            {
+                return null;
+            }
+
+            public function scopedQuery(): Builder
+            {
+                return $this->scopedToOrganization(
+                    fn (Organization $organization): Builder => $organization->users()->getQuery(),
+                );
+            }
+        }
+        PHP);
+
+    if (! class_exists(FakeWidgetResource::class, false)) {
+        require_once $directory.'/FakeWidgetResource.php';
+    }
+
+    app()->instance(ResourceRegistry::class, new ResourceRegistry(directory: $directory));
+
+    return 'fake-widgets';
 }
 
 /**
