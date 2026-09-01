@@ -16,6 +16,7 @@ import { edit as editPassword } from '@/routes/password';
 import { show as showTwoFactor } from '@/routes/two-factor';
 import { edit as editNotifications } from '@/routes/user-notification-preference';
 import { edit } from '@/routes/user-profile';
+import { edit as editWebhooks } from '@/routes/webhook';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
@@ -62,6 +63,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'API Tokens',
         href: editApiTokens(),
+        icon: null,
+    },
+    {
+        title: 'Webhooks',
+        href: editWebhooks(),
         icon: null,
     },
     {

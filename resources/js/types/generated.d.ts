@@ -214,3 +214,23 @@ two_factor_enabled: boolean,
 created_at: string,
 updated_at: string,
 };
+export type WebhookDelivery = {
+id: string,
+endpointId: string,
+event: string,
+attempt: number,
+status: string,
+statusCode: number | null,
+durationMs: number | null,
+nextAttemptAt: string | null,
+createdAt: string,
+};
+export type WebhookEndpoint = {
+id: string,
+url: string,
+description: string | null,
+events: string[],
+active: boolean,
+consecutiveFailures: number,
+createdAt: string,
+};

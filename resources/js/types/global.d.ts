@@ -11,6 +11,7 @@ declare module '@inertiajs/core' {
         flashDataType: {
             toast?: FlashToast;
             plainTextToken?: string;
+            webhookSecret?: string;
         };
         sharedPageProps: {
             name: string;

@@ -1,80 +1,80 @@
 {
-    "plan": "Platform ops and trust layer",
-    "created": "2026-08-31",
-    "depends_on": "todo/ux-features.status.json (list kit), todo/resource-spine.status.json (registry), todo/org-access.status.json (tenancy)",
-    "coverage_command": "herd coverage vendor/bin/pest --parallel --coverage --exactly=100.0",
-    "phases": [
-        {
-            "id": 1,
-            "name": "per-org api tokens",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=ApiToken"
-        },
-        {
-            "id": 2,
-            "name": "registry-driven read api",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=\"ApiResource|ApiCatalogue\""
-        },
-        {
-            "id": 3,
-            "name": "usage log and rate tiers",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=\"ApiUsage|RateTier\""
-        },
-        {
-            "id": 4,
-            "name": "audit log",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=Audit"
-        },
-        {
-            "id": 5,
-            "name": "gdpr export and deletion",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=Gdpr"
-        },
-        {
-            "id": 6,
-            "name": "health and error reporter",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=\"Health|ErrorReporter\""
-        },
-        {
-            "id": 7,
-            "name": "analytics seam",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=Analytics"
-        },
-        {
-            "id": 8,
-            "name": "signed outgoing webhooks",
-            "status": "failing",
-            "command": "php artisan test --compact --filter=Webhook"
-        },
-        {
-            "id": 9,
-            "name": "csp and form friction",
-            "status": "failing",
-            "command": "php artisan test --compact --filter=\"Csp|Honeypot\""
-        },
-        {
-            "id": 10,
-            "name": "admin control plane",
-            "status": "failing",
-            "command": "php artisan test --compact --filter=Admin"
-        },
-        {
-            "id": 11,
-            "name": "documentation",
-            "status": "failing",
-            "command": "php artisan wiki:lint && rg -q 'API tokens' README.md && test -f SECURITY.md"
-        },
-        {
-            "id": 12,
-            "name": "full gate green",
-            "status": "failing",
-            "command": "composer test"
-        }
-    ]
+  "plan": "Platform ops and trust layer",
+  "created": "2026-08-31",
+  "depends_on": "todo/ux-features.status.json (list kit), todo/resource-spine.status.json (registry), todo/org-access.status.json (tenancy)",
+  "coverage_command": "herd coverage vendor/bin/pest --parallel --coverage --exactly=100.0",
+  "phases": [
+    {
+      "id": 1,
+      "name": "per-org api tokens",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=ApiToken"
+    },
+    {
+      "id": 2,
+      "name": "registry-driven read api",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=\"ApiResource|ApiCatalogue\""
+    },
+    {
+      "id": 3,
+      "name": "usage log and rate tiers",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=\"ApiUsage|RateTier\""
+    },
+    {
+      "id": 4,
+      "name": "audit log",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=Audit"
+    },
+    {
+      "id": 5,
+      "name": "gdpr export and deletion",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=Gdpr"
+    },
+    {
+      "id": 6,
+      "name": "health and error reporter",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=\"Health|ErrorReporter\""
+    },
+    {
+      "id": 7,
+      "name": "analytics seam",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=Analytics"
+    },
+    {
+      "id": 8,
+      "name": "signed outgoing webhooks",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=Webhook"
+    },
+    {
+      "id": 9,
+      "name": "csp and form friction",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=\"Csp|Honeypot\""
+    },
+    {
+      "id": 10,
+      "name": "admin control plane",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=Admin"
+    },
+    {
+      "id": 11,
+      "name": "documentation",
+      "status": "failing",
+      "command": "php artisan wiki:lint && rg -q 'API tokens' README.md && test -f SECURITY.md"
+    },
+    {
+      "id": 12,
+      "name": "full gate green",
+      "status": "failing",
+      "command": "composer test"
+    }
+  ]
 }

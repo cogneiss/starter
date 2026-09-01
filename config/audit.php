@@ -14,6 +14,8 @@ use App\Models\OnboardingProgress;
 use App\Models\OrganizationInvitation;
 use App\Models\SavedSearch;
 use App\Models\TempUpload;
+use App\Models\WebhookDelivery;
+use App\Models\WebhookEndpoint;
 
 return [
     /**
@@ -35,6 +37,8 @@ return [
         OrganizationInvitation::class,
         SavedSearch::class,
         TempUpload::class,
+        WebhookDelivery::class,
+        WebhookEndpoint::class,
     ],
 
     /**

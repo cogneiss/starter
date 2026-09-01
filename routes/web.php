@@ -26,6 +26,7 @@ use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationMemberBulkController;
 use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationSwitchController;
+use App\Http\Controllers\OrganizationWebhookEndpointController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionController;
@@ -42,6 +43,7 @@ use App\Http\Controllers\UserPasskeyController;
 use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserTwoFactorAuthenticationController;
+use App\Http\Controllers\WebhookDeliveryReplayController;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -106,6 +108,18 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
             ->name('api-token.store');
         Route::delete('settings/api-tokens/{token}', [OrganizationApiTokenController::class, 'destroy'])
             ->name('api-token.destroy');
+
+        // Webhooks...
+        Route::get('settings/webhooks', [OrganizationWebhookEndpointController::class, 'edit'])
+            ->name('webhook.edit');
+        Route::post('settings/webhooks', [OrganizationWebhookEndpointController::class, 'store'])
+            ->name('webhook.store');
+        Route::patch('settings/webhooks/{endpoint}', [OrganizationWebhookEndpointController::class, 'update'])
+            ->name('webhook.update');
+        Route::delete('settings/webhooks/{endpoint}', [OrganizationWebhookEndpointController::class, 'destroy'])
+            ->name('webhook.destroy');
+        Route::post('settings/webhooks/deliveries/{delivery}/replay', WebhookDeliveryReplayController::class)
+            ->name('webhook.replay');
 
         // Organization Members...
         Route::get('settings/members', [OrganizationMemberController::class, 'edit'])

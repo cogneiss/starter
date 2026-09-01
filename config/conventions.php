@@ -19,6 +19,8 @@ use App\Models\RoleTemplate;
 use App\Models\SavedSearch;
 use App\Models\SocialAccount;
 use App\Models\TempUpload;
+use App\Models\WebhookDelivery;
+use App\Models\WebhookEndpoint;
 
 return [
     /** Models with no factory — pivots and framework-owned tables. */
@@ -45,5 +47,7 @@ return [
         SavedSearch::class => "One person's kept views of a list, offered by the list itself, never listed as records of their own.",
         SocialAccount::class => 'Provider link shown on the profile page, never listed on its own.',
         TempUpload::class => 'A file waiting for a scanner, replaced by whatever it becomes, never listed as a record.',
+        WebhookDelivery::class => 'One send attempt, shown on the webhooks settings page, never listed as a record of its own.',
+        WebhookEndpoint::class => 'A delivery target with a signing secret, managed on its own settings page, never listed or linked as data.',
     ],
 ];

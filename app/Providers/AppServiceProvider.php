@@ -12,6 +12,7 @@ use App\Contracts\AnalyticsReporter;
 use App\Contracts\ErrorReporter;
 use App\Contracts\FileScanner;
 use App\Enums\KnownFeatures;
+use App\Listeners\DispatchWebhookEvents;
 use App\Listeners\RecordAnalyticsEvent;
 use App\Listeners\RecordModelActivity;
 use App\Models\ApiToken;
@@ -31,6 +32,8 @@ use App\Support\OrganizationDatabaseChannel;
 use App\Support\Reporting\NullErrorReporter;
 use App\Support\Reporting\SentryErrorReporter;
 use App\Support\Scanners\NullScanner;
+use App\Webhooks\NativeHostnameResolver;
+use App\Webhooks\ResolvesHostnames;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -58,6 +61,8 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(FileScanner::class, is_string($scanner) ? $scanner : NullScanner::class);
 
         $this->app->singleton(ResourceRegistry::class);
+
+        $this->app->bind(ResolvesHostnames::class, NativeHostnameResolver::class);
 
         $this->app->bind(
             OrganizationResolver::class,
@@ -97,6 +102,11 @@ final class AppServiceProvider extends ServiceProvider
         Event::listen(
             ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],
             RecordAnalyticsEvent::class,
+        );
+
+        Event::listen(
+            ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],
+            DispatchWebhookEvents::class,
         );
 
         // Every stored notification carries the organization it was raised in.

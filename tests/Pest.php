@@ -15,6 +15,7 @@ use App\Resources\Definitions\FakeWidgetResource;
 use App\Resources\ResourceContract;
 use App\Resources\ResourceRegistry;
 use App\Support\AiAvailability;
+use App\Webhooks\ResolvesHostnames;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -335,6 +336,31 @@ function apiBearer(Organization $organization, array $abilities = ['read:users']
     ]);
 
     return [$token, 'Bearer '.$token->id.'|'.$plain];
+}
+
+/**
+ * Answers webhook DNS lookups from a fixed map instead of the network, so no
+ * test resolves a real hostname. Hosts absent from the map get the default
+ * public answer.
+ *
+ * @param  array<string, list<string>>  $map
+ * @param  list<string>  $default
+ */
+function fakeWebhookDns(array $map = [], array $default = ['93.184.216.34']): void
+{
+    app()->instance(ResolvesHostnames::class, new class($map, $default) implements ResolvesHostnames
+    {
+        /**
+         * @param  array<string, list<string>>  $map
+         * @param  list<string>  $default
+         */
+        public function __construct(private array $map, private array $default) {}
+
+        public function resolve(string $hostname): array
+        {
+            return $this->map[$hostname] ?? $this->default;
+        }
+    });
 }
 
 /**

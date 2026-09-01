@@ -107,6 +107,18 @@ final class PermissionCatalog
                 'See how much the organization has used the API and by which tokens.',
             ),
             new PermissionDefinition(
+                'webhooks.view',
+                'Webhooks',
+                'View webhooks',
+                "See the organization's webhook endpoints and their delivery log.",
+            ),
+            new PermissionDefinition(
+                'webhooks.manage',
+                'Webhooks',
+                'Manage webhooks',
+                'Register, edit and delete webhook endpoints, and replay deliveries.',
+            ),
+            new PermissionDefinition(
                 'audit.view',
                 'Audit',
                 'View the audit log',
