@@ -12,7 +12,7 @@ code_refs:
     - app/Models/LoginHistory.php
     - app/Http/Middleware/HandleAppearance.php
     - app/Models/AiMemory.php
-updated: 2026-08-25
+updated: 2026-09-01
 ---
 
 # Account settings

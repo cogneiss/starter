@@ -8,7 +8,7 @@ code_refs:
     - config/data.php
     - phpstan.neon
     - tests/Unit/TypeScriptGenerationTest.php
-updated: 2026-08-24
+updated: 2026-09-01
 ---
 
 # Type safety, end to end

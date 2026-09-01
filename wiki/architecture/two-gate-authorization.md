@@ -7,7 +7,7 @@ code_refs:
     - app/Support/PermissionCatalog.php
     - tests/Unit/AuthorizationConventionTest.php
     - .ai/rules/policies.md
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Why authorization needs two gates
@@ -78,7 +78,11 @@ sees a 403, the log shows nothing wrong, and the string looks right in review.
 catalog is the source; the table is a projection of it. The UX layer added two
 entries under an `Imports` group — `imports.view` and `imports.run` — split
 because seeing which lines of a file failed and creating records from a file in
-bulk are not the same trust.
+bulk are not the same trust. The platform ops layer added six more, split the
+same way: `api.tokens.view` and `api.tokens.manage`, `api.usage.view`,
+`audit.view`, and `webhooks.view` and `webhooks.manage` — seeing a credential,
+a usage number, an audit trail or a delivery log is never the same trust as
+creating or revoking one.
 
 `OrganizationPolicy::viewAny()` is worth one line of its own: with no record to
 relate to, the relationship gate becomes "an organization is bound at all"

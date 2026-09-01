@@ -13,7 +13,7 @@ code_refs:
     - app/Console/Commands/MakeResourceCommand.php
     - app/Console/Commands/ResourceCacheCommand.php
     - app/Console/Commands/ResourceClearCommand.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # The resource spine
@@ -35,6 +35,12 @@ last one, so an adapter over an ordinary scoped model writes no query at all. An
 adapter that needs more than the model's own scope — `AiConfirmTokenResource`
 narrows to the acting user as well — writes `scopedQuery()` by hand and says why
 in a docblock.
+
+`UserResource` is a second case: its `scopedQuery()` selects only the users
+table's own columns, because the pivot join behind `organization->users()`
+would otherwise leak the pivot's own `id` and `created_at` into the hydrated
+`User` — relevant now that those rows are served straight through the read API
+([[operations/ops-read-api]]).
 
 ## Discovery and caching
 

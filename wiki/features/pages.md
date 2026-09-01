@@ -8,7 +8,7 @@ code_refs:
     - resources/js/pages/dashboard.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Pages
@@ -45,6 +45,9 @@ What ships rendered, and nothing more:
 - `resources/js/pages/error.tsx` is not routed. Inertia renders it for a thrown
   status, so a 403, 404 or 500 is a page in the application's own shell rather
   than a framework default ([[domains/ux-primitives]]).
+- `/admin` — a super-admin control plane on the same list kit as the tenant
+  screens, gated so a refusal is a 404 rather than a 403
+  ([[operations/ops-admin-area]]).
 
 Everything else is yours to build. A starter kit that ships a settings page for a
 product it cannot know about leaves you deleting code before writing any.

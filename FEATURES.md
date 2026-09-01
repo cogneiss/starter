@@ -157,6 +157,39 @@ never decides what a person is allowed to see.
     suite; durations from `resources/js/lib/motion.ts`, which answers zero under
     reduced motion.
 
+## Platform
+
+The trust layer under the product — every piece scoped to the organization the
+credential resolves, never to a header or a route parameter.
+
+1. **API tokens** — per-organization tokens created from settings, shown once
+   and stored hashed, with scoped abilities, expiry and rotation
+   (`app/Actions/CreateApiToken.php`, `app/Models/ApiToken.php`).
+2. **Read API** — a registry-driven, read-only JSON surface at `/api/v1`
+   listing exactly the resources the spine registers; a foreign id is a 404
+   (`routes/api.php`, `app/Http/Controllers/Api/ResourceController.php`).
+3. **Usage and rate tiers** — every API request logged, per-plan rate tiers
+   from config, and a tenant usage dashboard reading the same rows
+   (`app/Http/Middleware/ApplyRateTier.php`, `config/api.php`).
+4. **Audit log** — an append-only record of who did what, with retention and
+   `audit:prune` (`app/Listeners/RecordModelActivity.php`,
+   `app/Models/Activity.php`).
+5. **GDPR** — a queued personal-data export and an anonymising deletion with a
+   purge window (`app/Jobs/BuildGdprExport.php`,
+   `app/Actions/DeleteAccount.php`).
+6. **Health** — a `/health` endpoint reporting database, queue, cache and
+   scheduler checks (`app/Http/Controllers/HealthController.php`).
+7. **Error reporting and analytics seams** — Sentry and PostHog wired but
+   silent until their keys exist (`config/services.php`,
+   `app/Support/Analytics/`).
+8. **Signed outgoing webhooks** — per-endpoint secrets, HMAC signatures, a
+   retry ladder, deactivation after repeated failures and an SSRF guard that
+   re-checks the resolved address (`app/Webhooks/`,
+   `app/Jobs/SendWebhookDelivery.php`).
+9. **Admin control plane** — a super-admin area on the same list kit, gated by
+   the `platform` ability behind a 404 (`app/Admin/AdminResources.php`,
+   `app/Http/Middleware/EnsurePlatformAdmin.php`).
+
 ## Developer experience
 
 ### Architecture
@@ -594,8 +627,10 @@ the vulnerable version of X" without cloning the repo.
 
 ## Not included
 
-Deliberately absent, so you add what your product actually needs: billing, an
-admin panel, and a REST or GraphQL API with token auth.
+Deliberately absent, so you add what your product actually needs: billing. The
+admin panel and the token-auth read API used to sit on this list; the platform
+layer shipped both, so what remains absent is a _write_ API — the read surface
+at `/api/v1` is deliberately read-only.
 
 Two entries left this list with the UX layer. Localization shipped — server-side
 translation files, a supported-locale list and a key parity test. So did

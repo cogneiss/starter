@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Not included
@@ -16,9 +16,12 @@ architecture it belongs to.
 
 ## Product surfaces
 
-Billing, an admin panel, and a REST or GraphQL API with token auth.
+Billing. An admin panel and a token-auth read API used to sit on this list; the
+platform ops layer shipped both, so what remains absent is a _write_ API — the
+read surface at `/api/v1` is deliberately read-only ([[operations/ops-admin-area]],
+[[operations/ops-read-api]], [[operations/ops-api-tokens]]).
 
-Two entries left this list. Localization shipped with the UX layer — one server
+Two entries left this list with the UX layer. Localization shipped — one server
 side set of translation files, a supported-locale list and a key parity test
 ([[domains/ux-i18n]]). So did the upload surface, though not as a general file
 manager: uploads exist to feed a bulk import, are quarantined until a scanner

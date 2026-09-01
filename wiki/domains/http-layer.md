@@ -14,7 +14,7 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # The HTTP layer
@@ -50,6 +50,18 @@ agent with nothing to scope its reads to
 organization it was minted in, and the write is authorized from the token's own
 record rather than from whatever organization the browser happens to have
 switched to since ([[domains/ai-confirm-tokens]]).
+
+A separate `admin/*` group sits behind `auth`, `two-factor` and
+`EnsurePlatformAdmin`, deliberately outside the `organization` middleware: the
+control plane reads across every organization, and the gate denies with a 404,
+so to anyone without the platform ability the routes simply do not exist
+([[operations/ops-admin-area]]).
+
+Register, the magic-link request and invitation acceptance also picked up a
+`friction` middleware alongside their existing throttle, and `UserController`
+now renders its `create` page with a `FormFriction` prop — added friction for
+unauthenticated form posts, on top of rate limiting rather than instead of it
+([[operations/ops-csp]]).
 
 The UX layer's routes sit inside that same signed-in group, with two additions to
 it: the `onboarded` alias and `HandlePrecognitiveRequests`, so every form in the

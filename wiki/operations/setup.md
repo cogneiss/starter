@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Setting up a clone
@@ -31,7 +31,10 @@ php artisan app:doctor
 Doctor is the answer to "is it me or is it broken": PHP version, extensions,
 coverage driver, `.env` and `APP_KEY`, database reachability, pending migrations,
 `bun`, `node_modules`, the Vite manifest, stale generated TypeScript, and
-writable `storage`/`bootstrap/cache`. Every failure prints its fix
+writable `storage`/`bootstrap/cache`. It also runs the same six checks
+`GET /health` answers with — database, cache, queue round-trip, schedule
+heartbeat, disk headroom, debug mode — failing only on a hard failure, since a
+degraded check still passes doctor. Every failure prints its fix
 ([[domains/console-commands]]).
 
 Below the failures it prints an optional section — mail transport, the pgvector

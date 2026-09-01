@@ -10,7 +10,7 @@ code_refs:
     - config/pennant.php
     - tests/Feature/FeatureFlagTest.php
     - app/Ai/Agents/DashboardBriefing.php
-updated: 2026-08-25
+updated: 2026-09-01
 ---
 
 # Feature flags
@@ -58,6 +58,13 @@ php artisan app:expire-feature-overrides
 `FeatureOverride` has no resource adapter and is exempted in
 `config/conventions.php` as _pending resource adapter_ — a temporary reason, and
 it says so ([[architecture/convention-guards]]).
+
+Not every registry entry is a boolean case. `KnownFeatures::API_RATE_TIER` is a
+class constant instead, because that Pennant feature resolves to a string — an
+organization's API rate tier — rather than a true/false switch; naming it
+through the registry still keeps a typo from existing. Its default lives in
+`config/api.php`, not `config/features.php`
+([[operations/ops-usage-and-limits]]).
 
 The two flagged features are described in [[features/organizations]]
 (impersonation) and [[features/authentication]] (social login).

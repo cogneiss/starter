@@ -14,7 +14,7 @@ code_refs:
     - app/Data/RecordPeekData.php
     - tests/Feature/FriendlyErrorTest.php
     - tests/Mutations/phase7-peek-scope.patch
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Interface primitives
@@ -47,9 +47,14 @@ Two halves, one wording. `App\Support\UserFriendlyExceptionRegistrar` writes the
 sentence for failures the server can answer with a page;
 `resources/js/lib/http-errors.ts` holds the same table for failures it cannot —
 an Inertia visit that came back as something other than a page, and the plain
-XHR the palette and the streaming views make. A 403 reads the same whichever
-half of the application noticed it, and a 419 offers to retry rather than
-blaming the reader (`tests/Browser/CsrfRetryTest.php`).
+XHR the palette and the streaming views make — the read API answers through
+this same JSON path regardless of the `Accept` header a client sent. A 403
+reads the same whichever half of the application noticed it, and a 419 offers
+to retry rather than blaming the reader (`tests/Browser/CsrfRetryTest.php`);
+that toast stays up until the person acts on it, since it is the only way back
+to the lost submission. A 500 carries the same reference the error reporter
+recorded, so a person quoting the error can be matched to the report — see
+[[operations/ops-error-reporting]].
 
 ## The detail drawer
 

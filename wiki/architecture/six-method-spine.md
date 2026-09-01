@@ -6,7 +6,7 @@ code_refs:
     - app/Resources/ResourceContract.php
     - app/Resources/Definitions/UserResource.php
     - .ai/rules/resources.md
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Why the resource contract grew from six methods to thirteen

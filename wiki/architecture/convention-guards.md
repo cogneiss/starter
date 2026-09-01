@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - tests/Unit/Conventions/ConventionTest.php
     - config/conventions.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Convention guards G1, G4 and G5
@@ -61,6 +61,14 @@ through its batch, `TempUpload` is replaced by whatever it becomes,
 gate, and `SavedSearch` is one person's kept views offered by the list itself
 ([[domains/ux-filters-and-saved-searches]]). None of them is a record anybody
 navigates to.
+
+The platform ops layer added four more, again named by where the table is
+actually read: `ApiToken` and `ApiRequestLog` surface only on their own
+settings and usage pages ([[operations/ops-api-tokens]],
+[[operations/ops-usage-and-limits]]), and `WebhookDelivery` and
+`WebhookEndpoint` are managed on the webhooks settings page
+([[operations/ops-webhooks]]). Same shape, same reason: nothing here has a
+list of its own.
 
 ## The rule around them
 

@@ -14,7 +14,7 @@ code_refs:
     - tests/Feature/Resources/CsvExportScopeTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # The server-driven list kit
@@ -37,6 +37,12 @@ organization is not hidden from the list — it is not in the result set, and
 `findListed()` cannot reach it either. **A foreign id is a 404 before any policy
 is consulted**, the same as an id that never existed; the two are
 indistinguishable from outside, which is the point.
+
+`listResource()` also accepts a resource instance in place of the registry key,
+which is what lets the super-admin area reuse it across organizations rather
+than one at a time. There it runs with no organization context at all, so the
+saved-views lookup is simply skipped instead of scoped to nothing — see
+[[operations/ops-admin-area]] for that control plane.
 
 ## Disbelieving the query string
 
@@ -84,6 +90,10 @@ is why the scope is part of the builder and why
 
 A list and its export share one URL: the same request with `Accept: text/csv`
 streams the CSV, so an export cannot drift away from the filters on screen.
+
+Handing over a spreadsheet of an organization's data is itself worth a record,
+so a scoped export writes an audit entry before the first row streams — see
+[[operations/ops-audit-log]].
 
 ## The controls, and the tests that prove them
 

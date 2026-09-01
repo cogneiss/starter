@@ -67,7 +67,7 @@
         {
             "id": 11,
             "name": "documentation",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan wiki:lint && rg -q 'API tokens' README.md && test -f SECURITY.md"
         },
         {

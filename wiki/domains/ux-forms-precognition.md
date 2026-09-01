@@ -12,7 +12,7 @@ code_refs:
     - tests/Unit/PrecognitionAllowlistTest.php
     - tests/Mutations/phase11-parity.patch
     - tests/Mutations/phase11-allowlist.patch
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Forms and live validation

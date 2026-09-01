@@ -8,7 +8,7 @@ code_refs:
     - app/Auth/Drivers/PasswordAuthDriver.php
     - app/Auth/Drivers/SocialAuthDriver.php
     - config/services.php
-updated: 2026-08-24
+updated: 2026-09-01
 ---
 
 # The auth driver seam

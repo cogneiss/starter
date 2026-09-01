@@ -11,7 +11,7 @@ code_refs:
     - app/Data/LoginHistoryData.php
     - app/Data/PasskeyData.php
     - app/Data/ImpersonatorData.php
-updated: 2026-08-24
+updated: 2026-09-01
 ---
 
 # Data objects
@@ -19,16 +19,16 @@ updated: 2026-08-24
 Eight `spatie/laravel-data` classes in `app/Data`. Every Inertia payload is one of
 these; a raw array or an Eloquent model never goes to `Inertia::render`.
 
-| Class                        | Carries                                   |
-| ---------------------------- | ----------------------------------------- |
-| `UserData`                   | the signed-in user                        |
-| `OrganizationData`           | the current organization                  |
-| `OrganizationMemberData`     | a member row with role and status         |
-| `OrganizationInvitationData` | a pending invitation                      |
-| `BrowserSessionData`         | one signed-in browser                     |
-| `LoginHistoryData`           | one sign-in attempt                       |
-| `PasskeyData`                | one registered WebAuthn credential        |
-| `ImpersonatorData`           | who is impersonating, while impersonating |
+| Class                        | Carries                                        |
+| ---------------------------- | ---------------------------------------------- |
+| `UserData`                   | the signed-in user, including `is_super_admin` |
+| `OrganizationData`           | the current organization                       |
+| `OrganizationMemberData`     | a member row with role and status              |
+| `OrganizationInvitationData` | a pending invitation                           |
+| `BrowserSessionData`         | one signed-in browser                          |
+| `LoginHistoryData`           | one sign-in attempt                            |
+| `PasskeyData`                | one registered WebAuthn credential             |
+| `ImpersonatorData`           | who is impersonating, while impersonating      |
 
 ## Why not just pass the model
 

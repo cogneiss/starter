@@ -8,7 +8,7 @@ code_refs:
     - config/queue.php
     - config/mail.php
     - config/inertia.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Runtime
@@ -46,7 +46,10 @@ upgrade rather than the requirement ([[domains/ux-realtime-notifications]]).
 
 Third-party credentials are all optional: the app boots and the suite passes with
 every social, mail and AI provider key blank ([[domains/auth-drivers]],
-[[domains/ai-layer-overview]]). The AI quota and budget ceilings are `.env`
+[[domains/ai-layer-overview]]). The same holds for `SENTRY_DSN`/`SENTRY_RELEASE`
+and `POSTHOG_KEY`/`POSTHOG_HOST`: blank by default, and error reporting and
+analytics both stay local (`NullErrorReporter`, `NullAnalyticsReporter`) until a
+key is set. The AI quota and budget ceilings are `.env`
 values too, and they apply whether or not a key is set
 ([[domains/ai-metering-and-quotas]]).
 

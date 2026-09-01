@@ -14,7 +14,7 @@ code_refs:
     - app/Actions/SyncPermissions.php
     - app/Console/Commands/SyncPermissionsCommand.php
     - config/permission.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Roles, permissions and policies
@@ -68,6 +68,13 @@ and `imports.run`. Reading a batch and starting one are separate permissions
 because an import writes rows in bulk, and the person who wants to see what a
 teammate uploaded is not necessarily the person allowed to run it
 ([[domains/ux-import-and-uploads]]).
+
+The platform ops layer added three more groups the same way: `API`
+(`api.tokens.view`, `api.tokens.manage`, `api.usage.view`), `Audit`
+(`audit.view`), and `Webhooks` (`webhooks.view`, `webhooks.manage`). Viewing and
+managing stay separate permissions in each case, for the same reason reading and
+running an import do ([[operations/ops-api-tokens]], [[operations/ops-audit-log]],
+[[operations/ops-webhooks]]).
 
 ## Roles and templates
 

@@ -7,7 +7,7 @@ code_refs:
     - tests/TestCase.php
     - tests/Unit/ArchTest.php
     - tests/Browser/AccessibilityTest.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Testing
@@ -64,10 +64,12 @@ that forgets to script its own fake throws rather than dialling out. Central
 rather than per-file, because the failure mode of forgetting is a real charge on
 a real key ([[domains/ai-evals]]).
 
-`tests/Pest.php` also carries the helpers the UX suites share —
-`resourceSearchDefects()`, `motionStyles()`, `ownerBeforeOnboarding()`,
-`uploadedImport()` and `runImport()` — so the setup a dozen tests need is written
-once rather than copied.
+`tests/Pest.php` also carries the helpers a dozen tests would otherwise copy:
+the UX suites share `resourceSearchDefects()`, `motionStyles()`,
+`ownerBeforeOnboarding()`, `uploadedImport()` and `runImport()`, and the
+platform-ops suites share `apiBearer()` for a live token and its Authorization
+header, `fakeWebhookDns()` so a webhook test never resolves a real hostname,
+and `frictionToken()` for the timed token a public form's own submit carries.
 
 Scoped models need an organization bound: use `resolve(OrganizationContext::class)->runAs()`
 ([[domains/multi-tenancy]]). Use factory states before hand-building a model —

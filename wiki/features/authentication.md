@@ -13,7 +13,7 @@ code_refs:
     - config/fortify.php
     - app/Actions/CreateSessionFromMagicLink.php
     - app/Actions/LinkSocialAccount.php
-updated: 2026-08-24
+updated: 2026-09-01
 ---
 
 # Authentication
@@ -43,6 +43,9 @@ screens on top of it.
 - **Magic link tokens last 15 minutes, work once, and never reveal whether an
   address is registered.** The last part is why the response is identical for a
   known and an unknown email.
+- **The magic-link request form carries the same bot friction as every other
+  unauthenticated form** — a honeypot field and a minimum dwell time, invisible
+  to a person filling it in ([[operations/ops-csp]]).
 - **Social login links rather than duplicates.** An OAuth email matching an
   existing _verified_ account links to it; an unverified match is refused, because
   accepting it would let anyone who can receive OAuth for an address take over an

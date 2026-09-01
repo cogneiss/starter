@@ -4,7 +4,7 @@ status: current
 supersedes: []
 code_refs:
     - .ai/rules/index.md
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Wiki index
@@ -123,6 +123,17 @@ See [[operations/documentation]] for the loop that keeps pages current.
 - [[operations/code-knowledge-graphs]]
 - [[operations/runtime]]
 - [[operations/documentation]]
+- [[operations/ops-api-tokens]]
+- [[operations/ops-read-api]]
+- [[operations/ops-usage-and-limits]]
+- [[operations/ops-audit-log]]
+- [[operations/ops-gdpr]]
+- [[operations/ops-health]]
+- [[operations/ops-error-reporting]]
+- [[operations/ops-analytics]]
+- [[operations/ops-webhooks]]
+- [[operations/ops-csp]]
+- [[operations/ops-admin-area]]
 
 ## Decisions — what was built, and what was left out
 

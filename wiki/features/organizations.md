@@ -19,7 +19,7 @@ code_refs:
     - app/Support/Impersonation.php
     - app/Actions/SummarizeAiUsage.php
     - app/Ai/Agents/InvitationDrafter.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Organizations
@@ -56,7 +56,9 @@ instant the patch fails and a silent revert tells the person nothing.
 - Invitations: invite by email, resend, revoke
   (`OrganizationInvitationController`); accepting joins the organization
   (`OrganizationInvitationAcceptanceController` +
-  `app/Actions/AcceptOrganizationInvitation.php`).
+  `app/Actions/AcceptOrganizationInvitation.php`). The acceptance form is
+  unauthenticated and public, so it carries the same honeypot and dwell-time
+  friction as the other public forms ([[operations/ops-csp]]).
 - `app/Actions/AssertNotLastActiveOwner.php` is called on the paths that could
   strand an organization — removing or demoting a member — so the last active
   owner cannot be removed or demoted. It is an action rather than a check inside

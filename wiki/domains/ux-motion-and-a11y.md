@@ -11,7 +11,7 @@ code_refs:
     - tests/Unit/Conventions/AriaLiveGuardTest.php
     - tests/Browser/AccessibilityTest.php
     - tests/Browser/RouteAnnouncerTest.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Motion and accessibility

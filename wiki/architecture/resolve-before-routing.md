@@ -6,7 +6,7 @@ code_refs:
     - bootstrap/app.php
     - app/Http/Middleware/ResolveOrganization.php
     - .ai/rules/bootstrap.md
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Why the organization resolves before route model binding
@@ -36,9 +36,13 @@ relative to yours, and `SubstituteBindings` comes from the framework.
 Appending middleware to the `web` group is routine. The current order in
 `bootstrap/app.php` is:
 
-`AuthenticateSession`, `EnsureUserIsActive`, `HandleAppearance`, `SetLocale`,
-`HonorDoNotTrack`, `ResolveOrganization`, `HandleBrand`,
-`HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`.
+`SetContentSecurityPolicy`, `AuthenticateSession`, `EnsureUserIsActive`,
+`HandleAppearance`, `SetLocale`, `HonorDoNotTrack`, `ResolveOrganization`,
+`HandleBrand`, `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`.
+`SetContentSecurityPolicy` sits first because it only mints the per-request
+nonce the response's headers and inline scripts share; it has no organization
+to read and nothing later in the stack depends on it running after anything
+else ([[operations/ops-csp]]).
 
 Two of those are placed rather than appended. `SetLocale` sits with the other
 preference middleware and before anything that produces text, so a validation
@@ -53,10 +57,11 @@ the same thing in one line to anyone editing the file.
 
 `bootstrap/app.php` also names the route middleware aliases — `organization`
 (`RequireOrganization`), `not-impersonating` (`ForbiddenDuringImpersonation`),
-`two-factor` (`EnsureTwoFactorEnabled`) and `onboarded`
-(`RedirectIfNotOnboarded`, [[domains/ux-onboarding]]) — and leaves the
-`appearance` and `sidebar_state` cookies out of encryption so the server can
-read them before hydration.
+`two-factor` (`EnsureTwoFactorEnabled`), `onboarded`
+(`RedirectIfNotOnboarded`, [[domains/ux-onboarding]]) and `friction`
+(`ProtectPublicForm`, [[operations/ops-csp]]) — and leaves the `appearance`
+and `sidebar_state` cookies out of encryption so the server can read them
+before hydration.
 
 Two more things hang off this file. `withBroadcasting()` mounts
 `routes/channels.php` behind `['web', 'auth']`, so a channel authorization

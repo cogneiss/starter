@@ -11,7 +11,7 @@ code_refs:
     - app/Models/ImpersonationLog.php
     - app/Models/SocialAccount.php
     - app/Enums/MembershipStatus.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Models
@@ -71,3 +71,9 @@ not something anybody opts out of.
 channel it does not support. Nothing recorded means everything is wanted, so a
 newly added channel reaches people without a backfill and a person who has never
 opened the settings screen is not silently opted out.
+
+`User` also picked up two traits this cycle: `SoftDeletes`, so anonymising
+deletion leaves a `deleted_at` row behind rather than removing it outright
+([[operations/ops-gdpr]]), and `HasApiTokens`, bound to the `ApiToken` model
+rather than Sanctum's own so a personal access token is pinned to the
+organization that issued it ([[operations/ops-api-tokens]]).

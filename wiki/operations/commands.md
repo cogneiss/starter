@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 
 # Commands

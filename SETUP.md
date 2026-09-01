@@ -341,6 +341,54 @@ Forms validate live through Precognition against the same form request the
 submit uses. Nothing to configure; it is worth knowing because it is the reason
 no validation rule is written in TypeScript.
 
+## The platform layer
+
+Like the UX layer, everything here works with an empty `.env` and degrades
+honestly when unconfigured.
+
+### API tokens and the read API
+
+Members create per-organization API tokens from settings. The plaintext value
+is shown once and stored hashed — losing it means creating a new token, which
+is also how rotation works: create the replacement, deploy it, revoke the old
+one. Tokens authenticate the read-only API at `/api/v1`, and every request
+resolves its organization from the token, never from a header.
+`php artisan tokens:prune` deletes revoked and expired tokens past the
+retention window.
+
+### Rate tiers and usage
+
+Every API request is logged and counted against a per-plan rate tier from
+`config/api.php`. An organization's tier comes from the `api-rate-tier`
+Pennant feature; with no override it uses the `default` tier. The usage
+dashboard in settings reads the same log rows, and
+`php artisan api:prune-logs` trims them past the retention window.
+
+### Health
+
+`/health` answers with database, queue, cache and scheduler checks — point
+your uptime monitor at it. The scheduler check reads the `health-heartbeat`
+task in `routes/console.php`, so it fails honestly when the scheduler stops.
+
+### Error reporting and analytics
+
+Sentry and PostHog are seams, not dependencies. Both stay silent until their
+keys exist:
+
+```dotenv
+SENTRY_DSN=
+POSTHOG_KEY=
+```
+
+With the keys blank the app boots, reports nothing, and the suite never makes
+a network call.
+
+### The admin area
+
+The control plane at `/admin` sits behind the `platform` ability, granted only
+to super admins — everyone else gets a 404, not a 403, so the URL does not
+even confirm the area exists.
+
 ## Adding a model
 
 Run the generator. Do not hand-write the files — there are ten of them across as
