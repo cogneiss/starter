@@ -63,7 +63,7 @@ function captureWebhookRequest(Organization $organization): array
         return Http::response('ok');
     });
 
-    SendWebhookDelivery::dispatch($delivery->id, $organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $organization->id));
 
     expect($captured)->not->toBe([]);
 

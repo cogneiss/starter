@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Enums\MembershipStatus;
 use App\Models\Activity;
+use App\Models\OrganizationMembership;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +29,7 @@ final readonly class DeleteAccount
         $user->memberships()
             ->where('status', MembershipStatus::Active)
             ->get()
-            ->each(fn ($membership) => $this->guard->handle($membership));
+            ->each(fn (OrganizationMembership $membership) => $this->guard->handle($membership));
 
         $email = $user->email;
 

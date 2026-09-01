@@ -18,6 +18,7 @@ use App\Support\AiAvailability;
 use App\Webhooks\ResolvesHostnames;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
@@ -32,6 +33,15 @@ use Symfony\Component\Process\Process as SymfonyProcess;
 use Tests\TestCase;
 
 pest()->tia()->locally();
+
+/*
+ * Browser assertions poll until they pass; the timeout only bounds the wait.
+ * The default 5s is tuned for an uninstrumented run — under an active coverage
+ * driver every request is slower, and the suite flakes on whichever browser
+ * test the scheduler happens to starve. 30s changes no assertion, only how
+ * long a slow run may take to satisfy one.
+ */
+pest()->browser()->timeout(30_000);
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
@@ -323,7 +333,7 @@ function motionStyles(bool $reduced): array
  */
 function frictionToken(int $ageSeconds = 3): string
 {
-    return Illuminate\Support\Facades\Crypt::encryptString(
+    return Crypt::encryptString(
         (string) now()->subSeconds($ageSeconds)->getTimestamp(),
     );
 }
@@ -365,7 +375,7 @@ function fakeWebhookDns(array $map = [], array $default = ['93.184.216.34']): vo
          * @param  array<string, list<string>>  $map
          * @param  list<string>  $default
          */
-        public function __construct(private array $map, private array $default) {}
+        public function __construct(private array $map, private readonly array $default) {}
 
         public function resolve(string $hostname): array
         {

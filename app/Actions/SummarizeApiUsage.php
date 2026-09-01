@@ -37,7 +37,7 @@ final readonly class SummarizeApiUsage
             tier: $tier,
             limit: $limit,
             remaining: max(0, RateLimiter::remaining('api:org:'.$organization->id, $limit)),
-            daily: $this->breakdown($organization, $since, "to_char(created_at, 'YYYY-MM-DD') as name", byName: true),
+            daily: $this->breakdown($organization, $since, 'date(created_at) as name', byName: true),
             endpoints: $this->breakdown($organization, $since, 'path as name'),
             tokens: $this->tokens($organization, $since),
         );

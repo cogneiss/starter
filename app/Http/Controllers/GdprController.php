@@ -15,7 +15,7 @@ final class GdprController
 {
     public function store(#[CurrentUser] User $user): RedirectResponse
     {
-        BuildGdprExport::dispatch($user->id);
+        dispatch(new BuildGdprExport($user->id));
 
         return back()->with('success', __('Your export is being prepared. You will be notified when it is ready.'));
     }

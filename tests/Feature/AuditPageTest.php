@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Activity;
+use App\Models\ApiToken;
 use App\Models\Organization;
+use App\Models\SavedSearch;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia;
 
@@ -60,7 +62,7 @@ it('filters by causer, event, subject type and date range', function (): void {
         'organization_id' => $this->organization->id,
         'description' => 'token-created-by-member',
         'event' => 'created',
-        'subject_type' => App\Models\ApiToken::class,
+        'subject_type' => ApiToken::class,
         'causer_type' => $this->member->getMorphClass(),
         'causer_id' => $this->member->id,
         'created_at' => '2026-08-01 12:00:00',
@@ -69,7 +71,7 @@ it('filters by causer, event, subject type and date range', function (): void {
         'organization_id' => $this->organization->id,
         'description' => 'search-deleted-by-other',
         'event' => 'deleted',
-        'subject_type' => App\Models\SavedSearch::class,
+        'subject_type' => SavedSearch::class,
         'causer_type' => $other->getMorphClass(),
         'causer_id' => $other->id,
         'created_at' => '2026-08-20 12:00:00',
@@ -78,11 +80,11 @@ it('filters by causer, event, subject type and date range', function (): void {
     $narrowing = [
         'causer' => ['causer' => [$this->member->id]],
         'event' => ['event' => ['created']],
-        'subject' => ['subject' => [App\Models\ApiToken::class]],
+        'subject' => ['subject' => [ApiToken::class]],
         'when' => ['when' => ['from' => '2026-07-25', 'to' => '2026-08-10']],
     ];
 
-    foreach ($narrowing as $name => $filter) {
+    foreach ($narrowing as $filter) {
         $this->actingAs($this->member)
             ->get(route('audit-log.index').'?'.http_build_query(['f' => $filter]))
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page

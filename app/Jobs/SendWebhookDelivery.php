@@ -171,7 +171,7 @@ final class SendWebhookDelivery implements OrganizationAware, ShouldQueue
 
         $delivery->update(['next_attempt_at' => now()->addSeconds($delay)]);
 
-        self::dispatch($this->deliveryId, $this->organizationId)->delay($delay);
+        dispatch(new self($this->deliveryId, $this->organizationId))->delay($delay);
     }
 
     private function recordFinalFailure(WebhookEndpoint $endpoint): void

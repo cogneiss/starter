@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Contracts\ErrorReporter;
+use App\Models\Organization;
 use App\Resources\ResourceRegistry;
 use App\Support\Reporting\NullErrorReporter;
 use App\Support\Reporting\SentryErrorReporter;
@@ -108,7 +109,7 @@ describe('the 500 payload', function (): void {
     it('carries the same reference the reporter recorded, with identifier-only context', function (): void {
         config()->set('services.sentry.release', 'v9.9.9');
 
-        $organization = App\Models\Organization::factory()->create();
+        $organization = Organization::factory()->create();
         [, $bearer] = apiBearer($organization);
 
         // The registry is final, so a proxy partial around the real instance

@@ -33,7 +33,7 @@ final class GdprExportCommand extends Command
             return self::FAILURE;
         }
 
-        BuildGdprExport::dispatch($user->id);
+        dispatch(new BuildGdprExport($user->id));
 
         $this->components->info('Export queued. The person will be notified with a signed download link.');
 

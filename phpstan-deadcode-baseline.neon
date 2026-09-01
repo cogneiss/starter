@@ -6,7 +6,17 @@ parameters:
         # The Laravel container builds these through reflection on the
         # constructor signature, so no literal `new` appears anywhere.
         -
-            message: '#^Unused App\\(Actions|Ai\\Actions|Auth\\Drivers|Policies|Support)\\.*::__construct$#'
+            message: '#^Unused App\\(Actions|Ai\\Actions|Auth\\Drivers|Policies|Rules|Support|Webhooks)\\.*::__construct$#'
+            identifier: shipmonk.deadMethod
+            reportUnmatched: false
+
+        # Larastan resolves `resolve(Interface::class)` to the class the
+        # container binds — the zero-key null implementation — so no call in
+        # the analysed code is ever typed against the interface itself. The
+        # interface methods are the seam's contract; Sentry and PostHog reach
+        # them the moment a key binds the real reporter.
+        -
+            message: '#^Unused App\\Contracts\\(AnalyticsReporter|ErrorReporter)::.*$#'
             identifier: shipmonk.deadMethod
             reportUnmatched: false
 

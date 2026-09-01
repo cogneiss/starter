@@ -51,7 +51,7 @@ it('declares every table holding a user_id column, in both directions', function
     ])->sort()->values()->all();
 
     expect($declared)->toBe($withUserId);
-});
+})->group('pgvector');
 
 it('builds a ZIP holding the profile and one JSON file per declared table', function (): void {
     TempUpload::factory()->create([
@@ -59,7 +59,7 @@ it('builds a ZIP holding the profile and one JSON file per declared table', func
         'user_id' => $this->member->id,
     ]);
 
-    (new BuildGdprExport($this->member->id))->handle();
+    new BuildGdprExport($this->member->id)->handle();
 
     $zip = exportArchive($this->member);
 
@@ -91,7 +91,7 @@ it('embeds the actual bytes of every upload the user owns, not a path reference'
 proof-row,proof@example.com
 ');
 
-    (new BuildGdprExport($this->member->id))->handle();
+    new BuildGdprExport($this->member->id)->handle();
 
     $zip = exportArchive($this->member);
 
@@ -129,7 +129,7 @@ it('audits against the first membership or not at all for a user without one', f
     $drifter = User::factory()->forOrganization($this->organization)->create();
     $drifter->forceFill(['current_organization_id' => null])->save();
 
-    (new BuildGdprExport($drifter->id))->handle();
+    new BuildGdprExport($drifter->id)->handle();
 
     expect(Activity::withoutOrganizationScope()
         ->where('event', 'exported')
@@ -140,7 +140,7 @@ it('audits against the first membership or not at all for a user without one', f
     // No membership anywhere: the export still builds, no entry is written.
     $loner = User::factory()->create();
 
-    (new BuildGdprExport($loner->id))->handle();
+    new BuildGdprExport($loner->id)->handle();
 
     expect(Storage::disk('local')->files("gdpr/{$loner->id}"))->toHaveCount(1)
         ->and(Activity::withoutOrganizationScope()->where('causer_id', $loner->id)->count())->toBe(0);
@@ -177,7 +177,7 @@ it('delivers a signed link that serves the archive and refuses every forgery', f
 });
 
 it('serves a file only from the requester’s own directory', function (): void {
-    (new BuildGdprExport($this->member->id))->handle();
+    new BuildGdprExport($this->member->id)->handle();
 
     $file = basename(Storage::disk('local')->files("gdpr/{$this->member->id}")[0]);
     $url = URL::temporarySignedRoute('gdpr-export.download', now()->addDay(), ['file' => $file]);

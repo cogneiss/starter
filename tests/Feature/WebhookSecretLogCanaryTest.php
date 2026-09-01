@@ -39,7 +39,7 @@ it('never logs or stores the canary secret or its signature in plaintext', funct
         return Http::response('ok');
     });
 
-    SendWebhookDelivery::dispatch($delivery->id, $organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $organization->id));
 
     expect($signature)->toBeString();
 

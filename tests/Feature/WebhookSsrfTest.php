@@ -78,7 +78,7 @@ it('re-checks dns at send time and blocks an answer that turned private', functi
 
     Http::fake();
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     expect($delivery->refresh()->status)->toBe('blocked')
         ->and($endpoint->refresh()->consecutive_failures)->toBe(1);
@@ -106,7 +106,7 @@ it('pins the connection to the checked ip and disables redirects', function (): 
         return Http::response('ok');
     });
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     expect($delivery->refresh()->status)->toBe('sent');
     Http::assertSentCount(1);
@@ -152,7 +152,7 @@ it('blocks a saved url with no usable hostname as a final failure', function ():
 
     Http::fake();
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     expect($delivery->refresh()->status)->toBe('blocked')
         ->and($endpoint->refresh()->consecutive_failures)->toBe(1);

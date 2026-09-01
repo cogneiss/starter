@@ -192,9 +192,9 @@ describe('the endpoint', function (): void {
     it('marks a check that throws as failed without leaking anything', function (): void {
         $secret = sprintf('boom with key %s', config('app.key'));
 
-        $throwing = new class($secret) implements Check
+        $throwing = new readonly class($secret) implements Check
         {
-            public function __construct(private readonly string $secret) {}
+            public function __construct(private string $secret) {}
 
             public function name(): string
             {

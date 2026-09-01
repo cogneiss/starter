@@ -23,8 +23,9 @@ it('loads the dashboard without a csp violation', function (): void {
         ->assertNoJavaScriptErrors();
 });
 
-it('opens the command palette without a csp violation', function (): void {
-    visit('/dashboard')->wait(1)
+it('opens the command palette on a list page without a csp violation', function (): void {
+    visit('/settings/audit')->wait(1)
+        ->assertSee('Audit log')
         ->keys('html > body', 'Meta+k')
         ->assertPresent('[data-test="command-palette"]')
         ->type('[data-test="palette-input"]', 'settings')
@@ -34,9 +35,9 @@ it('opens the command palette without a csp violation', function (): void {
 });
 
 it('mounts the live notification channel without a csp violation', function (): void {
-    // The notification bell subscribes to the organization channel on mount;
-    // dashboard is the page carrying a live Echo connection.
-    visit('/dashboard')->wait(1)
+    // The notification bell subscribes to the organization channel on mount,
+    // so any page under the app layout carries a live Echo connection.
+    visit('/settings/members')->wait(1)
         ->assertPresent('[data-test="notification-bell"]')
         ->assertNoConsoleLogs()
         ->assertNoJavaScriptErrors();

@@ -56,7 +56,7 @@ it('marks a successful delivery sent and resets consecutive failures', function 
 
     Http::fake(fn () => Http::response('ok'));
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     $delivery->refresh();
 
@@ -122,7 +122,7 @@ it('keeps the endpoint active through nine consecutive final failures and deacti
         'attempt' => 4,
     ]);
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     expect($this->endpoint->refresh()->consecutive_failures)->toBe(9)
         ->and($this->endpoint->active)->toBeTrue();
@@ -134,7 +134,7 @@ it('keeps the endpoint active through nine consecutive final failures and deacti
         'attempt' => 4,
     ]);
 
-    SendWebhookDelivery::dispatch($tenth->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($tenth->id, $this->organization->id));
 
     expect($this->endpoint->refresh()->consecutive_failures)->toBe(10)
         ->and($this->endpoint->active)->toBeFalse();
@@ -172,7 +172,7 @@ it('reads the deactivation threshold from config', function (): void {
         'attempt' => 4,
     ]);
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     expect($this->endpoint->refresh()->active)->toBeFalse();
     Notification::assertSentTo($this->owner, WebhookEndpointDeactivated::class);
@@ -213,7 +213,7 @@ it('scrubs the secret and the signature from the stored response snippet', funct
         'whsec_delivery_secret and '.$request->header('X-Signature')[0].' echoed',
     ));
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     $snippet = (string) $delivery->refresh()->response_snippet;
 
@@ -253,7 +253,7 @@ it('skips a delivery whose endpoint was deactivated meanwhile', function (): voi
 
     Http::fake();
 
-    SendWebhookDelivery::dispatch($delivery->id, $this->organization->id);
+    dispatch(new SendWebhookDelivery($delivery->id, $this->organization->id));
 
     expect($delivery->refresh()->status)->toBe('pending');
     Http::assertNothingSent();
@@ -262,7 +262,7 @@ it('skips a delivery whose endpoint was deactivated meanwhile', function (): voi
 it('quietly ignores a delivery that no longer exists', function (): void {
     Http::fake();
 
-    SendWebhookDelivery::dispatch(Str::uuid()->toString(), $this->organization->id);
+    dispatch(new SendWebhookDelivery(Str::uuid()->toString(), $this->organization->id));
 
     Http::assertNothingSent();
 });

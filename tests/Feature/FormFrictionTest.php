@@ -8,11 +8,12 @@ use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
 
 /**
  * @param  array<string, mixed>  $overrides
  */
-function registerAttempt(array $overrides = []): Illuminate\Testing\TestResponse
+function registerAttempt(array $overrides = []): TestResponse
 {
     return test()->post(route('register.store'), $overrides + [
         '_friction' => frictionToken(),

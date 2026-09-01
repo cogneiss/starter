@@ -16,18 +16,20 @@ use App\Support\Analytics\NullAnalyticsReporter;
 use App\Support\Analytics\PostHogReporter;
 use App\Support\OrganizationContext;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
 #[Track(['updated'])]
+#[Table(name: 'saved_searches')]
 final class AnalyticsTrackedFixture extends Model
 {
     use BelongsToOrganization;
+    use HasFactory;
     use HasUuids;
-
-    protected $table = 'saved_searches';
 
     protected $guarded = [];
 
@@ -35,12 +37,12 @@ final class AnalyticsTrackedFixture extends Model
 }
 
 #[NoTrack]
+#[Table(name: 'saved_searches')]
 final class AnalyticsSilencedFixture extends Model
 {
     use BelongsToOrganization;
+    use HasFactory;
     use HasUuids;
-
-    protected $table = 'saved_searches';
 
     protected $guarded = [];
 
@@ -128,7 +130,7 @@ it('stays silent on update unless the model opts in with #[Track]', function ():
 });
 
 it('sends changed attribute names only — never a value — for a model opted in with #[Track]', function (): void {
-    $fixture = AnalyticsTrackedFixture::create(fixtureAttributes($this->organization, $this->member));
+    $fixture = AnalyticsTrackedFixture::query()->create(fixtureAttributes($this->organization, $this->member));
 
     resolve(OrganizationContext::class)->runAs(
         $this->organization,
@@ -142,7 +144,7 @@ it('sends changed attribute names only — never a value — for a model opted i
 });
 
 it('emits nothing at all for a model marked #[NoTrack]', function (): void {
-    $fixture = AnalyticsSilencedFixture::create(fixtureAttributes($this->organization, $this->member));
+    $fixture = AnalyticsSilencedFixture::query()->create(fixtureAttributes($this->organization, $this->member));
 
     resolve(OrganizationContext::class)->runAs($this->organization, function () use ($fixture): void {
         $fixture->update(['name' => 'Changed']);

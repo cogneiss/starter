@@ -20,6 +20,6 @@ it('renders the same checks the registered HealthReport runs, no re-implementati
             ->has('report.status')
             ->where(
                 'report.checks',
-                fn ($checks) => array_column($checks->toArray(), 'name') === $registered,
+                fn ($checks): bool => array_column($checks->toArray(), 'name') === $registered,
             ));
 });

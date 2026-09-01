@@ -154,7 +154,7 @@ it('erases every trace of the person from every table in the schema', function (
 
     // Login history rows survive, anonymised in place.
     expect(LoginHistory::query()->where('email', 'anonymised@example.invalid')->count())->toBe(2);
-});
+})->group('pgvector');
 
 it('audits the anonymisation distinctly from an export', function (): void {
     $organization = Organization::factory()->create();

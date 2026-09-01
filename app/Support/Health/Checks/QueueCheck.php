@@ -28,7 +28,7 @@ final class QueueCheck implements Check
         return rescue(static function (): HealthStatus {
             $token = 'health:queue:'.Str::random(16);
 
-            QueueHeartbeat::dispatch($token);
+            dispatch(new QueueHeartbeat($token));
 
             $deadline = microtime(true) + config()->float('health.queue_timeout_seconds');
 

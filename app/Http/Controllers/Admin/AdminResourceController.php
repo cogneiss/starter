@@ -35,9 +35,7 @@ final readonly class AdminResourceController
     {
         $resource = AdminResources::pages()[$page] ?? null;
 
-        if ($resource === null) {
-            abort(404);
-        }
+        abort_if($resource === null, 404);
 
         if ($this->exportsCsv($request)) {
             $this->audit($user, $resource, $request, 'exported');

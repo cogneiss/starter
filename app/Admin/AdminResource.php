@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Data\AdminRowData;
+use App\Resources\ResourceColumn;
 use App\Resources\ResourceContract;
+use App\Support\ResourceFilter;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -19,25 +21,25 @@ use Illuminate\Database\Eloquent\Model;
  * discovers that directory and derives an API `read:` ability from every key
  * it finds, and no admin page may ever become readable through a tenant token.
  */
-final class AdminResource implements ResourceContract
+final readonly class AdminResource implements ResourceContract
 {
     /**
      * @param  class-string<Model>  $model
      * @param  Closure(): Builder<covariant Model>  $query
      * @param  list<string>  $searchable
      * @param  list<string>  $sortable
-     * @param  Closure(): list<\App\Support\ResourceFilter>  $filters
-     * @param  list<\App\Resources\ResourceColumn>  $columns
+     * @param  Closure():list<ResourceFilter>  $filters
+     * @param  list<ResourceColumn>  $columns
      */
     public function __construct(
-        private readonly string $key,
-        private readonly string $label,
-        private readonly string $model,
-        private readonly Closure $query,
-        private readonly array $searchable,
-        private readonly array $sortable,
-        private readonly Closure $filters,
-        private readonly array $columns,
+        private string $key,
+        private string $label,
+        private string $model,
+        private Closure $query,
+        private array $searchable,
+        private array $sortable,
+        private Closure $filters,
+        private array $columns,
     ) {}
 
     public function key(): string
@@ -91,7 +93,7 @@ final class AdminResource implements ResourceContract
     }
 
     /**
-     * @return list<\App\Support\ResourceFilter>
+     * @return list<ResourceFilter>
      */
     public function filters(): array
     {
@@ -99,7 +101,7 @@ final class AdminResource implements ResourceContract
     }
 
     /**
-     * @return list<\App\Resources\ResourceColumn>
+     * @return list<ResourceColumn>
      */
     public function columns(): array
     {

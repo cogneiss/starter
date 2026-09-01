@@ -45,10 +45,10 @@ final class PostHogReporter implements AnalyticsReporter
      */
     private function capture(string $event, array $properties, ?string $distinctId = null): void
     {
-        SendAnalyticsEvent::dispatch([
+        dispatch(new SendAnalyticsEvent([
             'event' => $event,
             'distinct_id' => $distinctId ?? Auth::id() ?? 'anonymous',
             'properties' => $properties,
-        ]);
+        ]));
     }
 }

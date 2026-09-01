@@ -42,12 +42,13 @@ final class WebhookEndpoint extends Model
     protected $guarded = [];
 
     /**
-     * @param  Builder<self>  $query
+     * Endpoints still receiving deliveries — matches the ApiToken::active() shape.
+     *
      * @return Builder<self>
      */
-    public function scopeActive(Builder $query): Builder
+    public static function active(): Builder
     {
-        return $query->where('active', true);
+        return self::query()->where('active', true);
     }
 
     /**

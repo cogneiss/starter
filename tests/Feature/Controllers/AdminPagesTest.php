@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
 use App\Support\OrganizationContext;
+use App\Support\ResourceFilter;
 
 /**
  * One record per page whose searchable value the loop below can look for, plus
@@ -75,7 +76,7 @@ it('serves search, a filter, sort and CSV export on every declared admin page', 
         // Search narrows: the seeded term matches, garbage matches nothing.
         $this->actingAs($admin)
             ->get($url.'?q='.urlencode($terms[$key]))
-            ->assertInertia(fn ($page) => $page->where('list.total', fn ($total) => $total >= 1));
+            ->assertInertia(fn ($page) => $page->where('list.total', fn ($total): bool => $total >= 1));
 
         $this->actingAs($admin)
             ->get($url.'?q=zzz-nothing-matches-this')
@@ -84,7 +85,7 @@ it('serves search, a filter, sort and CSV export on every declared admin page', 
         // At least one filter narrows to zero.
         expect($resource->filters())->not->toBeEmpty();
 
-        $filterKeys = array_map(fn ($declared): string => $declared->key, $resource->filters());
+        $filterKeys = array_map(fn (ResourceFilter $declared): string => $declared->key, $resource->filters());
 
         // The audit-log accrues rows for the empty organization as these very
         // admin views are audited against it, so it narrows on an event nothing
@@ -122,7 +123,7 @@ it('never exposes a plaintext token value on the admin api-tokens page', functio
 
     $plaintext = resolve(OrganizationContext::class)->runAs(
         $organization,
-        fn () => resolve(CreateApiToken::class)->handle($member, 'ci deploy token', ['read:users'], null),
+        fn () => resolve(CreateApiToken::class)->handle($member, 'ci deploy token', ['read:users']),
     )->plainTextToken;
 
     $admin = User::factory()->superAdmin()->create();

@@ -70,7 +70,7 @@ final readonly class DispatchWebhookEvents
                 'status' => 'pending',
             ]);
 
-            SendWebhookDelivery::dispatch($delivery->id, $organizationId)->afterCommit();
+            dispatch(new SendWebhookDelivery($delivery->id, $organizationId))->afterCommit();
         }
     }
 }

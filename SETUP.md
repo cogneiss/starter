@@ -364,6 +364,15 @@ Pennant feature; with no override it uses the `default` tier. The usage
 dashboard in settings reads the same log rows, and
 `php artisan api:prune-logs` trims them past the retention window.
 
+### Webhooks
+
+Each webhook endpoint gets a signing secret, shown once at creation. Deliveries
+carry an HMAC signature of `{timestamp}.{body}` computed with that secret.
+Webhook secret rotation works the same way as token rotation: create a new
+endpoint (which mints a fresh secret), point your consumer at it and verify
+deliveries arrive, then deactivate the old endpoint. There is no in-place
+secret change — a secret lives and dies with its endpoint.
+
 ### Health
 
 `/health` answers with database, queue, cache and scheduler checks — point

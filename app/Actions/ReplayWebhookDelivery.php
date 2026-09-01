@@ -23,7 +23,7 @@ final readonly class ReplayWebhookDelivery
             'status' => 'pending',
         ]);
 
-        SendWebhookDelivery::dispatch($replay->id, $delivery->organization_id)->afterCommit();
+        dispatch(new SendWebhookDelivery($replay->id, $delivery->organization_id))->afterCommit();
 
         return $replay;
     }

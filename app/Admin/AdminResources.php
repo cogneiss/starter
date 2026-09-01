@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\WebhookEndpoint;
 use App\Resources\ResourceColumn;
 use App\Support\ResourceFilter;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The declared admin page set. This list is the single source the routes, the
@@ -118,7 +119,7 @@ final class AdminResources
                 key: 'audit-log',
                 label: __('Audit log'),
                 model: Activity::class,
-                query: fn () => Activity::withoutOrganizationScope(),
+                query: fn (): Builder => Activity::withoutOrganizationScope(),
                 searchable: ['description'],
                 sortable: ['created_at', 'event'],
                 filters: fn (): array => [
@@ -136,7 +137,7 @@ final class AdminResources
                 key: 'api-tokens',
                 label: __('API tokens'),
                 model: ApiToken::class,
-                query: fn () => ApiToken::withoutOrganizationScope(),
+                query: fn (): Builder => ApiToken::withoutOrganizationScope(),
                 searchable: ['name'],
                 sortable: ['created_at', 'name', 'last_used_at'],
                 filters: fn (): array => [
@@ -157,7 +158,7 @@ final class AdminResources
                 key: 'webhook-endpoints',
                 label: __('Webhook endpoints'),
                 model: WebhookEndpoint::class,
-                query: fn () => WebhookEndpoint::withoutOrganizationScope(),
+                query: fn (): Builder => WebhookEndpoint::withoutOrganizationScope(),
                 searchable: ['url'],
                 sortable: ['created_at', 'url', 'consecutive_failures'],
                 filters: fn (): array => [

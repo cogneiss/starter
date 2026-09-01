@@ -115,7 +115,7 @@ final class RecordModelActivity
             ->except([$model->getUpdatedAtColumn() ?? 'updated_at', ...$redacted]);
 
         return [
-            'before' => $changed->map(fn ($value, string $key) => $model->getOriginal($key))->all(),
+            'before' => $changed->map(fn (mixed $value, string $key): mixed => $model->getOriginal($key))->all(),
             'after' => $changed->all(),
         ];
     }
