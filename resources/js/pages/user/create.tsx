@@ -1,4 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
+import FormFrictionFields, {
+    type Friction,
+} from '@/components/form-friction-fields';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -10,7 +13,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-export default function Register() {
+export default function Register({ friction }: { friction: Friction }) {
     return (
         <AuthLayout
             title="Create an account"
@@ -25,6 +28,7 @@ export default function Register() {
             >
                 {({ processing, errors }) => (
                     <>
+                        <FormFrictionFields friction={friction} />
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>

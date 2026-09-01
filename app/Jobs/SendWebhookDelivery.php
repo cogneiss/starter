@@ -67,7 +67,7 @@ final class SendWebhookDelivery implements OrganizationAware, ShouldQueue
         }
 
         $attempt = $delivery->attempt + 1;
-        $maxAttempts = (int) config('webhooks.max_attempts');
+        $maxAttempts = config()->integer('webhooks.max_attempts');
 
         if ($attempt > $maxAttempts) {
             return;
@@ -112,7 +112,7 @@ final class SendWebhookDelivery implements OrganizationAware, ShouldQueue
                 'X-Signature' => $signature,
                 'X-Timestamp' => (string) $timestamp,
             ])
-                ->timeout((int) config('webhooks.timeout'))
+                ->timeout(config()->integer('webhooks.timeout'))
                 ->withOptions([
                     'allow_redirects' => false,
                     'curl' => [CURLOPT_RESOLVE => [$host.':'.$port.':'.$pinned]],
@@ -177,7 +177,7 @@ final class SendWebhookDelivery implements OrganizationAware, ShouldQueue
     private function recordFinalFailure(WebhookEndpoint $endpoint): void
     {
         $failures = $endpoint->consecutive_failures + 1;
-        $deactivate = $failures >= (int) config('webhooks.deactivate_after');
+        $deactivate = $failures >= config()->integer('webhooks.deactivate_after');
 
         $endpoint->update([
             'consecutive_failures' => $failures,
@@ -195,7 +195,7 @@ final class SendWebhookDelivery implements OrganizationAware, ShouldQueue
             ?->users;
 
         if ($owners !== null && $owners->isNotEmpty()) {
-            Notification::send($owners, new WebhookEndpointDeactivated($endpoint));
+            Notification::send($owners, new WebhookEndpointDeactivated);
         }
     }
 

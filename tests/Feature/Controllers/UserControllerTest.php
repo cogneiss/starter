@@ -20,6 +20,7 @@ it('may register a new user', function (): void {
 
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password1234',
@@ -43,6 +44,7 @@ it('may register a new user', function (): void {
 it('requires name', function (): void {
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -55,6 +57,7 @@ it('requires name', function (): void {
 it('requires email', function (): void {
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -67,6 +70,7 @@ it('requires email', function (): void {
 it('requires valid email', function (): void {
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'email' => 'not-an-email',
             'password' => 'password',
@@ -82,6 +86,7 @@ it('requires unique email', function (): void {
 
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -95,6 +100,7 @@ it('requires unique email', function (): void {
 it('requires password', function (): void {
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
@@ -106,6 +112,7 @@ it('requires password', function (): void {
 it('requires password confirmation', function (): void {
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -118,6 +125,7 @@ it('requires password confirmation', function (): void {
 it('requires matching password confirmation', function (): void {
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
+            '_friction' => frictionToken(),
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',

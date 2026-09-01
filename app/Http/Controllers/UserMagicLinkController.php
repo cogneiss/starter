@@ -8,6 +8,7 @@ use App\Actions\CreateSessionFromMagicLink;
 use App\Actions\CreateUserMagicLinkNotification;
 use App\Http\Requests\CreateUserMagicLinkRequest;
 use App\Models\User;
+use App\Support\FormFriction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,10 +17,11 @@ use Inertia\Response;
 
 final readonly class UserMagicLinkController
 {
-    public function create(Request $request): Response
+    public function create(Request $request, FormFriction $friction): Response
     {
         return Inertia::render('user-magic-link/create', [
             'status' => $request->session()->get('status'),
+            'friction' => $friction->props(),
         ]);
     }
 

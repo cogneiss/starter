@@ -69,7 +69,7 @@ final readonly class OrganizationWebhookEndpointController
     {
         Gate::authorize('update', $endpoint);
 
-        $endpoint->update($request->safe()->only(['url', 'description', 'events', 'active']));
+        $endpoint->update($request->validated());
 
         Inertia::flash('toast', [
             'type' => 'success',

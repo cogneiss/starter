@@ -26,6 +26,7 @@ it('may send a magic link', function (): void {
 
     $response = $this->fromRoute('magic-link.create')
         ->post(route('magic-link.store'), [
+            '_friction' => frictionToken(),
             'email' => 'test@example.com',
         ]);
 
@@ -40,6 +41,7 @@ it('returns generic message for non-existent email', function (): void {
 
     $response = $this->fromRoute('magic-link.create')
         ->post(route('magic-link.store'), [
+            '_friction' => frictionToken(),
             'email' => 'nonexistent@example.com',
         ]);
 
@@ -52,6 +54,7 @@ it('returns generic message for non-existent email', function (): void {
 it('requires a valid email', function (): void {
     $response = $this->fromRoute('magic-link.create')
         ->post(route('magic-link.store'), [
+            '_friction' => frictionToken(),
             'email' => 'not-an-email',
         ]);
 

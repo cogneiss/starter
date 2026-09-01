@@ -1,5 +1,8 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 // Components
+import FormFrictionFields, {
+    type Friction,
+} from '@/components/form-friction-fields';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -10,7 +13,13 @@ import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/magic-link';
 
-export default function MagicLink({ status }: { status?: string }) {
+export default function MagicLink({
+    status,
+    friction,
+}: {
+    status?: string;
+    friction: Friction;
+}) {
     const { token } = usePage().props.errors;
 
     return (
@@ -36,6 +45,7 @@ export default function MagicLink({ status }: { status?: string }) {
                 <Form {...store.form()}>
                     {({ processing, errors }) => (
                         <>
+                            <FormFrictionFields friction={friction} />
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
                                 <Input

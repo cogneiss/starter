@@ -1,10 +1,14 @@
 import { Form, Head } from '@inertiajs/react';
 import OrganizationInvitationAcceptanceController from '@/actions/App/Http/Controllers/OrganizationInvitationAcceptanceController';
+import FormFrictionFields, {
+    type Friction,
+} from '@/components/form-friction-fields';
 import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/auth-layout';
 
 type Props = {
     token: string;
+    friction: Friction;
     email?: string | null;
     organization?: string | null;
     role?: string | null;
@@ -13,6 +17,7 @@ type Props = {
 
 export default function Show({
     token,
+    friction,
     email = null,
     organization = null,
     role = null,
@@ -50,14 +55,17 @@ export default function Show({
                 )}
             >
                 {({ processing }) => (
-                    <Button
-                        type="submit"
-                        className="mt-4 w-full"
-                        disabled={processing}
-                        data-test="accept-invitation-button"
-                    >
-                        Accept invitation
-                    </Button>
+                    <>
+                        <FormFrictionFields friction={friction} />
+                        <Button
+                            type="submit"
+                            className="mt-4 w-full"
+                            disabled={processing}
+                            data-test="accept-invitation-button"
+                        >
+                            Accept invitation
+                        </Button>
+                    </>
                 )}
             </Form>
         </AuthLayout>

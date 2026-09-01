@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\AcceptOrganizationInvitation;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
+use App\Support\FormFriction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,12 +17,13 @@ use Inertia\Response;
 
 final readonly class OrganizationInvitationAcceptanceController
 {
-    public function show(string $token): Response
+    public function show(string $token, FormFriction $friction): Response
     {
         $invitation = OrganizationInvitation::findByToken($token);
 
         return Inertia::render('organization-invitation/show', [
             'token' => $token,
+            'friction' => $friction->props(),
             'email' => $invitation?->email,
             'organization' => $invitation?->organization->name,
             'role' => $invitation?->role,

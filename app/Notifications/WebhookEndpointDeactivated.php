@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\User;
-use App\Models\WebhookEndpoint;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 final class WebhookEndpointDeactivated extends Notification
 {
     use Queueable;
-
-    public function __construct(private readonly WebhookEndpoint $endpoint) {}
 
     /**
      * @return list<string>

@@ -9,6 +9,7 @@ use App\Actions\DeleteUser;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\DeleteUserRequest;
 use App\Models\User;
+use App\Support\FormFriction;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -17,9 +18,11 @@ use Inertia\Response;
 
 final readonly class UserController
 {
-    public function create(): Response
+    public function create(FormFriction $friction): Response
     {
-        return Inertia::render('user/create');
+        return Inertia::render('user/create', [
+            'friction' => $friction->props(),
+        ]);
     }
 
     public function store(CreateUserRequest $request, CreateUser $action): RedirectResponse

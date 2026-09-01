@@ -318,6 +318,17 @@ function motionStyles(bool $reduced): array
 }
 
 /**
+ * The friction token a real person would carry: issued when the form
+ * rendered, a few seconds before the submit.
+ */
+function frictionToken(int $ageSeconds = 3): string
+{
+    return Illuminate\Support\Facades\Crypt::encryptString(
+        (string) now()->subSeconds($ageSeconds)->getTimestamp(),
+    );
+}
+
+/**
  * A live API token for an organization, and the Authorization header a client
  * would send with it. The plaintext exists only in the returned header string.
  *

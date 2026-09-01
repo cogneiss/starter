@@ -19,7 +19,7 @@ final class Signature
 
     public static function verify(string $body, string $secret, int $timestamp, string $signature, ?int $tolerance = null): bool
     {
-        $tolerance ??= (int) config('webhooks.tolerance');
+        $tolerance ??= config()->integer('webhooks.tolerance');
 
         if (abs(time() - $timestamp) > $tolerance) {
             return false;

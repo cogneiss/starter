@@ -17,6 +17,6 @@ final class NativeHostnameResolver implements ResolvesHostnames
 
         $addresses = gethostbynamel($hostname);
 
-        return $addresses === false ? [] : array_values($addresses);
+        return $addresses === false ? [] : $addresses;
     }
 }

@@ -180,7 +180,7 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
 Route::get('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'show'])
     ->name('organization-invitation-acceptance.show');
 Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'update'])
-    ->middleware('throttle:6,1')
+    ->middleware(['throttle:6,1', 'friction'])
     ->name('organization-invitation-acceptance.update');
 
 Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
@@ -264,6 +264,7 @@ Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function 
     Route::get('register', [UserController::class, 'create'])
         ->name('register');
     Route::post('register', [UserController::class, 'store'])
+        ->middleware('friction')
         ->name('register.store');
 
     // User Password...
@@ -282,7 +283,7 @@ Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function 
     Route::get('magic-link', [UserMagicLinkController::class, 'create'])
         ->name('magic-link.create');
     Route::post('magic-link', [UserMagicLinkController::class, 'store'])
-        ->middleware('throttle:6,1')
+        ->middleware(['throttle:6,1', 'friction'])
         ->name('magic-link.store');
     Route::get('magic-link/{token}', [UserMagicLinkController::class, 'update'])
         ->middleware('throttle:6,1')

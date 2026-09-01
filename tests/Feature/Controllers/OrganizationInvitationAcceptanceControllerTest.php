@@ -42,7 +42,7 @@ it('shows an unknown token as unavailable', function (): void {
 it('sends a guest to log in before accepting', function (): void {
     pendingInvitation('new@example.com');
 
-    $this->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']))
+    $this->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']), ['_friction' => frictionToken()])
         ->assertRedirectToRoute('login');
 
     expect(session('url.intended'))
@@ -54,7 +54,7 @@ it('accepts the invitation for the invited user', function (): void {
     $user = User::factory()->create(['email' => 'new@example.com']);
 
     $this->actingAs($user)
-        ->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']))
+        ->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']), ['_friction' => frictionToken()])
         ->assertRedirectToRoute('dashboard');
 
     expect($invitation->refresh()->accepted_at)->not->toBeNull()
@@ -66,7 +66,7 @@ it('logs out a different account instead of attaching it', function (): void {
     $user = User::factory()->create(['email' => 'him@example.com']);
 
     $this->actingAs($user)
-        ->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']))
+        ->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']), ['_friction' => frictionToken()])
         ->assertRedirectToRoute('login');
 
     expect(Auth::check())->toBeFalse();
@@ -79,6 +79,6 @@ it('sends an expired invitation back to the unavailable page', function (): void
     $user = User::factory()->create(['email' => 'late@example.com']);
 
     $this->actingAs($user)
-        ->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']))
+        ->post(route('organization-invitation-acceptance.update', ['token' => 'raw-token']), ['_friction' => frictionToken()])
         ->assertRedirectToRoute('organization-invitation-acceptance.show', ['token' => 'raw-token']);
 });
