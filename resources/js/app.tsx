@@ -1,4 +1,4 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType } from 'react';
 import { StrictMode } from 'react';
@@ -7,6 +7,11 @@ import { ConfirmProvider } from '@/components/confirm-dialog';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+import {
+    configureAnalytics,
+    identifyOnce,
+    trackPageview,
+} from '@/lib/analytics';
 import { installHttpErrorHandlers } from '@/lib/http-errors';
 import '../css/app.css';
 
@@ -43,3 +48,16 @@ initializeTheme();
 
 // Every failed request past this point says something a person can act on.
 installHttpErrorHandlers();
+
+// No provider ships by default — analytics is a no-op until one is wired
+// here. Do Not Track still silences everything if that ever changes.
+router.on('navigate', (event) => {
+    const props = event.detail.page.props;
+
+    configureAnalytics(null, Boolean(props.doNotTrack));
+    trackPageview(event.detail.page.url);
+
+    if (props.auth?.user) {
+        identifyOnce(props.auth.user.id, props.organization?.id ?? null);
+    }
+});

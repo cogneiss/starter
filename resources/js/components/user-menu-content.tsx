@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { resetAnalytics } from '@/lib/analytics';
 import { useTranslate } from '@/lib/i18n';
 import { logout } from '@/routes';
 import { edit } from '@/routes/user-profile';
@@ -25,6 +26,7 @@ export function UserMenuContent({ user }: Props) {
 
     const handleLogout = () => {
         cleanup();
+        resetAnalytics();
         router.flushAll();
     };
 

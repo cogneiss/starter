@@ -23,6 +23,7 @@ declare module '@inertiajs/core' {
             translations: Record<string, string>;
             sidebarOpen: boolean;
             unreadNotifications: number;
+            doNotTrack: boolean;
             recentNotifications: AppNotification[];
             [key: string]: unknown;
         };

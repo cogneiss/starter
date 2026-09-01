@@ -8,13 +8,17 @@ use App\Auth\Contracts\OrganizationResolver;
 use App\Auth\Resolvers\SessionOrganizationResolver;
 use App\Auth\Resolvers\SingleOrganizationResolver;
 use App\Auth\Resolvers\SubdomainOrganizationResolver;
+use App\Contracts\AnalyticsReporter;
 use App\Contracts\ErrorReporter;
 use App\Contracts\FileScanner;
 use App\Enums\KnownFeatures;
+use App\Listeners\RecordAnalyticsEvent;
 use App\Listeners\RecordModelActivity;
 use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Resources\ResourceRegistry;
+use App\Support\Analytics\NullAnalyticsReporter;
+use App\Support\Analytics\PostHogReporter;
 use App\Support\Health\Checks\CacheCheck;
 use App\Support\Health\Checks\DatabaseCheck;
 use App\Support\Health\Checks\DebugModeCheck;
@@ -66,6 +70,11 @@ final class AppServiceProvider extends ServiceProvider
             ? new NullErrorReporter()
             : $this->app->make(SentryErrorReporter::class));
 
+        // Same shape as the error reporter: null unless a key is configured.
+        $this->app->singleton(AnalyticsReporter::class, fn (): AnalyticsReporter => config('services.posthog.key') === null
+            ? new NullAnalyticsReporter()
+            : new PostHogReporter());
+
         $this->app->bind(HealthReport::class, fn (): HealthReport => new HealthReport([
             new DatabaseCheck(),
             new CacheCheck(),
@@ -83,6 +92,11 @@ final class AppServiceProvider extends ServiceProvider
         Event::listen(
             ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],
             RecordModelActivity::class,
+        );
+
+        Event::listen(
+            ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],
+            RecordAnalyticsEvent::class,
         );
 
         // Every stored notification carries the organization it was raised in.

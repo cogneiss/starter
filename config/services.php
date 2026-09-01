@@ -48,6 +48,11 @@ return [
         'redirect' => '/auth/microsoft/callback',
     ],
 
+    'posthog' => [
+        'key' => env('POSTHOG_KEY') ?: null,
+        'host' => env('POSTHOG_HOST') ?: 'https://app.posthog.com',
+    ],
+
     'sentry' => [
         'dsn' => env('SENTRY_DSN') ?: null,
         'release' => env('SENTRY_RELEASE') ?: null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToOrganization;
+use App\Support\Analytics\Attributes\NoTrack;
 use Database\Factories\ActivityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
@@ -16,6 +17,7 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  *
  * @property-read string $organization_id
  */
+#[NoTrack]
 final class Activity extends SpatieActivity
 {
     use BelongsToOrganization;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToOrganization;
+use App\Support\Analytics\Attributes\NoTrack;
 use Carbon\CarbonInterface;
 use Database\Factories\ApiRequestLogFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -30,6 +31,7 @@ use LogicException;
  * @property-read Organization $organization
  * @property-read ApiToken|null $token
  */
+#[NoTrack]
 final class ApiRequestLog extends Model
 {
     use BelongsToOrganization;
