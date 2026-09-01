@@ -20,6 +20,14 @@ enum KnownFeatures: string
     case SocialLoginEnabled = 'social-login-enabled';
 
     /**
+     * The Pennant feature naming an organization's API rate tier. A
+     * string-valued feature, not a boolean flag, so it is a constant rather
+     * than a case; every reference goes through it, so a typo cannot exist.
+     * Its default lives in config/api.php as `rate_tiers.default`.
+     */
+    public const string API_RATE_TIER = 'api-rate-tier';
+
+    /**
      * A live override wins; otherwise the configured default applies.
      */
     public function enabledFor(?Organization $organization): bool

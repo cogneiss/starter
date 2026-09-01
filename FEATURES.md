@@ -561,6 +561,7 @@ Local loops:
 | `php artisan app:expire-feature-overrides`     | Drop feature overrides whose expiry has passed.                               |
 | `php artisan uploads:prune`                    | Delete expired temp uploads, bytes and rows, across every organization.       |
 | `php artisan tokens:prune`                     | Delete API tokens revoked or expired past the retention window, everywhere.   |
+| `php artisan api:prune-logs`                   | Delete API usage log rows older than the retention window, everywhere.        |
 | `php artisan brand:preview <primary> <accent>` | Print the palette two brand hexes derive, with every measured contrast ratio. |
 | `php artisan wiki:lint`                        | The five wiki rules. What `composer test:wiki` runs.                          |
 | `php artisan wiki:audit`                       | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |

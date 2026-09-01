@@ -72,6 +72,21 @@ lastUsedAt: string | null,
 expiresAt: string | null,
 createdAt: string,
 };
+export type ApiUsage = {
+since: string,
+requests: number,
+throttled: number,
+tier: string,
+limit: number,
+remaining: number,
+daily: ApiUsageRow[],
+endpoints: ApiUsageRow[],
+tokens: ApiUsageRow[],
+};
+export type ApiUsageRow = {
+name: string,
+requests: number,
+};
 export type AppNotification = {
 id: string,
 title: string,

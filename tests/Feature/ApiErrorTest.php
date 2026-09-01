@@ -57,6 +57,18 @@ it('422 carries an error bag', function (): void {
         ->assertJsonValidationErrors(['per']);
 });
 
+it('429 is json and carries retry-after', function (): void {
+    config()->set('api.rate_tiers.tiers.standard', ['per_token' => 1, 'per_organization' => 1]);
+
+    $this->withHeader('Authorization', $this->bearer)->get('/api/v1/users')->assertOk();
+
+    $this->withHeader('Authorization', $this->bearer)
+        ->get('/api/v1/users')
+        ->assertStatus(429)
+        ->assertHeader('Retry-After')
+        ->assertHeader('Content-Type', 'application/json');
+});
+
 it('unsupported method on api routes is 405 json and never writes', function (): void {
     foreach (['post', 'put', 'patch', 'delete'] as $method) {
         foreach (['/api/v1/users', '/api/v1/users/'.$this->member->id] as $url) {

@@ -17,6 +17,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizationAiUsageController;
 use App\Http\Controllers\OrganizationApiTokenController;
+use App\Http\Controllers\OrganizationApiUsageController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -93,6 +94,8 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
             ->name('organization.update');
         Route::get('settings/organization/ai-usage', [OrganizationAiUsageController::class, 'index'])
             ->name('organization.ai-usage');
+        Route::get('settings/organization/api-usage', [OrganizationApiUsageController::class, 'index'])
+            ->name('organization.api-usage');
 
         // API Tokens...
         Route::get('settings/api-tokens', [OrganizationApiTokenController::class, 'edit'])

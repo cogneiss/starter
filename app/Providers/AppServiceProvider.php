@@ -76,7 +76,7 @@ final class AppServiceProvider extends ServiceProvider
         // A plan's API tier is a string feature, so a billing integration can
         // move an organization between tiers without a deploy.
         Feature::define(
-            'api-rate-tier',
+            KnownFeatures::API_RATE_TIER,
             fn (?Organization $organization): string => config()->string('api.rate_tiers.default'),
         );
     }

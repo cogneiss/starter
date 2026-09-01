@@ -19,7 +19,7 @@
         {
             "id": 3,
             "name": "usage log and rate tiers",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=\"ApiUsage|RateTier\""
         },
         {

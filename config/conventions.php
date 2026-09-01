@@ -6,6 +6,7 @@ use App\Models\AiAuditLog;
 use App\Models\AiCreditLedgerEntry;
 use App\Models\AiDocument;
 use App\Models\AiMemory;
+use App\Models\ApiRequestLog;
 use App\Models\ApiToken;
 use App\Models\FeatureOverride;
 use App\Models\ImpersonationLog;
@@ -31,6 +32,7 @@ return [
         AiCreditLedgerEntry::class => 'Append-only AI credit ledger, summed for a balance, never listed as a record.',
         AiDocument::class => 'Retrieval corpus rows, reached only through an agent tool, never listed or linked.',
         AiMemory::class => "One person's private assistant memory, written by one tool and read into their own prompt, never listed or linked.",
+        ApiRequestLog::class => 'Append-only API usage log, reported in aggregate on the usage page, never listed or linked.',
         ApiToken::class => 'A credential, not a record: shown only on its own settings page, never listed or linked as data.',
         FeatureOverride::class => 'pending resource adapter',
         ImpersonationLog::class => 'Append-only audit table, never listed or linked.',
