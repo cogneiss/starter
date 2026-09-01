@@ -11,3 +11,4 @@ Schedule::command('uploads:prune')->daily();
 Schedule::command('tokens:prune')->daily();
 Schedule::command('api:prune-logs')->daily();
 Schedule::command('audit:prune')->daily();
+Schedule::command('gdpr:purge')->daily();

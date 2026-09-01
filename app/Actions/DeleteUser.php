@@ -21,7 +21,7 @@ final readonly class DeleteUser
         DB::transaction(function () use ($user): void {
             AiMemory::query()->where('user_id', $user->id)->delete();
 
-            $user->delete();
+            $user->forceDelete();
         });
     }
 }

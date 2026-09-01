@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\MembershipStatus;
+use App\Exceptions\LastActiveOwnerException;
 use App\Models\OrganizationMembership;
 use App\Models\Role;
 use App\Support\OrganizationContext;
-use Illuminate\Validation\ValidationException;
 
 final readonly class AssertNotLastActiveOwner
 {
@@ -28,7 +28,7 @@ final readonly class AssertNotLastActiveOwner
             return;
         }
 
-        throw ValidationException::withMessages([
+        throw LastActiveOwnerException::withMessages([
             'membership' => __('An organization must keep at least one active owner.'),
         ]);
     }

@@ -3,6 +3,7 @@ import { useForm } from 'laravel-precognition-react-inertia';
 import type { FormEvent } from 'react';
 import UserProfileController from '@/actions/App/Http/Controllers/UserProfileController';
 import DeleteUser from '@/components/delete-user';
+import ExportUserData from '@/components/export-user-data';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -141,6 +142,8 @@ export default function Edit({
                         </div>
                     </form>
                 </div>
+
+                <ExportUserData />
 
                 <DeleteUser />
             </SettingsLayout>

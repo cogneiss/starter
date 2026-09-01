@@ -9,6 +9,7 @@ use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GdprController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ImportDownloadController;
 use App\Http\Controllers\ImportRetryController;
@@ -180,6 +181,16 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
     Route::patch('settings/profile', [UserProfileController::class, 'update'])
         ->middleware('not-impersonating')
         ->name('user-profile.update');
+
+    // Personal-data export... the download link arrives signed and expiring
+    // through a notification; the file lives under the requester's own id, so
+    // a foreign file name is a 404.
+    Route::post('settings/profile/gdpr-export', [GdprController::class, 'store'])
+        ->middleware('not-impersonating')
+        ->name('gdpr-export.store');
+    Route::get('settings/profile/gdpr-export/{file}', [GdprController::class, 'show'])
+        ->middleware('signed')
+        ->name('gdpr-export.download');
 
     // User Password...
     Route::get('settings/password', [UserPasswordController::class, 'edit'])
