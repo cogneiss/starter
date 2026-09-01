@@ -10,6 +10,7 @@ use App\Auth\Resolvers\SingleOrganizationResolver;
 use App\Auth\Resolvers\SubdomainOrganizationResolver;
 use App\Contracts\FileScanner;
 use App\Enums\KnownFeatures;
+use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Resources\ResourceRegistry;
 use App\Support\OrganizationContext;
@@ -19,6 +20,7 @@ use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
+use Laravel\Sanctum\Sanctum;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +51,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Sanctum::usePersonalAccessTokenModel(ApiToken::class);
+
         // Every stored notification carries the organization it was raised in.
         // Laravel resolves the `database` driver through the container, so the
         // stamping channel replaces it there rather than at each call site.
@@ -68,5 +72,12 @@ final class AppServiceProvider extends ServiceProvider
                 fn (?Organization $organization): bool => $feature->enabledFor($organization),
             );
         }
+
+        // A plan's API tier is a string feature, so a billing integration can
+        // move an organization between tiers without a deploy.
+        Feature::define(
+            'api-rate-tier',
+            fn (?Organization $organization): string => config()->string('api.rate_tiers.default'),
+        );
     }
 }

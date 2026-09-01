@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
+import { edit as editApiTokens } from '@/routes/api-token';
 import { edit as editAppearance } from '@/routes/appearance';
 import { show as showBrowserSessions } from '@/routes/browser-session';
 import { edit as editOrganization } from '@/routes/organization';
@@ -55,6 +56,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Notifications',
         href: editNotifications(),
+        icon: null,
+    },
+    {
+        title: 'API Tokens',
+        href: editApiTokens(),
         icon: null,
     },
     {

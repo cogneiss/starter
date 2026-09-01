@@ -16,6 +16,7 @@ use App\Http\Controllers\NotificationBulkController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizationAiUsageController;
+use App\Http\Controllers\OrganizationApiTokenController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationAcceptanceController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -92,6 +93,14 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
             ->name('organization.update');
         Route::get('settings/organization/ai-usage', [OrganizationAiUsageController::class, 'index'])
             ->name('organization.ai-usage');
+
+        // API Tokens...
+        Route::get('settings/api-tokens', [OrganizationApiTokenController::class, 'edit'])
+            ->name('api-token.edit');
+        Route::post('settings/api-tokens', [OrganizationApiTokenController::class, 'store'])
+            ->name('api-token.store');
+        Route::delete('settings/api-tokens/{token}', [OrganizationApiTokenController::class, 'destroy'])
+            ->name('api-token.destroy');
 
         // Organization Members...
         Route::get('settings/members', [OrganizationMemberController::class, 'edit'])

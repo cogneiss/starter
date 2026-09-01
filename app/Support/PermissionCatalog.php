@@ -89,6 +89,24 @@ final class PermissionCatalog
                 'Upload a file and create records from it in bulk.',
             ),
             new PermissionDefinition(
+                'api.tokens.view',
+                'API',
+                'View API tokens',
+                "See the organization's API tokens and when they were last used.",
+            ),
+            new PermissionDefinition(
+                'api.tokens.manage',
+                'API',
+                'Manage API tokens',
+                'Create and revoke API tokens for the organization.',
+            ),
+            new PermissionDefinition(
+                'api.usage.view',
+                'API',
+                'View API usage',
+                'See how much the organization has used the API and by which tokens.',
+            ),
+            new PermissionDefinition(
                 'roles.manage',
                 'Roles',
                 'Manage roles',

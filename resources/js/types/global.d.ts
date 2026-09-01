@@ -10,6 +10,7 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         flashDataType: {
             toast?: FlashToast;
+            plainTextToken?: string;
         };
         sharedPageProps: {
             name: string;

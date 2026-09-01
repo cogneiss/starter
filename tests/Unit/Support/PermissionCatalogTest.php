@@ -25,5 +25,5 @@ it('has no duplicate names', function (): void {
 
 it('collects the permissions for a verb', function (): void {
     expect(PermissionCatalog::endingWith('view'))
-        ->toBe(['organization.view', 'members.view', 'roles.view', 'ai.view', 'imports.view']);
+        ->toBe(['organization.view', 'members.view', 'roles.view', 'ai.view', 'imports.view', 'api.tokens.view', 'api.usage.view']);
 });

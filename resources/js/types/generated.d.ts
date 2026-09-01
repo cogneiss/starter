@@ -64,6 +64,14 @@ runs: number,
 tokens: number,
 cost_micros: number,
 };
+export type ApiToken = {
+id: string,
+name: string,
+abilities: string[],
+lastUsedAt: string | null,
+expiresAt: string | null,
+createdAt: string,
+};
 export type AppNotification = {
 id: string,
 title: string,
