@@ -111,6 +111,7 @@ current: boolean,
 };
 export type BulkMembershipAction = 'suspend' | 'reactivate' | 'remove';
 export type FilterType = 'select' | 'multi-select' | 'boolean' | 'range' | 'date-range';
+export type HealthStatus = 'ok' | 'degraded' | 'failed';
 export type Impersonator = {
 id: string,
 name: string,

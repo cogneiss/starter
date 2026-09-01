@@ -8,14 +8,24 @@ use App\Auth\Contracts\OrganizationResolver;
 use App\Auth\Resolvers\SessionOrganizationResolver;
 use App\Auth\Resolvers\SingleOrganizationResolver;
 use App\Auth\Resolvers\SubdomainOrganizationResolver;
+use App\Contracts\ErrorReporter;
 use App\Contracts\FileScanner;
 use App\Enums\KnownFeatures;
 use App\Listeners\RecordModelActivity;
 use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Resources\ResourceRegistry;
+use App\Support\Health\Checks\CacheCheck;
+use App\Support\Health\Checks\DatabaseCheck;
+use App\Support\Health\Checks\DebugModeCheck;
+use App\Support\Health\Checks\DiskCheck;
+use App\Support\Health\Checks\QueueCheck;
+use App\Support\Health\Checks\ScheduleCheck;
+use App\Support\Health\HealthReport;
 use App\Support\OrganizationContext;
 use App\Support\OrganizationDatabaseChannel;
+use App\Support\Reporting\NullErrorReporter;
+use App\Support\Reporting\SentryErrorReporter;
 use App\Support\Scanners\NullScanner;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Event;
@@ -49,6 +59,21 @@ final class AppServiceProvider extends ServiceProvider
             OrganizationResolver::class,
             self::RESOLVERS[config()->string('organizations.resolver')] ?? SessionOrganizationResolver::class,
         );
+
+        // Null unless a DSN is configured, so a clone with blank keys boots
+        // clean and sends nothing anywhere.
+        $this->app->singleton(ErrorReporter::class, fn (): ErrorReporter => config('services.sentry.dsn') === null
+            ? new NullErrorReporter()
+            : $this->app->make(SentryErrorReporter::class));
+
+        $this->app->bind(HealthReport::class, fn (): HealthReport => new HealthReport([
+            new DatabaseCheck(),
+            new CacheCheck(),
+            new QueueCheck(),
+            new ScheduleCheck(),
+            new DiskCheck(),
+            new DebugModeCheck(),
+        ]));
     }
 
     public function boot(): void

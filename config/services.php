@@ -48,6 +48,11 @@ return [
         'redirect' => '/auth/microsoft/callback',
     ],
 
+    'sentry' => [
+        'dsn' => env('SENTRY_DSN') ?: null,
+        'release' => env('SENTRY_RELEASE') ?: null,
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

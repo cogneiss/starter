@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\ErrorReporter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -94,7 +95,16 @@ final class UserFriendlyExceptionRegistrar
 
         // The API answers JSON regardless of the Accept header a client sent.
         if ($request->expectsJson() || $request->is('api/*')) {
-            return new JsonResponse(['message' => $described['message']], $described['status']);
+            $payload = ['message' => $described['message']];
+
+            // The same id the reporter recorded, so a person quoting the
+            // error can be matched to the report. Null when nothing was
+            // reported — an abort(500) is user-facing, not a crash.
+            if ($described['status'] === 500) {
+                $payload['reference'] = resolve(ErrorReporter::class)->reference($throwable);
+            }
+
+            return new JsonResponse($payload, $described['status']);
         }
 
         return Inertia::render('error', $described)

@@ -37,7 +37,7 @@
         {
             "id": 6,
             "name": "health and error reporter",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=\"Health|ErrorReporter\""
         },
         {

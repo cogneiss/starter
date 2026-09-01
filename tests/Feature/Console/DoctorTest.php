@@ -62,13 +62,48 @@ it('emits valid JSON', function (): void {
 
         $decoded = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
-        expect($decoded['checks'])->toHaveCount(13)
+        expect($decoded['checks'])->toHaveCount(19)
             ->and($decoded['checks'][0])->toHaveKeys(['name', 'ok', 'fix']);
 
         // Everything but the coverage driver, which depends on how PHP was invoked.
         $others = collect($decoded['checks'])->reject(fn (array $check): bool => $check['name'] === 'Coverage driver');
 
         expect($others->every(fn (array $check): bool => $check['ok']))->toBeTrue();
+    });
+});
+
+it('runs the same six health checks the endpoint does, one line each', function (): void {
+    withCheckoutLock(function (): void {
+        Artisan::call('app:doctor', ['--json' => true]);
+
+        $health = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['checks'])
+            ->filter(fn (array $check): bool => str_starts_with($check['name'], 'Health: '));
+
+        expect($health)->toHaveCount(6);
+
+        foreach (['database', 'cache', 'queue', 'disk', 'debug-mode'] as $name) {
+            expect($health->firstWhere('name', sprintf('Health: %s (ok)', $name)))->not->toBeNull();
+        }
+
+        // Degraded is visible but does not fail the doctor: the scheduler has
+        // never written a heartbeat into the test's array cache.
+        $schedule = $health->firstWhere('name', 'Health: schedule (degraded)');
+
+        expect($schedule)->not->toBeNull()
+            ->and($schedule['ok'])->toBeTrue();
+    });
+});
+
+it('fails when a health check fails hard', function (): void {
+    withCheckoutLock(function (): void {
+        config()->set('cache.default', 'bogus');
+
+        expect(Artisan::call('app:doctor', ['--json' => true]))->toBe(1);
+
+        $checks = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['checks'])
+            ->keyBy('name');
+
+        expect($checks['Health: cache (failed)']['ok'])->toBeFalse();
     });
 });
 

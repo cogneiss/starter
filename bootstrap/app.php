@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Contracts\ErrorReporter;
+use App\Http\Controllers\HealthController;
 use App\Http\Middleware\EnsureTwoFactorEnabled;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\ForbiddenDuringImpersonation;
@@ -21,6 +23,7 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -29,6 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         apiPrefix: 'api/v1',
+        then: function (): void {
+            // No middleware group on purpose: the endpoint must answer while
+            // the database is down, and the web group's session store is the
+            // database.
+            Route::get('health', HealthController::class)->name('health');
+        },
     )
     ->withBroadcasting(
         __DIR__.'/../routes/channels.php',
@@ -71,6 +80,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request, Throwable $throwable): bool => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Framework-reported errors flow to the configured reporter; report()
+        // runs before respond(), so the reference id exists when the 500
+        // payload is rendered.
+        $exceptions->report(static function (Throwable $throwable): void {
+            resolve(ErrorReporter::class)->report($throwable);
+        });
 
         $exceptions->respond(
             fn (Response $response, Throwable $throwable, Request $request): Response => UserFriendlyExceptionRegistrar::respond($response, $throwable, $request),
