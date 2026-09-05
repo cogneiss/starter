@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.3.0](https://github.com/cogneiss/starter/compare/v0.2.0...v0.3.0) (2026-09-05)
+
+
+### Features
+
+* **admin:** add a platform control plane on the list kit ([09cc932](https://github.com/cogneiss/starter/commit/09cc9327afe3192265cffe1de696feea75b39a55))
+* **ai:** add assistant memory scoped to organization and user ([92602ec](https://github.com/cogneiss/starter/commit/92602ece71690949d3911f220fc71117aa77bc68))
+* **ai:** add invitation drafting and dashboard briefing verticals ([fc265b2](https://github.com/cogneiss/starter/commit/fc265b26ef3f247d59ec4157993cf94fba29e9c5))
+* **ai:** add org-scoped retrieval over pgvector ([9763980](https://github.com/cogneiss/starter/commit/9763980058bb46bf93463342a028dbad03e20c93))
+* **ai:** add the agent kernel, tier router and middleware pipeline ([6dab30e](https://github.com/cogneiss/starter/commit/6dab30ea7abf5aff94a6927ebaba0b811e7fcf9e))
+* **ai:** execute agent proposals through signed single-use confirm tokens ([646ce06](https://github.com/cogneiss/starter/commit/646ce06090b628367b0c8774799672bec38620a0))
+* **ai:** expose the resource registry over mcp ([4258370](https://github.com/cogneiss/starter/commit/4258370a71578781dc6ffc9dd5cef803dcf6b428))
+* **ai:** expose the resource registry to agents as read-only tools ([7e2fff3](https://github.com/cogneiss/starter/commit/7e2fff37419ef764a2a4e98a911b7deb730a963a))
+* **ai:** fence untrusted content and gate every tool call and egress ([2868bb3](https://github.com/cogneiss/starter/commit/2868bb3401e65fb72ce2075411d75fa0763e7de9))
+* **ai:** install the laravel ai sdk with a zero-key fake default ([8add71f](https://github.com/cogneiss/starter/commit/8add71f193f52d737a92da618e47a747d8a13b24))
+* **ai:** meter agent usage with quotas, an audit log and a credit ledger ([2adc81f](https://github.com/cogneiss/starter/commit/2adc81fbf0ee560a6272a5816e5162100dc1eb8e))
+* **ai:** render agent output as a typed streaming block union ([4435e10](https://github.com/cogneiss/starter/commit/4435e1012e38b3ae125a4d01aad776f4ec4ba036))
+* **ai:** report token usage, cost and quota health ([d843a1a](https://github.com/cogneiss/starter/commit/d843a1aee41fdf315dd438b7b5a90772a7b6c7f4))
+* **analytics:** add a provider-agnostic analytics seam ([ba08cf2](https://github.com/cogneiss/starter/commit/ba08cf2b043430ac4a1b39512ac599c11d93d71c))
+* **api:** add per-organization api tokens ([5347f44](https://github.com/cogneiss/starter/commit/5347f449d495b1c5dfaf3b00bf88b77fc1b39bca))
+* **api:** add usage logging, rate tiers and a usage dashboard ([a9c3a38](https://github.com/cogneiss/starter/commit/a9c3a3889b3a276ec82b7deb9e2a0ac2a8ab3fe9))
+* **api:** expose a registry-driven read api ([e9822f4](https://github.com/cogneiss/starter/commit/e9822f4af96f845d6ddf96b61d0ba3de49f40e9d))
+* **audit:** add an org-scoped audit log with export and pruning ([3d18ac4](https://github.com/cogneiss/starter/commit/3d18ac48486ed8584912095456055eb756cfe8fc))
+* **db:** make postgresql 17 + pgvector the primary database ([9d17512](https://github.com/cogneiss/starter/commit/9d17512ffe457b0984cf0dcbb1009f9e44803307))
+* **forms:** add precognition live validation with a ci parity gate ([08d94f1](https://github.com/cogneiss/starter/commit/08d94f1e559aff80b97b7b51fcf46a607023ccf4))
+* **i18n:** add locale resolution and a single translation source ([3c986b4](https://github.com/cogneiss/starter/commit/3c986b455930fbc9e25b2ffbf420e089c12b9b9e))
+* **import:** add registry-driven bulk import with scanned temp uploads ([df44fa7](https://github.com/cogneiss/starter/commit/df44fa70c3c0f3d847f2a0bee9b50bba3a7cc710))
+* **notifications:** add realtime delivery and an in-app inbox ([60c0541](https://github.com/cogneiss/starter/commit/60c054161f79024b4de3216aa4541fb01ba15385))
+* **onboarding:** add a step registry, checklist and gate ([df2741b](https://github.com/cogneiss/starter/commit/df2741b6f7c9f7d42fc7c58e5aa60853410e3856))
+* **ops:** add health checks and a pluggable error reporter ([6313373](https://github.com/cogneiss/starter/commit/63133738e2ce5eefbf98e287a7bfaced96812d13))
+* **privacy:** add gdpr export, anonymising deletion and purge ([b084c29](https://github.com/cogneiss/starter/commit/b084c297dbe9694e497cb0632491394874e73fb2))
+* **search:** add a policy-scoped cross-resource search endpoint ([dc49c91](https://github.com/cogneiss/starter/commit/dc49c9100220eb51c4b5ada9761037bcf3af3792))
+* **security:** add csp nonces and public-form friction ([85c611c](https://github.com/cogneiss/starter/commit/85c611cddfea7f437d708a000d713daaa621be56))
+* **ui:** add a command palette over scoped search ([3bb740a](https://github.com/cogneiss/starter/commit/3bb740ac5eecc71b9508bef595ffcc8135d3562d))
+* **ui:** add a reduced-motion-gated motion system and route announcer ([6c00d9e](https://github.com/cogneiss/starter/commit/6c00d9e80dba8415855ae14122c73d76f94378ef))
+* **ui:** add column controls, bulk actions and csv export ([0d8b038](https://github.com/cogneiss/starter/commit/0d8b03803679f8fbf0905ec6c1c1cc9a6d80d174))
+* **ui:** add empty states, friendly errors, confirm and drawer primitives ([54da5a2](https://github.com/cogneiss/starter/commit/54da5a2fddd57af132624b6db4b97521c33fa6bd))
+* **ui:** add faceted filters with url-serialized state ([a07193b](https://github.com/cogneiss/starter/commit/a07193b49d6f2b0be5a441396bf20ac0595fd6f6))
+* **ui:** add per-user saved searches ([ee2e745](https://github.com/cogneiss/starter/commit/ee2e745069f2e64a146a0cdb6caf67a1ee23cb8c))
+* **ui:** add the server-driven list kit ([6ab7125](https://github.com/cogneiss/starter/commit/6ab7125b6c02d0fb72c6504246370c393048aaf3))
+* **ui:** derive accessible oklch brand palettes from two hexes ([e9e19cc](https://github.com/cogneiss/starter/commit/e9e19ccee16567fde38d5bad09d271a18170a0df))
+* **webhooks:** add signed outgoing webhooks with a delivery log ([8770d49](https://github.com/cogneiss/starter/commit/8770d49b7ae5943a9f730ed0b0842c8458d2b2c0))
+
+
+### Bug Fixes
+
+* pin the boost config so the guideline gate only fails on real drift ([ad9f337](https://github.com/cogneiss/starter/commit/ad9f3375e9de66696a4d237822f60bbd1cd043f8))
+* **ui:** keep bulk removal rules out of the membership policy ([9d0a803](https://github.com/cogneiss/starter/commit/9d0a80307a56cb6fb82443b4670c8d05be767501))
+
 ## [0.2.0](https://github.com/cogneiss/starter/compare/v0.1.0...v0.2.0) (2026-08-23)
 
 
