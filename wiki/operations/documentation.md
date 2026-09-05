@@ -11,7 +11,7 @@ code_refs:
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-09-01
+updated: 2026-08-31
 ---
 
 # Documentation
@@ -46,9 +46,6 @@ them — `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/**`,
 reaches across the request cycle, the queue and the browser has no single
 directory to name, and a row that named only one of them would leave the rest
 editable without the rule ever loading ([[domains/ux-list-kit]]).
-`.ai/rules/platform-ops.md` has the same shape for the same reason: the API
-routes, webhooks, admin area and provider seams span `routes/`, `app/` and
-`config/`, so its row names each of them ([[operations/ops-read-api]]).
 
 ## Generated files
 
