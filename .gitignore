@@ -1,3 +1,6 @@
+.env
+.env.*
+/.vscode
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules
@@ -48,4 +51,3 @@ nginx.pid
 # commit). A worklist for /document, not a source file — regenerate, never edit.
 /wiki/_meta/audit.json
 .gitignore
-config.bat
