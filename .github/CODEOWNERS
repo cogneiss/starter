@@ -1,0 +1,14 @@
+# Gate files. A change here weakens or strengthens a check, so it needs an owner's eyes.
+/.github/                 @coding-sunshine
+/.githooks/               @coding-sunshine
+/.claude/settings.json    @coding-sunshine
+/.claude/hooks/           @coding-sunshine
+/.coderabbit.yaml         @coding-sunshine
+/phpstan*.neon            @coding-sunshine
+/rector.php               @coding-sunshine
+/pint.json                @coding-sunshine
+/composer.json            @coding-sunshine
+/package.json             @coding-sunshine
+/knip.json                @coding-sunshine
+/vite.config.ts           @coding-sunshine
+/tests/Unit/ArchTest.php  @coding-sunshine

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Quiet profile. Pint, Rector, PHPStan max, oxlint, knip and the tests already
+# catch style and type issues; review for intent, logic and security.
+language: en-US
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: false
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!resources/js/actions/**"
+    - "!resources/js/routes/**"
+    - "!resources/js/wayfinder/**"
+    - "!resources/js/types/generated.d.ts"
+    - "!resources/js/components/ui/**"
+    - "!AGENTS.md"
+    - "!CLAUDE.md"
+    - "!GEMINI.md"
+    - "!CHANGELOG.md"
+    - "!bun.lock"
+    - "!composer.lock"
+  path_instructions:
+    - path: "app/Ai/**"
+      instructions: "Follow .ai/rules/ai.md. Tools never write; agents pick a tier, never a model literal; untrusted input goes through UntrustedContent::fence()."
+    - path: "app/**"
+      instructions: "Follow .ai/rules/app.md and the Action pattern. Flag post-fetch organization checks; scoping must be query-level (foreign id = 404)."
+    - path: "routes/api.php"
+      instructions: "Follow .ai/rules/platform-ops.md. Organization comes from the token only. The API is read-only by design."
+    - path: "tests/**"
+      instructions: "Flag tests that execute code without asserting the behaviour under test, and any weakened or skipped assertion."
+    - path: ".github/**"
+      instructions: "Flag any lowered threshold, removed gate, or skipped check."
+  tools:
+    phpstan:
+      enabled: false
+    eslint:
+      enabled: false
+    biome:
+      enabled: false
+chat:
+  auto_reply: true

@@ -1,0 +1,29 @@
+name: semgrep
+
+# PHP static security scan. Zero findings today, so any finding is a regression.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: semgrep/semgrep
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan
+        run: semgrep scan --config p/php --config p/security-audit --error --metrics=off app routes config database bootstrap
