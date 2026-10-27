@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+#
+# Refuse a commit whose staged files are not formatted. Check mode only: the
+# hook never rewrites files, so a partially staged file cannot pick up hunks
+# you did not stage. Run `composer lint` to fix, then stage again.
+
+php_files="$(git diff --cached --name-only --diff-filter=ACMR -- '*.php')"
+web_files="$(git diff --cached --name-only --diff-filter=ACMR -- 'resources/*.ts' 'resources/*.tsx' 'resources/*.css')"
+
+status=0
+
+if [ -n "$php_files" ]; then
+    # shellcheck disable=SC2086
+    vendor/bin/pint --test $php_files || status=1
+fi
+
+if [ -n "$web_files" ]; then
+    # shellcheck disable=SC2086
+    NODE_OPTIONS='--experimental-strip-types' node_modules/.bin/vp fmt --check $web_files || status=1
+fi
+
+if [ "$status" -ne 0 ]; then
+    echo "pre-commit: staged files are not formatted. Run composer lint, stage, and commit again." >&2
+fi
+
+exit "$status"

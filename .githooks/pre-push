@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+#
+# The static gates CI would fail on, run before the push leaves the machine.
+# phpstan-strict.neon includes phpstan.neon, so one run covers both levels.
+# The test suite stays in CI: it needs Postgres and takes minutes.
+
+vendor/bin/phpstan analyse -c phpstan-strict.neon --memory-limit=2G --no-progress || exit 1
+node_modules/.bin/tsc --noEmit || exit 1

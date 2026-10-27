@@ -5,7 +5,10 @@ supersedes: []
 code_refs:
     - CONTRIBUTING.md
     - .githooks/commit-msg
-updated: 2026-08-31
+    - .githooks/pre-commit
+    - .githooks/pre-push
+    - .claude/settings.json
+updated: 2026-10-28
 ---
 
 # Contributing
@@ -18,6 +21,21 @@ updated: 2026-08-31
 it reaches a branch. That is not style policing — release-please reads those
 prefixes to pick the next version and write the changelog
 ([[operations/releases]]).
+
+## Format and static checks run before code leaves the machine
+
+`.githooks/pre-commit` checks only the staged files: Pint for PHP, `vp fmt` for
+TypeScript and CSS. It never rewrites anything, so a partly staged file can't pick
+up hunks you didn't stage. Run `composer lint`, stage again and commit.
+
+`.githooks/pre-push` runs PHPStan with `phpstan-strict.neon` and `tsc --noEmit`,
+which takes a few seconds. The test suite stays in CI, since it needs Postgres.
+
+Claude Code sessions get two extra project hooks from `.claude/settings.json`.
+The first formats each file right after the agent writes it. The second refuses
+any command that skips git hooks, and asks a human before an agent edits gate
+config: PHPStan, Rector, Pint, knip, the Sloppy baseline, `vite.config.ts`, the
+arch test, the workflows, and the hooks themselves.
 
 ## Tests are not optional
 
