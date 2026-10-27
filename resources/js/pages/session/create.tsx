@@ -117,6 +117,7 @@ export default function Login({
                                         variant="outline"
                                         className="w-full"
                                         render={
+                                            // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- the render prop receives its children from the parent component
                                             <a
                                                 href={socialLogin.url(provider)}
                                             />

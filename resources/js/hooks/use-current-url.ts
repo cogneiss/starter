@@ -69,6 +69,7 @@ export function useCurrentUrl(): UseCurrentUrlReturn {
     const whenCurrentUrl: WhenCurrentUrlFn = <TIfTrue, TIfFalse = null>(
         urlToCheck: NonNullable<InertiaLinkProps['href']>,
         ifTrue: TIfTrue,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- an omitted ifFalse is the `null` that TIfFalse defaults to; TypeScript cannot express that default inside the body
         ifFalse: TIfFalse = null as TIfFalse,
     ): TIfTrue | TIfFalse => {
         return isCurrentUrl(urlToCheck) ? ifTrue : ifFalse;

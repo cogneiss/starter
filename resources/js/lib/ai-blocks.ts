@@ -1,3 +1,4 @@
+import { readJson } from '@/lib/json';
 import type { AiBlock } from '@/types/ai-blocks';
 
 const KNOWN_TYPES = new Set([
@@ -34,7 +35,7 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
         throw new Error(`The request failed with status ${response.status}.`);
     }
 
-    return (await response.json()) as T;
+    return readJson<T>(response);
 }
 
 /**
@@ -93,13 +94,17 @@ function emit(line: string, onBlock: (block: AiBlock) => void): void {
 
     const parsed: unknown = JSON.parse(line);
 
-    if (
-        typeof parsed === 'object' &&
-        parsed !== null &&
-        'type' in parsed &&
-        typeof parsed.type === 'string' &&
-        KNOWN_TYPES.has(parsed.type)
-    ) {
-        onBlock(parsed as AiBlock);
+    if (isKnownBlock(parsed)) {
+        onBlock(parsed);
     }
+}
+
+function isKnownBlock(value: unknown): value is AiBlock {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'type' in value &&
+        typeof value.type === 'string' &&
+        KNOWN_TYPES.has(value.type)
+    );
 }

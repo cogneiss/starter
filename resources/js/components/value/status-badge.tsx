@@ -3,7 +3,7 @@ import { EmptyValue } from '@/components/value/empty-value';
 
 type Variant = 'default' | 'secondary' | 'destructive' | 'outline';
 
-const VARIANTS: Record<string, Variant> = {
+const VARIANTS: Partial<Record<string, Variant>> = {
     active: 'default',
     accepted: 'default',
     verified: 'default',
@@ -24,7 +24,7 @@ export function StatusBadge({
     variants = {},
 }: {
     status?: string | null;
-    variants?: Record<string, Variant>;
+    variants?: Partial<Record<string, Variant>>;
 }) {
     if (status === null || status === undefined || status === '') {
         return <EmptyValue />;

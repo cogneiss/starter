@@ -35,14 +35,14 @@ export default function PasskeyRegister({ onSuccess }: Props) {
         },
     });
 
-    const handleSubmit = async (event: FormEvent): Promise<void> => {
+    const handleSubmit = (event: FormEvent): void => {
         event.preventDefault();
 
         if (!name.trim()) {
             return;
         }
 
-        await register(name);
+        void register(name);
     };
 
     const handleCancel = (): void => {

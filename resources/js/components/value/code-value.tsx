@@ -12,7 +12,7 @@ export function CodeValue({ value }: { value?: string | null }) {
 
     return (
         <span className="inline-flex items-center gap-1" data-test="code-value">
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+            <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xs">
                 {value}
             </code>
 

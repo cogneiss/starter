@@ -5,7 +5,7 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { index, pages as pageRoute } from '@/routes/admin';
-import type { AdminRow, BreadcrumbItem, ResourceList } from '@/types';
+import type { AdminRow, BreadcrumbItem, TypedResourceList } from '@/types';
 
 type ColumnHeader = {
     key: string;
@@ -26,7 +26,7 @@ type Props = {
     label: string;
     pages: { key: string; label: string }[];
     columns: ColumnHeader[];
-    list: ResourceList;
+    list: TypedResourceList<AdminRow>;
     recentFailures: RecentFailure[] | null;
 };
 

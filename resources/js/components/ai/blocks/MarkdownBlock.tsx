@@ -12,7 +12,7 @@ export function MarkdownBlock({
 }) {
     return (
         <div
-            className="prose prose-sm dark:prose-invert max-w-none text-sm"
+            className="prose prose-sm max-w-none text-sm dark:prose-invert"
             data-test="ai-markdown-block"
             dangerouslySetInnerHTML={{ __html: block.html }}
         />

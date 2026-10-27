@@ -158,7 +158,8 @@ function FilterControl({ filter, onChange }: ControlProps) {
                     labels={['From', 'To']}
                 />
             );
-        default:
+        case 'select':
+        case 'boolean':
             return <ChoiceFilter filter={filter} onChange={onChange} />;
     }
 }

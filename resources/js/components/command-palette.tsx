@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { xhrFetch } from '@/lib/http-errors';
+import { readJson } from '@/lib/json';
 import { search } from '@/routes';
 import type { SearchGroup, SearchResult } from '@/types/generated';
 
@@ -56,9 +57,8 @@ function useDebouncedSearch(term: string, open: boolean) {
                 headers: { Accept: 'application/json' },
                 signal: controller.signal,
             })
-                .then(
-                    (response) =>
-                        response.json() as Promise<{ groups: SearchGroup[] }>,
+                .then((response) =>
+                    readJson<{ groups: SearchGroup[] }>(response),
                 )
                 .then((payload) => {
                     setSettled({

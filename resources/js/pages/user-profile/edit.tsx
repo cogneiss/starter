@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react-inertia';
 import type { FormEvent } from 'react';
 import UserProfileController from '@/actions/App/Http/Controllers/UserProfileController';
@@ -9,6 +9,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuthUser } from '@/hooks/use-auth-user';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit } from '@/routes/user-profile';
@@ -29,14 +30,14 @@ export default function Edit({
     mustVerifyEmail: boolean;
     status?: string;
 }) {
-    const { auth } = usePage().props;
+    const user = useAuthUser();
 
     // Validation runs on the server as the fields are left, against the same
     // form request the submission uses, so a message never disagrees with what
     // saving would actually say.
     const form = useForm('patch', UserProfileController.update().url, {
-        name: auth.user.name,
-        email: auth.user.email,
+        name: user.name,
+        email: user.email,
     });
 
     const submit = (event: FormEvent) => {
@@ -107,29 +108,28 @@ export default function Edit({
                             />
                         </div>
 
-                        {mustVerifyEmail &&
-                            auth.user.email_verified_at === null && (
-                                <div>
-                                    <p className="-mt-4 text-sm text-muted-foreground">
-                                        Your email address is unverified.{' '}
-                                        <Link
-                                            href={send()}
-                                            as="button"
-                                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                        >
-                                            Click here to resend the
-                                            verification email.
-                                        </Link>
-                                    </p>
+                        {mustVerifyEmail && user.email_verified_at === null && (
+                            <div>
+                                <p className="-mt-4 text-sm text-muted-foreground">
+                                    Your email address is unverified.{' '}
+                                    <Link
+                                        href={send()}
+                                        as="button"
+                                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                    >
+                                        Click here to resend the verification
+                                        email.
+                                    </Link>
+                                </p>
 
-                                    {status === 'verification-link-sent' && (
-                                        <div className="mt-2 text-sm font-medium text-green-600">
-                                            A new verification link has been
-                                            sent to your email address.
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                {status === 'verification-link-sent' && (
+                                    <div className="mt-2 text-sm font-medium text-green-600">
+                                        A new verification link has been sent to
+                                        your email address.
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-4">
                             <Button

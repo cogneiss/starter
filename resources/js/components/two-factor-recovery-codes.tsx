@@ -67,7 +67,7 @@ export default function TwoFactorRecoveryCodes({
             <CardContent>
                 <div className="flex flex-col gap-3 select-none sm:flex-row sm:items-center sm:justify-between">
                     <Button
-                        onClick={toggleCodesVisibility}
+                        onClick={() => void toggleCodesVisibility()}
                         className="w-fit"
                         aria-expanded={codesAreVisible}
                         aria-controls="recovery-codes-section"
@@ -83,7 +83,7 @@ export default function TwoFactorRecoveryCodes({
                         <Form
                             {...regenerateRecoveryCodes.form()}
                             options={{ preserveScroll: true }}
-                            onSuccess={fetchRecoveryCodes}
+                            onSuccess={() => void fetchRecoveryCodes()}
                         >
                             {({ processing }) => (
                                 <Button
@@ -104,7 +104,7 @@ export default function TwoFactorRecoveryCodes({
                     aria-hidden={!codesAreVisible}
                 >
                     <div className="mt-3 space-y-3">
-                        {errors?.length ? (
+                        {errors.length ? (
                             <AlertError errors={errors} />
                         ) : (
                             <>
@@ -134,7 +134,7 @@ export default function TwoFactorRecoveryCodes({
                                                 (_, index) => (
                                                     <div
                                                         key={index}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
+                                                        className="h-4 animate-pulse rounded-sm bg-muted-foreground/20"
                                                         aria-hidden="true"
                                                     />
                                                 ),

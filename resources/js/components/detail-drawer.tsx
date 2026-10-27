@@ -18,7 +18,7 @@ import type { RecordPeek } from '@/types';
  * with someone else's details in it.
  */
 export function DetailDrawer() {
-    const peek = usePage().props.peek as RecordPeek | null;
+    const peek = usePage<{ peek: RecordPeek | null }>().props.peek;
 
     /**
      * Closing drops the parameter and hands the keyboard back to the row that

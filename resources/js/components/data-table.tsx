@@ -32,7 +32,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import type { ResourceList, ResourceQuery } from '@/types/generated';
+import { useAuthUser } from '@/hooks/use-auth-user';
+import type { ResourceQuery } from '@/types/generated';
+import type { TypedResourceList } from '@/types/ui';
 
 /**
  * How long the table waits after the last keystroke before asking the server.
@@ -108,7 +110,7 @@ type Preferences = {
 
 type DataTableProps<TRow extends RowData> = {
     /** The page of rows and the query that produced it, straight from the server. */
-    list: ResourceList;
+    list: TypedResourceList<TRow>;
     columns: DataTableColumns<TRow>;
     /** Props to reload; everything else on the page is left alone. */
     only: string[];
@@ -154,6 +156,7 @@ export function DataTable<TRow extends RowData>({
     saveable,
 }: DataTableProps<TRow>) {
     const page = usePage();
+    const user = useAuthUser();
     const path = page.url.split('?')[0];
     const [term, setTerm] = useState(list.query.q);
     const [pending, setPending] = useState(false);
@@ -161,7 +164,7 @@ export function DataTable<TRow extends RowData>({
     const debounce = useRef<number | undefined>(undefined);
     const startedAt = useRef(0);
 
-    const preferencesKey = `table:${PREFERENCES_VERSION}:${path}:${page.props.auth.user.id}`;
+    const preferencesKey = `table:${PREFERENCES_VERSION}:${path}:${user.id}`;
     const [preferences, setPreferences] = useState<Preferences>(() =>
         readPreferences(preferencesKey),
     );
@@ -234,7 +237,7 @@ export function DataTable<TRow extends RowData>({
         setEveryMatch(false);
     }
 
-    const rows = list.rows as TRow[];
+    const rows = list.rows;
 
     const table = useTable({
         features,
@@ -747,13 +750,27 @@ function readPreferences(key: string): Preferences {
             return empty;
         }
 
-        const parsed = JSON.parse(stored) as Partial<Preferences>;
+        const parsed: unknown = JSON.parse(stored);
+
+        if (typeof parsed !== 'object' || parsed === null) {
+            return empty;
+        }
+
+        const hidden: unknown = 'hidden' in parsed ? parsed.hidden : [];
+        const widths: unknown = 'widths' in parsed ? parsed.widths : {};
 
         return {
-            hidden: Array.isArray(parsed.hidden) ? parsed.hidden : [],
+            hidden: Array.isArray(hidden)
+                ? hidden.filter((id): id is string => typeof id === 'string')
+                : [],
             widths:
-                typeof parsed.widths === 'object' && parsed.widths !== null
-                    ? parsed.widths
+                typeof widths === 'object' && widths !== null
+                    ? Object.fromEntries(
+                          Object.entries(widths).filter(
+                              (entry): entry is [string, number] =>
+                                  typeof entry[1] === 'number',
+                          ),
+                      )
                     : {},
         };
     } catch {

@@ -27,6 +27,7 @@ export function NavFooter({
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 render={
+                                    // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- the render prop receives its children from the parent component
                                     <a
                                         href={toUrl(item.href)}
                                         target="_blank"

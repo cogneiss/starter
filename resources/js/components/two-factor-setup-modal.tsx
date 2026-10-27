@@ -68,7 +68,7 @@ function TwoFactorSetupStep({
 
     return (
         <>
-            {errors?.length ? (
+            {errors.length ? (
                 <AlertError errors={errors} />
             ) : (
                 <>
@@ -123,7 +123,9 @@ function TwoFactorSetupStep({
                                         className="h-full w-full bg-background p-3 text-foreground outline-none"
                                     />
                                     <button
-                                        onClick={() => copy(manualSetupKey)}
+                                        onClick={() =>
+                                            void copy(manualSetupKey)
+                                        }
                                         className="border-l border-border px-3 hover:bg-muted"
                                     >
                                         <IconComponent className="w-4" />

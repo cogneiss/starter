@@ -7,6 +7,7 @@
         "dev": "vp dev",
         "lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt resources/ && NODE_OPTIONS='--experimental-strip-types' vp lint --fix",
         "test:lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt --check resources/ && NODE_OPTIONS='--experimental-strip-types' vp lint",
+        "test:dupes": "bunx jscpd@5.4.2 resources/js --min-tokens 50 --min-lines 6 --threshold 3 --ignore \"**/components/ui/**,**/actions/**,**/routes/**,**/wayfinder/**,**/generated.d.ts\" --reporters console --silent",
         "knip": "knip",
         "knip:fix": "knip --fix",
         "test:types": "tsc --noEmit",
@@ -15,7 +16,9 @@
     "devDependencies": {
         "@laravel/vite-plugin-wayfinder": "^0.1.11",
         "@rolldown/plugin-babel": "^0.2.4",
+        "@tailwindcss/typography": "^0.5.20",
         "@types/node": "^26.6.5",
+        "eslint-plugin-better-tailwindcss": "4.10.0",
         "knip": "^6.43.0",
         "npm-check-updates": "^23.1.1",
         "playwright": "^1.64.1",

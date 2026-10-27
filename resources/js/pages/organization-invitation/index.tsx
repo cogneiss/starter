@@ -1,5 +1,4 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { useMemo } from 'react';
 import OrganizationInvitationController from '@/actions/App/Http/Controllers/OrganizationInvitationController';
 import { DataTable, dataTableColumns } from '@/components/data-table';
 import Heading from '@/components/heading';
@@ -10,11 +9,11 @@ import { create, index } from '@/routes/organization-invitation';
 import type {
     BreadcrumbItem,
     OrganizationInvitation,
-    ResourceList,
+    TypedResourceList,
 } from '@/types';
 
 type Props = {
-    invitations: ResourceList;
+    invitations: TypedResourceList<OrganizationInvitation>;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,49 +25,45 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const helper = dataTableColumns<OrganizationInvitation>();
 
-export default function Index({ invitations }: Props) {
-    const columns = useMemo(
-        () =>
-            helper.columns([
-                helper.accessor('email', {
-                    header: 'Email',
-                    meta: { sort: 'email' },
-                }),
-                helper.accessor('role', {
-                    header: 'Role',
-                    meta: { sort: 'role' },
-                }),
-                helper.accessor('expires_at', {
-                    header: 'Expires',
-                    meta: { sort: 'expires_at' },
-                }),
-                helper.display({
-                    id: 'actions',
-                    header: 'Actions',
-                    cell: ({ row }) => (
-                        <Form
-                            {...OrganizationInvitationController.destroy.form(
-                                row.original.id,
-                            )}
-                            options={{ preserveScroll: true }}
-                        >
-                            {({ processing }) => (
-                                <Button
-                                    type="submit"
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={processing}
-                                >
-                                    Revoke
-                                </Button>
-                            )}
-                        </Form>
-                    ),
-                }),
-            ]),
-        [],
-    );
+const columns = helper.columns([
+    helper.accessor('email', {
+        header: 'Email',
+        meta: { sort: 'email' },
+    }),
+    helper.accessor('role', {
+        header: 'Role',
+        meta: { sort: 'role' },
+    }),
+    helper.accessor('expires_at', {
+        header: 'Expires',
+        meta: { sort: 'expires_at' },
+    }),
+    helper.display({
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+            <Form
+                {...OrganizationInvitationController.destroy.form(
+                    row.original.id,
+                )}
+                options={{ preserveScroll: true }}
+            >
+                {({ processing }) => (
+                    <Button
+                        type="submit"
+                        size="sm"
+                        variant="outline"
+                        disabled={processing}
+                    >
+                        Revoke
+                    </Button>
+                )}
+            </Form>
+        ),
+    }),
+]);
 
+export default function Index({ invitations }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Pending invitations" />

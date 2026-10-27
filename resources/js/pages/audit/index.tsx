@@ -5,10 +5,10 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { index } from '@/routes/audit-log';
-import type { Activity, BreadcrumbItem, ResourceList } from '@/types';
+import type { Activity, BreadcrumbItem, TypedResourceList } from '@/types';
 
 type Props = {
-    entries: ResourceList;
+    entries: TypedResourceList<Activity>;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [

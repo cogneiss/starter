@@ -1,7 +1,7 @@
 import type { User } from './generated';
 
 export type Auth = {
-    user: User;
+    user: User | null;
 };
 
 export type TwoFactorSetupData = {

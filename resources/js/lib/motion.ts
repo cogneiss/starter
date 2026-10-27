@@ -38,8 +38,8 @@ export type TransitionName = keyof typeof motionTransitions;
  */
 function prefersReducedMotion(): boolean {
     return (
-        globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ===
-        true
+        'matchMedia' in globalThis &&
+        globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches
     );
 }
 

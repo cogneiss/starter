@@ -1,5 +1,5 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { useMemo, type ComponentProps } from 'react';
 import OrganizationMemberController from '@/actions/App/Http/Controllers/OrganizationMemberController';
 import {
     DataTable,
@@ -16,10 +16,14 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { create as invite } from '@/routes/organization-invitation';
 import { index as invitations } from '@/routes/organization-invitation';
 import { bulk, edit } from '@/routes/organization-member';
-import type { BreadcrumbItem, OrganizationMember, ResourceList } from '@/types';
+import type {
+    BreadcrumbItem,
+    OrganizationMember,
+    TypedResourceList,
+} from '@/types';
 
 type Props = {
-    members: ResourceList;
+    members: TypedResourceList<OrganizationMember>;
     roles?: string[];
 };
 
@@ -42,39 +46,50 @@ const bulkActions: BulkAction[] = [
     { value: 'remove', label: 'Remove', destructive: true },
 ];
 
+/**
+ * A plain function, not a component: the cell closes over the row actions'
+ * inputs without defining a component during render.
+ */
+function memberColumns(
+    roles: string[],
+    pending: Record<string, string>,
+    patch: ComponentProps<typeof MemberActions>['patch'],
+) {
+    return helper.columns([
+        helper.accessor('name', {
+            header: 'Name',
+            meta: { sort: 'user.name' },
+        }),
+        helper.accessor('email', {
+            header: 'Email',
+            meta: { sort: 'user.email' },
+        }),
+        helper.accessor('status', {
+            header: 'Status',
+            meta: { sort: 'status' },
+        }),
+        helper.display({
+            id: 'actions',
+            header: 'Actions',
+            cell: ({ row }) => (
+                <MemberActions
+                    member={row.original}
+                    roles={roles}
+                    pendingRole={pending[row.original.id]}
+                    patch={patch}
+                />
+            ),
+        }),
+    ]);
+}
+
 export default function Edit({ members, roles = [] }: Props) {
     // One patcher for the whole table: the pending values are keyed by member,
     // so two rows edited at once keep their own spinner and their own value.
     const { pending, patch } = usePendingPatch<string>();
 
     const columns = useMemo(
-        () =>
-            helper.columns([
-                helper.accessor('name', {
-                    header: 'Name',
-                    meta: { sort: 'user.name' },
-                }),
-                helper.accessor('email', {
-                    header: 'Email',
-                    meta: { sort: 'user.email' },
-                }),
-                helper.accessor('status', {
-                    header: 'Status',
-                    meta: { sort: 'status' },
-                }),
-                helper.display({
-                    id: 'actions',
-                    header: 'Actions',
-                    cell: ({ row }) => (
-                        <MemberActions
-                            member={row.original}
-                            roles={roles}
-                            pendingRole={pending[row.original.id]}
-                            patch={patch}
-                        />
-                    ),
-                }),
-            ]),
+        () => memberColumns(roles, pending, patch),
         [roles, pending, patch],
     );
 

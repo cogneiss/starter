@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { streamBlocks } from '@/lib/ai-blocks';
-import { motionTransitions, transitionStyle } from '@/lib/motion';
+import {
+    motionTransitions,
+    transitionStyle,
+    type TransitionName,
+} from '@/lib/motion';
 import { store } from '@/routes/ai-block';
 import type { AiBlock } from '@/types/ai-blocks';
 
@@ -14,6 +18,10 @@ import type { AiBlock } from '@/types/ai-blocks';
  * live stream, so the same components are read twice: once from a prop and once
  * arriving a line at a time.
  */
+function isTransitionName(name: string): name is TransitionName {
+    return name in motionTransitions;
+}
+
 export default function BlockGallery({ blocks }: { blocks: AiBlock[] }) {
     const [prompt, setPrompt] = useState('Summarise the organization.');
     const [streamed, setStreamed] = useState<AiBlock[]>([]);
@@ -76,18 +84,18 @@ export default function BlockGallery({ blocks }: { blocks: AiBlock[] }) {
                 <h2 className="text-sm font-medium">Motion</h2>
 
                 <ul className="flex flex-wrap gap-3">
-                    {Object.keys(motionTransitions).map((name) => (
-                        <li
-                            key={name}
-                            className="rounded-md border px-3 py-2 text-sm hover:opacity-70"
-                            style={transitionStyle(
-                                name as keyof typeof motionTransitions,
-                            )}
-                            data-test={`motion-${name}`}
-                        >
-                            {name}
-                        </li>
-                    ))}
+                    {Object.keys(motionTransitions)
+                        .filter(isTransitionName)
+                        .map((name) => (
+                            <li
+                                key={name}
+                                className="rounded-md border px-3 py-2 text-sm hover:opacity-70"
+                                style={transitionStyle(name)}
+                                data-test={`motion-${name}`}
+                            >
+                                {name}
+                            </li>
+                        ))}
                 </ul>
             </section>
         </main>

@@ -46,7 +46,7 @@ export default function PasskeyVerify({
                     type="button"
                     variant="outline"
                     className="w-full"
-                    onClick={verify}
+                    onClick={() => void verify()}
                     disabled={isLoading}
                 >
                     {isLoading ? <Spinner /> : <KeyRound className="h-4 w-4" />}

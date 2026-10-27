@@ -57,7 +57,7 @@ router.on('navigate', (event) => {
     configureAnalytics(null, Boolean(props.doNotTrack));
     trackPageview(event.detail.page.url);
 
-    if (props.auth?.user) {
+    if (props.auth.user) {
         identifyOnce(props.auth.user.id, props.organization?.id ?? null);
     }
 });
