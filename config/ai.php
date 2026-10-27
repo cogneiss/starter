@@ -90,9 +90,9 @@ return [
     */
 
     'quotas' => [
-        'user_requests_per_hour' => env('AI_QUOTA_USER_HOUR', 60),
-        'org_requests_per_day' => env('AI_QUOTA_ORG_DAY', 2000),
-        'org_budget_micros_per_month' => env('AI_BUDGET_ORG_MONTH', 50_000_000),
+        'user_requests_per_hour' => (int) env('AI_QUOTA_USER_HOUR', 60),
+        'org_requests_per_day' => (int) env('AI_QUOTA_ORG_DAY', 2000),
+        'org_budget_micros_per_month' => (int) env('AI_BUDGET_ORG_MONTH', 50_000_000),
     ],
 
     /*
@@ -134,7 +134,7 @@ return [
     */
 
     'confirm' => [
-        'ttl' => env('AI_CONFIRM_TTL', 15),
+        'ttl' => (int) env('AI_CONFIRM_TTL', 15),
     ],
 
     'actions' => [
@@ -157,7 +157,7 @@ return [
     */
 
     'briefing' => [
-        'ttl' => env('AI_BRIEFING_TTL', 900),
+        'ttl' => (int) env('AI_BRIEFING_TTL', 900),
     ],
 
     /*
@@ -174,7 +174,7 @@ return [
     */
 
     'memory' => [
-        'max_facts' => env('AI_MEMORY_MAX_FACTS', 20),
+        'max_facts' => (int) env('AI_MEMORY_MAX_FACTS', 20),
     ],
 
     /*
