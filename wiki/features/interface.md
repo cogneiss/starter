@@ -10,7 +10,7 @@ code_refs:
     - resources/js/components/value/relative-time.tsx
     - components.json
     - vite.config.ts
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Interface

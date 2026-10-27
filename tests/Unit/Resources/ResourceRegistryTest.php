@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Resources\Definitions\UserResource;
 use App\Resources\ResourceRegistry;
+use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Resources\Valid\FixtureResource;
 
 function fixtureRegistry(string $directory = 'Valid', string $namespace = 'Valid'): ResourceRegistry
@@ -87,7 +88,7 @@ it('reads the adapters back out of the cache file instead of scanning the direct
 
         expect($registry->keys())->toBe(['fixtures']);
     } finally {
-        @unlink($path);
+        File::delete($path);
     }
 });
 
@@ -101,7 +102,7 @@ it('falls back to scanning when the cache file holds something other than a clas
 
         expect($registry->keys())->toContain('organizations', 'users');
     } finally {
-        @unlink($path);
+        File::delete($path);
     }
 });
 
@@ -115,6 +116,6 @@ it('drops cached entries that are no longer resource adapters', function (): voi
 
         expect($registry->keys())->toBe(['fixtures']);
     } finally {
-        @unlink($path);
+        File::delete($path);
     }
 });

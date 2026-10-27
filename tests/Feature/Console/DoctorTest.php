@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 
@@ -32,11 +33,11 @@ function withAudit(?string $json, Closure $assert): void
         $original = is_file($path) ? (string) file_get_contents($path) : null;
 
         try {
-            $json === null ? unlink($path) : file_put_contents($path, $json);
+            $json === null ? File::delete($path) : file_put_contents($path, $json);
 
             $assert();
         } finally {
-            $original === null ? unlink($path) : file_put_contents($path, $original);
+            $original === null ? File::delete($path) : file_put_contents($path, $original);
         }
     });
 }

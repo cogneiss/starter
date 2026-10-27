@@ -9,7 +9,7 @@ code_refs:
     - app/Ai/Agents/Concerns/HasDefaultMiddleware.php
     - app/Ai/Concerns/OrganizationScopedAgent.php
     - app/Console/Commands/AiInstallCommand.php
-updated: 2026-08-25
+updated: 2026-10-28
 ---
 
 # AI layer overview
@@ -39,7 +39,9 @@ its tests pass without an account anywhere.
 
 Agents use `App\Ai\Agents\Concerns\HasDefaultMiddleware`, which returns one
 pipeline in one order — `EnforceQuota`, `FenceUntrustedInput`, `FilterTopics`,
-`RecordAudit`. Quota is first so a prompt that will be refused is never paid
+`RecordAudit`. On `laravel/ai` 1.x each of these wraps every model step
+(`handle(PendingStep $step, Closure $next)`), not just the opening prompt; the
+quota and topic checks act on the first step only. Quota is first so a prompt that will be refused is never paid
 for; audit is last so the record describes what actually went out. The order is
 the control, and it lives in one file so there is one place to change it and one
 test to go red when it changes.
@@ -56,6 +58,10 @@ Agents ask for a tier, not a model name. `App\Support\AiTier::for()` resolves
 failover when a second provider is configured. A model-name literal in an agent
 class is the thing this exists to prevent — see [[domains/ai-metering-and-quotas]]
 for how a tier's price is read back out of the same config.
+
+The integer settings in `config/ai.php` (quotas, confirm TTL, briefing TTL,
+memory fact cap) are cast with `(int) env(...)`, so a value set in `.env` as a
+string still satisfies `config()->integer()`.
 
 ## Getting it running
 

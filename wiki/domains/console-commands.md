@@ -16,7 +16,7 @@ code_refs:
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Console commands

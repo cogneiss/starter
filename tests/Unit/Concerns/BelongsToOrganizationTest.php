@@ -7,6 +7,7 @@ use App\Exceptions\OrganizationContextMissing;
 use App\Models\Organization;
 use App\Support\OrganizationContext;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,12 +20,11 @@ use Illuminate\Support\Facades\Schema;
  */
 #[Table(name: 'scoped_notes')]
 #[WithoutTimestamps]
+#[Unguarded]
 final class ScopedNote extends Model
 {
     use BelongsToOrganization;
     use HasFactory;
-
-    protected $guarded = [];
 }
 
 beforeEach(function (): void {

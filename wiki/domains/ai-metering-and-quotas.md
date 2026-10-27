@@ -13,7 +13,7 @@ code_refs:
     - app/Console/Commands/AiUsageCommand.php
     - tests/Feature/Ai/AiQuotaTest.php
     - tests/Feature/Console/AiUsageCommandTest.php
-updated: 2026-08-25
+updated: 2026-10-28
 ---
 
 # AI metering and quotas
@@ -23,14 +23,20 @@ questions: what happened, what it cost, and whether the next request is allowed.
 
 ## The record
 
-`app/Ai/Middleware/RecordAudit.php` writes an `AiAuditLog` row for each run —
+`app/Ai/Middleware/RecordAudit.php` writes an `AiAuditLog` row for each model step —
 organization, user, agent, provider, model, tier, token counts, cost in micros,
 duration and status — and debits the credit ledger in the same transaction. It
 runs last in the pipeline, so the record describes what actually went out.
+Middleware wraps every generation step and each step is a billed round trip, so
+a run that calls tools writes one row per step. The row is written from the
+`StepResult->then()` callback with the step's `StepResponse`; token counts come
+from the usage fields `inputTokens` and `outputTokens` (stored in
+`prompt_tokens` and `completion_tokens`), and `total_tokens` from
+`totalTokens()`.
 Refusals are recorded too, with status `Blocked` and the reason.
 
 Cost comes from `app/Support/AiPricing.php`, which reads `ai.pricing` keyed by
-provider and model. A model with no entry is priced at zero, which is why
+provider and model and prices `inputTokens` and `outputTokens` per million. A model with no entry is priced at zero, which is why
 `php artisan app:doctor` reports an unpriced configured model: runs that cost
 nothing never trip the budget.
 
@@ -49,7 +55,9 @@ anything short of time passing. Blocked requests are not counted: refusing one
 costs nothing, so it must not push the member further over.
 
 `app/Ai/Middleware/EnforceQuota.php` runs the check first in the pipeline, inside
-the agent's organization, and refuses before a prompt reaches a provider.
+the agent's organization, and refuses before a prompt reaches a provider. It
+checks only the first step (`isFirstStep()`): a run that was let in finishes its
+tool loop rather than dying halfway.
 
 ## Reading it back
 

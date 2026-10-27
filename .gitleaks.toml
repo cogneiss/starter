@@ -47,6 +47,13 @@ paths = [
     '''^\.github/skills/.*''',
 ]
 
+# History only. 2687a0b is the September worm commit: its `.env` held the
+# payload's base64-encoded download URL, not a credential of ours. The tree
+# was restored in bbd1076 and rewriting published history is not an option.
+commits = [
+    '''2687a0bcd50858827febafa164a05cccb9011274''',
+]
+
 regexes = [
     # Laravel's documented placeholder APP_KEY shape in docs and examples.
     '''base64:[A-Za-z0-9+/=]{0,10}$''',

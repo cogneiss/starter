@@ -9,10 +9,12 @@ code_refs:
     - tests/Evals/DashboardBriefingEvalTest.php
     - .github/workflows/evals.yml
     - composer.json
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # AI evals
+
+The SDK is `laravel/ai` `^1.3` (`composer.json`); `laravel/mcp` arrives through it and is not required directly. The agents the evals grade run on that per-step middleware API ([[domains/ai-injection-defense]]).
 
 Two kinds of test exist here, and conflating them is how a suite ends up both
 flaky and expensive.

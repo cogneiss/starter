@@ -22,8 +22,8 @@ final class AiMemoryFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
-            'key' => $this->faker->unique()->word(),
-            'value' => $this->faker->sentence(),
+            'key' => fake()->unique()->word(),
+            'value' => fake()->sentence(),
             'source' => 'tool',
             'expires_at' => null,
         ];

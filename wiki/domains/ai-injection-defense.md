@@ -9,7 +9,7 @@ code_refs:
     - app/Support/AiEgress.php
     - tests/Feature/Ai/InjectionTest.php
     - tests/Feature/Ai/EgressTest.php
-updated: 2026-08-25
+updated: 2026-10-28
 ---
 
 # AI injection defense
@@ -27,7 +27,11 @@ strips any fence markers already inside the content, so text that tries to close
 the fence early cannot escape it.
 
 `app/Ai/Middleware/FenceUntrustedInput.php` applies it in the pipeline, so an
-agent author cannot forget. `tests/Feature/Ai/InjectionTest.php` proves the
+agent author cannot forget. Middleware runs once per model step
+(`handle(PendingStep $step, Closure $next)`), and a fenced history applies to
+one step only, so it fences every `UserMessage` in `$step->messages` on every
+step. That covers earlier turns of a remembered conversation, which are member
+text too. `tests/Feature/Ai/InjectionTest.php` proves the
 prompt that reaches the provider is fenced — remove the wrapping from
 `fence()` and it goes red rather than passing on a hollow assertion.
 
@@ -42,7 +46,9 @@ live provider, in [[domains/ai-evals]].
 ## Topic filtering
 
 `app/Ai/Middleware/FilterTopics.php` refuses a prompt containing any substring in
-`ai.guardrails.denied_topics` before it costs anything. The list is empty by
+`ai.guardrails.denied_topics` before it costs anything. It checks only the first
+step (`isFirstStep()`), reading the last `UserMessage` in the step's messages;
+later steps of a tool loop pass straight through. The list is empty by
 default and is a product decision, not a security control.
 
 ## Egress

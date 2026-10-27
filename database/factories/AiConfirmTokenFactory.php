@@ -21,7 +21,7 @@ final class AiConfirmTokenFactory extends Factory
     public function definition(): array
     {
         $id = (string) Str::uuid();
-        $payload = ['email' => $this->faker->safeEmail(), 'role' => 'Member'];
+        $payload = ['email' => fake()->safeEmail(), 'role' => 'Member'];
 
         return [
             'id' => $id,

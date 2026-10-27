@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Vite;
 
 it('ships an enforcing policy with a nonce and no inline escape hatches', function (): void {
@@ -91,7 +92,7 @@ it('allows the vite dev server while running hot', function (): void {
     try {
         $policy = (string) $this->get(route('login'))->headers->get('Content-Security-Policy');
     } finally {
-        unlink($hotFile);
+        File::delete($hotFile);
     }
 
     preg_match('/script-src ([^;]+)/', $policy, $scripts);

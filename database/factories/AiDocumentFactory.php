@@ -22,9 +22,9 @@ final class AiDocumentFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'source_type' => 'note',
-            'source_id' => (string) $this->faker->numberBetween(1, 1000),
-            'title' => $this->faker->sentence(),
-            'content' => $this->faker->paragraph(),
+            'source_id' => (string) fake()->numberBetween(1, 1000),
+            'title' => fake()->sentence(),
+            'content' => fake()->paragraph(),
             'embedding' => Embeddings::fakeEmbedding(1536),
         ];
     }

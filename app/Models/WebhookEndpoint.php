@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Concerns\BelongsToOrganization;
 use Carbon\CarbonInterface;
 use Database\Factories\WebhookEndpointFactory;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  */
+#[Unguarded]
 final class WebhookEndpoint extends Model
 {
     use BelongsToOrganization;
@@ -38,8 +40,6 @@ final class WebhookEndpoint extends Model
     use HasFactory;
 
     use HasUuids;
-
-    protected $guarded = [];
 
     /**
      * Endpoints still receiving deliveries — matches the ApiToken::active() shape.

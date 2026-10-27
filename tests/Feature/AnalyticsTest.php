@@ -17,6 +17,7 @@ use App\Support\Analytics\PostHogReporter;
 use App\Support\OrganizationContext;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,28 +26,32 @@ use Illuminate\Support\Facades\Queue;
 
 #[Track(['updated'])]
 #[Table(name: 'saved_searches')]
+#[Unguarded]
 final class AnalyticsTrackedFixture extends Model
 {
     use BelongsToOrganization;
     use HasFactory;
     use HasUuids;
 
-    protected $guarded = [];
-
-    protected $casts = ['query' => 'array'];
+    protected function casts(): array
+    {
+        return ['query' => 'array'];
+    }
 }
 
 #[NoTrack]
 #[Table(name: 'saved_searches')]
+#[Unguarded]
 final class AnalyticsSilencedFixture extends Model
 {
     use BelongsToOrganization;
     use HasFactory;
     use HasUuids;
 
-    protected $guarded = [];
-
-    protected $casts = ['query' => 'array'];
+    protected function casts(): array
+    {
+        return ['query' => 'array'];
+    }
 }
 
 beforeEach(function (): void {

@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Concerns\BelongsToOrganization;
 use Carbon\CarbonInterface;
 use Database\Factories\WebhookDeliveryFactory;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  */
+#[Unguarded]
 final class WebhookDelivery extends Model
 {
     use BelongsToOrganization;
@@ -39,8 +41,6 @@ final class WebhookDelivery extends Model
     use HasFactory;
 
     use HasUuids;
-
-    protected $guarded = [];
 
     /**
      * @return BelongsTo<WebhookEndpoint, $this>

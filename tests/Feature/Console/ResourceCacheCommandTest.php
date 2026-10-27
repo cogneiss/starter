@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Resources\Definitions\UserResource;
 use App\Resources\ResourceRegistry;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
 beforeEach(function (): void {
@@ -13,7 +14,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    @unlink($this->cachePath);
+    File::delete($this->cachePath);
 });
 
 /**

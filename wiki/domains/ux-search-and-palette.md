@@ -10,7 +10,7 @@ code_refs:
     - resources/js/components/command-palette.tsx
     - tests/Feature/Controllers/SearchEndpointScopeTest.php
     - tests/Mutations/phase1-policy.patch
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # Scoped search and the command palette
