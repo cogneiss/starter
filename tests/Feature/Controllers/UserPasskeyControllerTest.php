@@ -78,3 +78,13 @@ it('does not allow guests to view passkeys', function (): void {
 
     $response->assertRedirectToRoute('login');
 });
+
+it('throttles passkey sign-in attempts for one credential', function (): void {
+    $attempt = ['credential' => ['id' => 'credential-id-1']];
+
+    foreach (range(1, 10) as $ignored) {
+        expect($this->post(route('passkey.login'), $attempt)->status())->not->toBe(429);
+    }
+
+    $this->post(route('passkey.login'), $attempt)->assertTooManyRequests();
+});
