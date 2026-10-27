@@ -12,16 +12,19 @@ use App\Support\AiPricing;
 use App\Support\OrganizationContext;
 use Closure;
 use Illuminate\Support\Facades\DB;
-use Laravel\Ai\Prompts\AgentPrompt;
-use Laravel\Ai\Responses\AgentResponse;
+use Laravel\Ai\Gateway\StepResponse;
+use Laravel\Ai\Gateway\StepResult;
+use Laravel\Ai\PendingStep;
 use Laravel\Ai\Responses\Data\ToolCall;
-use Laravel\Ai\Responses\StreamableAgentResponse;
 
 /**
  * Last in the pipeline, so the row describes what actually went out rather than
  * what was asked for. The audit row and the charge for it are one transaction:
  * usage that is recorded but never billed, or billed but never recorded, is the
  * failure mode this exists to prevent.
+ *
+ * Middleware wraps every generation step and every step is a billed round trip,
+ * so a run that calls tools writes one row per step.
  */
 final readonly class RecordAudit
 {
@@ -30,32 +33,32 @@ final readonly class RecordAudit
         private DebitAiCredits $debits,
     ) {}
 
-    public function handle(AgentPrompt $prompt, Closure $next): mixed
+    public function handle(PendingStep $step, Closure $next): mixed
     {
-        $agent = $prompt->agent;
+        $agent = $step->options?->agent;
 
         if (! $agent instanceof OrganizationScoped) {
-            return $next($prompt);
+            return $next($step);
         }
 
         $startedAt = hrtime(true);
 
-        $response = $next($prompt);
+        $result = $next($step);
 
-        // A streamed response is metered when the stream completes, which is
-        // the only point its usage is known. Anything else — a provider that
-        // returned something this middleware cannot read — passes through
-        // unmetered rather than being charged for a guess.
-        if (! $response instanceof AgentResponse && ! $response instanceof StreamableAgentResponse) {
-            return $response;
+        // A streamed step is metered when the stream completes, which is the
+        // only point its usage is known. Anything else — a step that was not
+        // answered by a provider — passes through unmetered rather than being
+        // charged for a guess.
+        if (! $result instanceof StepResult) {
+            return $result;
         }
 
-        return $response->then(function (AgentResponse $response) use ($agent, $startedAt): void {
+        return $result->then(function (StepResponse $response) use ($agent, $startedAt): void {
             $this->record($agent, $response, $startedAt);
         });
     }
 
-    private function record(OrganizationScoped $agent, AgentResponse $response, int $startedAt): void
+    private function record(OrganizationScoped $agent, StepResponse $response, int $startedAt): void
     {
         $usage = $response->usage;
         $costMicros = AiPricing::costMicros($response->meta->provider, $response->meta->model, $usage);
@@ -66,13 +69,13 @@ final readonly class RecordAudit
                 'agent' => $agent::class,
                 'provider' => $response->meta->provider,
                 'model' => $response->meta->model,
-                'prompt_tokens' => $usage->promptTokens,
-                'completion_tokens' => $usage->completionTokens,
-                'total_tokens' => $usage->promptTokens + $usage->completionTokens,
+                'prompt_tokens' => $usage->inputTokens,
+                'completion_tokens' => $usage->outputTokens,
+                'total_tokens' => $usage->totalTokens(),
                 'cost_micros' => $costMicros,
                 'duration_ms' => intdiv(hrtime(true) - $startedAt, 1_000_000),
                 'status' => AiAuditStatus::Ok,
-                'tool_calls' => $response->toolCalls->map(fn (ToolCall $call): string => $call->name)->all(),
+                'tool_calls' => array_map(fn (ToolCall $call): string => $call->name, $response->toolCalls),
             ]));
 
             if ($costMicros > 0) {

@@ -30,7 +30,7 @@ final class AiPricing
         $input = config()->integer($key.'.input', 0);
         $output = config()->integer($key.'.output', 0);
 
-        return intdiv($usage->promptTokens * $input, 1_000_000)
-            + intdiv($usage->completionTokens * $output, 1_000_000);
+        return intdiv($usage->inputTokens * $input, 1_000_000)
+            + intdiv($usage->outputTokens * $output, 1_000_000);
     }
 }

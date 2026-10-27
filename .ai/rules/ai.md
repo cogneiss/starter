@@ -63,10 +63,11 @@ and `Laravel\Ai\Contracts\HasMiddleware`, and never touches `DB` or the write
 actions. That is an architecture test, so a new agent that forgets fails the
 build rather than leaking across organizations.
 
-## `laravel/mcp` is vendored, not required
+## `laravel/mcp` is transitive, not required
 
-It arrives through `laravel/boost` at 0.9.4. Do not add it to `composer.json`
-and do not bump it. The server in `app/Mcp` ships disabled.
+It arrives at 1.x through `laravel/ai` and `laravel/boost`. Do not add it to
+`composer.json`; it moves with `laravel/ai`. The server in `app/Mcp` ships
+disabled.
 
 ## Map a block enum to its class with a const array
 

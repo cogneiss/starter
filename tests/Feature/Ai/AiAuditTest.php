@@ -11,10 +11,15 @@ use App\Models\OrganizationMembership;
 use App\Models\User;
 use App\Support\AiPricing;
 use App\Support\OrganizationContext;
-use Laravel\Ai\Ai;
-use Laravel\Ai\Prompts\AgentPrompt;
-use Laravel\Ai\Responses\AgentResponse;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Gateway\StepResponse;
+use Laravel\Ai\Gateway\StepResult;
+use Laravel\Ai\Gateway\TextGenerationOptions;
+use Laravel\Ai\Messages\UserMessage;
+use Laravel\Ai\PendingStep;
+use Laravel\Ai\Responses\Data\FinishReason;
 use Laravel\Ai\Responses\Data\Meta;
+use Laravel\Ai\Responses\Data\TextUsage;
 use Laravel\Ai\Responses\Data\Usage;
 use Tests\Fixtures\Ai\KernelFixtureAgent;
 use Tests\Fixtures\Ai\UnscopedFixtureAgent;
@@ -27,6 +32,21 @@ function auditMember(): array
     $membership = OrganizationMembership::factory()->create();
 
     return [$membership->user, $membership->organization];
+}
+
+function auditStep(Agent $agent): PendingStep
+{
+    return new PendingStep(
+        number: 0,
+        isFinalStep: false,
+        provider: 'anthropic',
+        model: 'claude-haiku-4-5-20251001',
+        instructions: null,
+        messages: [new UserMessage('Say hello.')],
+        tools: [],
+        schema: null,
+        options: new TextGenerationOptions(agent: $agent),
+    );
 }
 
 it('writes one audit row for a prompt that reached a provider', function (): void {
@@ -73,7 +93,7 @@ it('prices usage from the configured rate in whole micros', function (): void {
     $cost = AiPricing::costMicros(
         'anthropic',
         'claude-haiku-4-5-20251001',
-        new Usage(promptTokens: 2_000_000, completionTokens: 1_000_000),
+        new Usage(inputTokens: 2_000_000, outputTokens: 1_000_000),
     );
 
     expect($cost)->toBe(7_000_000);
@@ -85,7 +105,7 @@ it('charges nothing for a model, or a provider, that has no configured price', f
         'output' => 5_000_000,
     ]);
 
-    $usage = new Usage(promptTokens: 2_000_000, completionTokens: 1_000_000);
+    $usage = new Usage(inputTokens: 2_000_000, outputTokens: 1_000_000);
 
     expect(AiPricing::costMicros('anthropic', 'some-unknown-model', $usage))->toBe(0)
         ->and(AiPricing::costMicros('unknown-provider', 'claude-haiku-4-5-20251001', $usage))->toBe(0)
@@ -132,15 +152,9 @@ it('passes a response it cannot read through unmetered rather than charging a gu
 
     $agent = new KernelFixtureAgent($user, $organization);
 
-    $prompt = new AgentPrompt(
-        agent: $agent,
-        prompt: 'Say hello.',
-        attachments: [],
-        provider: Ai::textProvider('anthropic'),
-        model: 'claude-haiku-4-5-20251001',
-    );
+    $step = auditStep($agent);
 
-    $passed = resolve(RecordAudit::class)->handle($prompt, fn (): string => 'not a response');
+    $passed = resolve(RecordAudit::class)->handle($step, fn (): string => 'not a response');
 
     expect($passed)->toBe('not a response');
 
@@ -163,22 +177,17 @@ it('rolls the audit row back when the charge for it fails', function (): void {
 
     $agent = new KernelFixtureAgent($user, $organization);
 
-    $prompt = new AgentPrompt(
-        agent: $agent,
-        prompt: 'Say hello.',
-        attachments: [],
-        provider: Ai::textProvider('anthropic'),
-        model: 'claude-haiku-4-5-20251001',
-    );
+    $step = auditStep($agent);
 
-    $response = new AgentResponse(
-        'invocation-1',
+    $response = new StepResponse(
         'Answered.',
-        new Usage(promptTokens: 1_000_000, completionTokens: 1_000_000),
+        [],
+        FinishReason::Stop,
+        new TextUsage(inputTokens: 1_000_000, outputTokens: 1_000_000),
         new Meta('anthropic', 'claude-haiku-4-5-20251001'),
     );
 
-    expect(fn (): mixed => resolve(RecordAudit::class)->handle($prompt, fn (): AgentResponse => $response))
+    expect(fn (): ?StepResponse => resolve(RecordAudit::class)->handle($step, fn (): StepResult => new StepResult($response))->response())
         ->toThrow(RuntimeException::class);
 
     resolve(OrganizationContext::class)->set($organization);
@@ -190,16 +199,10 @@ it('rolls the audit row back when the charge for it fails', function (): void {
 });
 
 it('lets an agent that belongs to no organization through unmetered', function (): void {
-    $prompt = new AgentPrompt(
-        agent: new UnscopedFixtureAgent,
-        prompt: 'Say hello.',
-        attachments: [],
-        provider: Ai::textProvider('anthropic'),
-        model: 'claude-haiku-4-5-20251001',
-    );
+    $step = auditStep(new UnscopedFixtureAgent);
 
-    expect(resolve(RecordAudit::class)->handle($prompt, fn (): string => 'through'))->toBe('through')
-        ->and(resolve(EnforceQuota::class)->handle($prompt, fn (): string => 'through'))->toBe('through');
+    expect(resolve(RecordAudit::class)->handle($step, fn (): string => 'through'))->toBe('through')
+        ->and(resolve(EnforceQuota::class)->handle($step, fn (): string => 'through'))->toBe('through');
 
     $this->assertDatabaseCount('ai_audit_logs', 0);
 });

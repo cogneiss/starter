@@ -8,5 +8,5 @@
 - Never write a model-name literal in an agent. Pick a tier — `cheap` or `smart` — and let `config/ai.php` map it to a provider and model.
 - No real provider call in the blocking suite. `tests/Pest.php` fakes every agent under `app/Ai/Agents` with `preventStrayPrompts()`; `tests/Evals/` is the only exception and it is excluded from `composer test`.
 - Agents implement `App\Ai\Contracts\OrganizationScoped` and `Laravel\Ai\Contracts\HasMiddleware`, and never write.
-- `laravel/mcp` arrives vendored through `laravel/boost` at 0.9.4. Do not require it and do not bump it.
+- `laravel/mcp` arrives transitively through `laravel/ai` 1.x and `laravel/boost` (1.x). Do not require it directly; it moves with `laravel/ai`.
 - Never print, log or commit a provider key. `.env.example` keeps them blank.

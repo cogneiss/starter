@@ -7,7 +7,8 @@ namespace App\Ai\Middleware;
 use App\Exceptions\BlockedTopicException;
 use Closure;
 use Illuminate\Support\Str;
-use Laravel\Ai\Prompts\AgentPrompt;
+use Laravel\Ai\Messages\UserMessage;
+use Laravel\Ai\PendingStep;
 
 /**
  * Refuses prompts about topics the application does not answer, before they
@@ -17,17 +18,23 @@ use Laravel\Ai\Prompts\AgentPrompt;
  */
 final class FilterTopics
 {
-    public function handle(AgentPrompt $prompt, Closure $next): mixed
+    public function handle(PendingStep $step, Closure $next): mixed
     {
+        if (! $step->isFirstStep()) {
+            return $next($step);
+        }
+
+        $prompt = (string) collect($step->messages)->last(fn (object $message): bool => $message instanceof UserMessage)?->content;
+
         /** @var list<string> $denied */
         $denied = config()->array('ai.guardrails.denied_topics');
 
         foreach ($denied as $topic) {
-            if (Str::contains($prompt->prompt, $topic, ignoreCase: true)) {
+            if (Str::contains($prompt, $topic, ignoreCase: true)) {
                 throw BlockedTopicException::topic($topic);
             }
         }
 
-        return $next($prompt);
+        return $next($step);
     }
 }
