@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Not included
