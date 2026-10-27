@@ -13,7 +13,8 @@ return new class extends Migration
     {
         // Run on the connection configured for the database driver
         // (null = the app's default connection).
-        $this->connection = config('laravel-brain.database.connection');
+        $connection = config('laravel-brain.database.connection');
+        $this->connection = is_string($connection) ? $connection : null;
     }
 
     public function up(): void
@@ -38,6 +39,6 @@ return new class extends Migration
 
     private function table(): string
     {
-        return (string) config('laravel-brain.database.table', 'laravel_brain_graphs');
+        return config()->string('laravel-brain.database.table', 'laravel_brain_graphs');
     }
 };
