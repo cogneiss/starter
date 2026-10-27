@@ -5,13 +5,15 @@ supersedes: []
 code_refs:
     - config/essentials.php
     - tests/Pest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Better defaults from Essentials
 
 `nunomaduro/essentials` turns on the settings most Laravel applications end up
-enabling by hand, configured in `config/essentials.php`.
+enabling by hand, configured in `config/essentials.php`. That file overrides one setting
+(`Unguard`, set to `true`); every other behaviour below is the package's own
+default, and the defaults themselves are not defined in this repository.
 
 On by default:
 

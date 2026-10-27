@@ -12,7 +12,7 @@ code_refs:
     - tests/Unit/PrecognitionAllowlistTest.php
     - tests/Mutations/phase11-parity.patch
     - tests/Mutations/phase11-allowlist.patch
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Forms and live validation
@@ -40,6 +40,9 @@ A form validating live against a route that lacks
 `HandlePrecognitiveRequests` gets **no** validation at all: the request falls
 through to the controller and does the thing. That failure is silent, which is
 why the gate is the router rather than a list of forms somebody maintains.
+
+`routes/web.php` puts `HandlePrecognitiveRequests` on the two route groups that
+hold the application's forms, not on each route.
 
 `tests/Feature/PrecognitionParityTest.php` walks every registered route, finds
 the ones whose action type-hints a `FormRequest`, and requires the middleware on

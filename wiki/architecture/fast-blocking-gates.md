@@ -7,7 +7,7 @@ code_refs:
     - .github/workflows/nightly.yml
     - .github/workflows/mutation.yml
     - .ai/rules/ci.md
-updated: 2026-08-25
+updated: 2026-10-28
 ---
 
 # Why blocking gates stay fast and deterministic
@@ -25,8 +25,10 @@ stops protecting anything, including the parts of it that were working.
 That is the whole reason for the split in `.github/workflows/`:
 
 - Blocking, on every pull request: `.github/workflows/tests.yml` — `composer test`,
-  gitleaks, dependency audits, dead code, unused Composer packages, knip, and the
-  axe-core accessibility suite.
+  gitleaks, dependency audits, dead code, unused Composer packages, knip, wiki
+  rot (`composer test:wiki`), and the axe-core accessibility suite.
+- Reporting on every pull request without blocking: the `docs` job in the same
+  file, which posts the documentation worklist counts to the job summary.
 - Scheduled, reporting: `.github/workflows/nightly.yml` (the suite on SQLite,
   minus vector search) and `.github/workflows/mutation.yml` (the mutation score).
 

@@ -11,14 +11,19 @@ code_refs:
     - app/Support/Health/Checks/ScheduleCheck.php
     - bootstrap/app.php
     - tests/Feature/HealthTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The health endpoint
 
 `GET /health` (registered in `bootstrap/app.php`) answers with a JSON report
 from `HealthReport`: one entry per check, an overall status, and a non-200
-code when anything is failing — which is what an uptime monitor keys on.
+code when anything is failing — which is what an uptime monitor keys on. The route is added in the
+`then` callback of `withRouting()` with no middleware group, on purpose: the web
+group's session store is the database, and the endpoint has to answer while the
+database is down. The same call passes `health: '/up'`, which registers the
+framework's own built-in health route; that route is separate from this report
+and its response is not defined in this repository.
 
 ## The checks
 

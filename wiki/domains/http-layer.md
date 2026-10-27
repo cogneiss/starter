@@ -14,19 +14,29 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The HTTP layer
 
-Thirty-five controllers, twenty form requests, eleven middleware, one validation
-rule.
+Forty-six controllers, twenty-three form requests, seventeen middleware, two
+validation rules (`ValidEmail` and `PublicHttpsUrl`).
 
 ## Routes
 
 `routes/web.php`. `/` renders the `welcome` page as the `home` route. The
-dashboard sits behind four middleware — `auth`, `verified`, `organization`,
-`two-factor` — which is the standard stack for anything inside an organization.
+dashboard sits behind `auth`, `verified`, `organization`, `two-factor`,
+`onboarded` and `HandlePrecognitiveRequests` — the standard stack for anything
+inside an organization.
+
+Two small routes sit outside every group. `csrf-token` returns an empty response
+so the browser can get a fresh session cookie after a token expires.
+`.well-known/passkey-endpoints` returns JSON naming `passkey.show` as both the
+enroll and manage URL, which is where a password manager looks.
+
+In the signed-in group without an organization, the account routes
+`user.destroy`, `password.edit`, `password.update`, `two-factor.show` and
+`passkey.show` now also require `verified`, alongside `not-impersonating`.
 
 Organization `create` and `store` are deliberately _outside_ the `organization`
 middleware: a user with no organization has to be able to make one, and requiring
@@ -59,7 +69,8 @@ so to anyone without the platform ability the routes simply do not exist
 
 Register, the magic-link request and invitation acceptance also picked up a
 `friction` middleware alongside their existing throttle, and `UserController`
-now renders its `create` page with a `FormFriction` prop — added friction for
+now renders its `create` page with a `FormFriction` prop and a `passwordRules`
+string built from `Password::defaults()` — added friction for
 unauthenticated form posts, on top of rate limiting rather than instead of it
 ([[operations/ops-csp]]).
 
@@ -114,6 +125,10 @@ Authorization does not live here; it lives in the policies
 | `SetLocale`                    | picks the request's language ([[domains/ux-i18n]])                        |
 | `HandleBrand`                  | shares the organization's palette ([[domains/ux-branding]])               |
 | `RedirectIfNotOnboarded`       | alias `onboarded` — holds a new member on the checklist                   |
+
+The directory also holds `ApplyRateTier`, `EnsurePlatformAdmin`,
+`EnsureTokenMatchesOrganization`, `LogApiRequest`, `ProtectPublicForm` and
+`SetContentSecurityPolicy`, covered in the operations pages.
 
 The order they run in, and why `ResolveOrganization` is special, is in
 [[architecture/resolve-before-routing]]. Controllers stay cruddy —

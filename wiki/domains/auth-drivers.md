@@ -8,7 +8,7 @@ code_refs:
     - app/Auth/Drivers/PasswordAuthDriver.php
     - app/Auth/Drivers/SocialAuthDriver.php
     - config/services.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The auth driver seam
@@ -20,7 +20,10 @@ default.
 
 Two drivers ship:
 
-- `PasswordAuthDriver` — email and password.
+- `PasswordAuthDriver` — email and password. Its `redirect()` renders
+  `session/create` with `canResetPassword` and `canRegister` (each true only
+  when the `password.request` or `register` route exists), the flash `status`
+  and the enabled social providers.
 - `SocialAuthDriver` — Socialite, with `PROVIDERS = ['google', 'github',
 'microsoft']`. `enabledProviders()` returns only providers that pass two
   checks: the `social-login-enabled` feature flag

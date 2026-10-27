@@ -8,7 +8,7 @@ code_refs:
     - resources/js/pages/dashboard.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Pages
@@ -17,10 +17,13 @@ What ships rendered, and nothing more:
 
 - `/` — the public welcome page (`resources/js/pages/welcome.tsx`), named route
   `home`.
-- `/dashboard` — behind `auth`, `verified`, `organization` and `two-factor`
-  (`resources/js/pages/dashboard.tsx`). It renders server-supplied count widgets
+- `/dashboard` — behind `auth`, `verified`, `organization`, `two-factor` and `onboarded`
+  (`resources/js/pages/dashboard.tsx`, which declares its `AppLayout` and
+  breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets
   and, until it is finished or dismissed, the activation checklist
   ([[domains/ux-onboarding]]).
+- `/csrf-token` and `/.well-known/passkey-endpoints` have no page: the first is an
+  empty response, the second a JSON pointer to the passkey settings screen.
 - The auth and settings screens listed in [[features/authentication]] and
   [[features/account-settings]].
 - The organization screens in [[features/organizations]], including

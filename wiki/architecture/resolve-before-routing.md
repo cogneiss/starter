@@ -6,7 +6,7 @@ code_refs:
     - bootstrap/app.php
     - app/Http/Middleware/ResolveOrganization.php
     - .ai/rules/bootstrap.md
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Why the organization resolves before route model binding
@@ -62,6 +62,11 @@ the same thing in one line to anyone editing the file.
 (`ProtectPublicForm`, [[operations/ops-csp]]) — and leaves the `appearance`
 and `sidebar_state` cookies out of encryption so the server can read them
 before hydration.
+
+`withRouting()` also passes `health: '/up'`, which registers the framework's
+built-in health route; the kit's own `GET /health` is a separate route added in
+the `then` callback with no middleware group, so it answers while the database
+is down ([[operations/ops-health]]).
 
 Two more things hang off this file. `withBroadcasting()` mounts
 `routes/channels.php` behind `['web', 'auth']`, so a channel authorization

@@ -11,7 +11,7 @@ code_refs:
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Documentation

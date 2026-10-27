@@ -8,7 +8,7 @@ code_refs:
     - config/queue.php
     - config/mail.php
     - config/inertia.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Runtime
@@ -19,8 +19,9 @@ database, and every driver swaps through `.env`.
 
 Postgres is the default rather than SQLite because retrieval runs on pgvector,
 and a vector column is not something to discover you cannot have after building
-on it ([[domains/ai-retrieval]]). `.env.example` keeps the SQLite pair commented
-out two lines below `DB_CONNECTION=pgsql` for anyone who wants the file-less
+on it ([[domains/ai-retrieval]]). `.env.example` keeps the SQLite pair
+(`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`) commented out below the Postgres
+block for anyone who wants the file-less
 version and no vector search.
 
 Nothing else in the kit depends on Postgres, which is what `composer test:sqlite`
@@ -34,10 +35,11 @@ proves nightly: the whole suite minus the `pgvector` group, on SQLite in memory
 | `ORGANIZATIONS_RESOLVER`  | `session` | How the active organization is picked ([[domains/organization-resolvers]])       |
 | `ORGANIZATIONS_STRICT`    | `true`    | Fail closed when no organization is bound ([[architecture/fail-closed-scoping]]) |
 | `INERTIA_ENCRYPT_HISTORY` | off       | Encrypt Inertia history state                                                    |
+| `INERTIA_SSR_ENABLED`     | `true`    | Inertia server-side rendering; needs a separate render service to take effect (`config/inertia.php`) |
 | `AI_FAKE`                 | `false`   | Answer every agent from a canned response, no provider call                      |
 | `BROADCAST_CONNECTION`    | `null`    | Where broadcasts go; `reverb` turns live notifications on                        |
 
-Broadcasting is off by default. `.env.example` carries the Reverb block —
+Broadcasting is off by default. `.env.example` sets `APP_URL` to `http://localhost:8000`. It carries the Reverb block —
 `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, host, port, scheme, and
 the four `VITE_REVERB_*` mirrors the browser client reads — all blank. With
 `BROADCAST_CONNECTION=null` the notification bell still works: notifications are

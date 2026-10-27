@@ -10,13 +10,18 @@ code_refs:
     - config/pennant.php
     - tests/Feature/FeatureFlagTest.php
     - app/Ai/Agents/DashboardBriefing.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Feature flags
 
 Pennant, configured in `config/pennant.php`, with one addition: every flag is
 declared in `app/Enums/KnownFeatures.php` before it is used.
+
+`config/pennant.php` makes the `array` store the default (`PENNANT_STORE`
+overrides it), because every flag is resolved from the `feature_overrides` table
+on each request and nothing should go stale. A `database` store on the `features`
+table is configured but not the default.
 
 ## Why a registry in front of Pennant
 

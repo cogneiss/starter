@@ -8,7 +8,7 @@ code_refs:
     - config/data.php
     - phpstan.neon
     - tests/Unit/TypeScriptGenerationTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Type safety, end to end
@@ -19,7 +19,8 @@ a gate rather than by review.
 ## PHP side
 
 - PHPStan with Larastan at level max, configured in `phpstan.neon` across `app`,
-  `config`, `database`, `routes`, `public` and `bootstrap`.
+  `bootstrap/app.php`, `config`, `database`, `public`, `routes` and
+  `tests/Fixtures`, with its cache in the project-relative `tmp/phpstan`.
 - 100% type coverage (`composer test:type-coverage`, `--min=100`): every
   parameter, property and return annotated, or the build fails.
 - `declare(strict_types=1)` and `final` classes, enforced by the Pest strict
@@ -36,8 +37,14 @@ Two separate mechanisms, and it is worth keeping them straight:
   `app/Data` carrying `#[TypeScript]`, and
   `spatie/laravel-typescript-transformer` (configured in
   `app/Providers/TypeScriptTransformerServiceProvider.php`) turns those into TS
-  interfaces. Pages import the generated type, so a renamed or removed field
+  interfaces. The provider registers the attributed-class and enum
+  transformers, scans `app_path()` and writes one `generated.d.ts` into
+  `resources/js/types`. Pages import the generated type, so a renamed or removed field
   breaks `tsc` instead of rendering `undefined`.
+
+`config/data.php` sets how the Data classes behave at runtime: ISO 8601 dates
+(`DATE_ATOM`), structure caching over `app/Data`, and validation only for
+requests (`ValidationStrategy::OnlyRequests`).
 
 Routes typed without payloads typed still lets a field rename through silently,
 which is why both exist.

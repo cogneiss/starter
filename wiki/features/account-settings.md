@@ -12,7 +12,7 @@ code_refs:
     - app/Models/LoginHistory.php
     - app/Http/Middleware/HandleAppearance.php
     - app/Models/AiMemory.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Account settings
@@ -27,6 +27,11 @@ updated: 2026-09-01
 | Browser sessions | every browser signed in, with device and last activity; log the others out      |
 | Login history    | the last ten attempts, successful and failed, kept for 90 days then pruned      |
 | Delete account   | password-confirmed, permanent (`app/Actions/DeleteUser.php`)                    |
+
+The passkeys, two-factor and password screens, and account deletion, require a
+verified email (`verified` in `routes/web.php`) as well as not impersonating.
+The sign-up, reset and password-change pages receive a `passwordRules` string
+from `Password::defaults()` in `UserController` and `UserPasswordController`.
 
 ## Two details worth knowing before changing them
 

@@ -11,7 +11,7 @@ code_refs:
     - routes/ai.php
     - .mcp.json
     - tests/Feature/Ai/McpServerTest.php
-updated: 2026-08-25
+updated: 2026-10-28
 ---
 
 # AI MCP server

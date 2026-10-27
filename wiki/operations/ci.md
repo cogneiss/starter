@@ -9,7 +9,7 @@ code_refs:
     - .github/workflows/lint-autofix.yml
     - .github/workflows/tia-baseline.yml
     - .github/workflows/release-please.yml
-updated: 2026-08-25
+updated: 2026-10-28
 ---
 
 # CI topology
@@ -26,11 +26,23 @@ runs in parallel:
 | ---------- | ---------------------------------------------------------------------------- |
 | `tests`    | `composer test` — lint, type coverage, PHPStan, suite at `--exactly=100.0`   |
 | `security` | gitleaks over the directory and over git history, plus `composer test:audit` |
-| `static`   | `composer test:dead-code`, `composer test:deps`, `composer test:knip`        |
+| `static`   | `composer test:dead-code`, `composer test:deps`, `composer test:knip`, `composer test:wiki` |
+| `docs`     | `php artisan wiki:audit`, summarised as a count table; reports, never blocks |
 | `a11y`     | `composer test:a11y`, uploading screenshots on failure                       |
+
+The `static` and `docs` jobs check out with `fetch-depth: 0`. `wiki:lint` and
+`wiki:audit` compare a page's `updated:` date against `git log` for each
+`code_refs` file, and a depth-1 clone finds nothing, so the stale-page rule would
+pass silently. The `docs` job writes the stale, undocumented and orphaned counts
+to the job summary and points at `/document`; the gate is `wiki:lint` in `static`
+([[operations/documentation]]).
 
 Fanning out this way costs a job slot, not a second install. The shared build is
 uploaded as a tar so binaries stay executable through the artifact round trip.
+
+In the `tests` job the Rector and PHPStan caches live in the project-relative
+`tmp/` directory rather than `/tmp`. The `static` job still caches PHPStan's
+dead-code run under `/tmp/phpstan-deadcode`.
 
 The `tests` and `a11y` jobs both run against a `pgvector/pgvector:pg17` service
 rather than plain `postgres:17`. The AI documents migration calls
