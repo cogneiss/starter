@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Contracts\FileScanner;
+use App\Enums\HealthStatus;
 use App\Support\AiAvailability;
 use App\Support\AiRetrieval;
+use App\Support\Health\HealthReport;
 use App\Support\Scanners\NullScanner;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -31,7 +33,7 @@ final class DoctorCommand extends Command
 
     private const string GENERATED_TYPES = 'resources/js/types/generated.d.ts';
 
-    public function handle(Filesystem $files, Migrator $migrator, FileScanner $scanner): int
+    public function handle(Filesystem $files, Migrator $migrator, FileScanner $scanner, HealthReport $health): int
     {
         $checks = [
             $this->php($files),
@@ -47,6 +49,7 @@ final class DoctorCommand extends Command
             $this->viteManifest($files),
             $this->generatedTypeScript(),
             $this->writableDirectories(),
+            ...$this->health($health),
         ];
 
         $failed = array_values(array_filter($checks, static fn (array $check): bool => ! $check['ok']));
@@ -456,6 +459,21 @@ final class DoctorCommand extends Command
         });
 
         return ['name' => $name, 'set' => $set, 'disables' => $disables];
+    }
+
+    /**
+     * The same six checks GET /health runs, one line each. Degraded stays a
+     * PASS with its status in the name; only a hard failure fails the doctor.
+     *
+     * @return list<array{name: string, ok: bool, fix: string}>
+     */
+    private function health(HealthReport $health): array
+    {
+        return array_map(fn (array $check): array => $this->check(
+            sprintf('Health: %s (%s)', $check['name'], $check['status']),
+            $check['status'] !== HealthStatus::Failed->value,
+            'The same check GET /health runs — see app/Support/Health.',
+        ), $health->run()['checks']);
     }
 
     /**
