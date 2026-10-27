@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { EmptyValue } from '@/components/value/empty-value';
 
 const DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
@@ -38,12 +39,14 @@ export function RelativeTime({
     now?: Date;
     locale?: string;
 }) {
+    const [renderedAt] = useState(() => new Date());
+
     if (value === null || value === undefined) {
         return <EmptyValue />;
     }
 
     const date = value instanceof Date ? value : new Date(value);
-    const reference = now ?? new Date();
+    const reference = now ?? renderedAt;
 
     return (
         <time

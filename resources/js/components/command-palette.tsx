@@ -30,24 +30,24 @@ type Status = 'idle' | 'loading' | 'ready' | 'error';
  */
 type Positioned = { result: SearchResult; index: number };
 
+const NO_GROUPS: SearchGroup[] = [];
+
 function useDebouncedSearch(term: string, open: boolean) {
-    const [groups, setGroups] = useState<SearchGroup[]>([]);
-    const [status, setStatus] = useState<Status>('idle');
     const [attempt, setAttempt] = useState(0);
+    const [settled, setSettled] = useState<{
+        key: string;
+        groups: SearchGroup[];
+        status: 'ready' | 'error';
+    }>({ key: '', groups: NO_GROUPS, status: 'ready' });
 
     const trimmed = term.trim();
+    const active = open && trimmed !== '';
+    const key = `${attempt}:${trimmed}`;
 
     useEffect(() => {
-        if (!open || trimmed === '') {
-            setGroups([]);
-            setStatus('idle');
-
+        if (!active) {
             return;
         }
-
-        // Every keystroke marks the palette busy straight away, so the skeleton
-        // covers the debounce as well as the request itself.
-        setStatus('loading');
 
         const controller = new AbortController();
 
@@ -61,12 +61,19 @@ function useDebouncedSearch(term: string, open: boolean) {
                         response.json() as Promise<{ groups: SearchGroup[] }>,
                 )
                 .then((payload) => {
-                    setGroups(payload.groups);
-                    setStatus('ready');
+                    setSettled({
+                        key,
+                        groups: payload.groups,
+                        status: 'ready',
+                    });
                 })
                 .catch(() => {
                     if (!controller.signal.aborted) {
-                        setStatus('error');
+                        setSettled((previous) => ({
+                            key,
+                            groups: previous.groups,
+                            status: 'error',
+                        }));
                     }
                 });
         }, DEBOUNCE_MS);
@@ -75,9 +82,18 @@ function useDebouncedSearch(term: string, open: boolean) {
             window.clearTimeout(timer);
             controller.abort();
         };
-    }, [trimmed, open, attempt]);
+    }, [active, key, trimmed]);
 
     const retry = useCallback(() => setAttempt((previous) => previous + 1), []);
+
+    // Until the response for the current term lands, the palette reads as busy,
+    // so the skeleton covers the debounce as well as the request itself.
+    const groups = active ? settled.groups : NO_GROUPS;
+    const status: Status = !active
+        ? 'idle'
+        : settled.key === key
+          ? settled.status
+          : 'loading';
 
     return { groups, status, retry };
 }
@@ -107,7 +123,13 @@ export function CommandPalette() {
         [positioned],
     );
 
-    useEffect(() => setSelected(0), [groups]);
+    // A new result set starts the keyboard at the top again.
+    const [selectionGroups, setSelectionGroups] = useState(groups);
+
+    if (selectionGroups !== groups) {
+        setSelectionGroups(groups);
+        setSelected(0);
+    }
 
     useEffect(() => {
         function onKeyDown(event: KeyboardEvent) {
