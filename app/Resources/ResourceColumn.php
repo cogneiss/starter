@@ -60,11 +60,11 @@ final readonly class ResourceColumn
         $value = data_get($record, $this->key);
 
         if ($value instanceof BackedEnum) {
-            $value = $value->value;
+            return (string) $value->value;
         }
 
         if ($value instanceof DateTimeInterface) {
-            $value = $value->format('Y-m-d H:i:s');
+            return $value->format('Y-m-d H:i:s');
         }
 
         return is_scalar($value) ? (string) $value : '';

@@ -56,7 +56,7 @@ final class ApiRequestLog extends Model
      * writing another row, never editing this one.
      *
      * @param  array<string, mixed>  $attributes
-     * @param  array<string, mixed>  $options
+     * @param  array<int|string, mixed>  $options
      */
     public function update(array $attributes = [], array $options = []): bool
     {

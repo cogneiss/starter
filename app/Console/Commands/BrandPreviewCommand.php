@@ -42,7 +42,7 @@ final class BrandPreviewCommand extends Command
 
         foreach ($palette as $mode => $tokens) {
             $this->newLine();
-            $this->line(mb_strtoupper((string) $mode));
+            $this->line(mb_strtoupper($mode));
 
             foreach (BrandPalette::PAIRS as [$foreground, $background, $minimum]) {
                 $ratio = BrandPalette::contrast($tokens[$foreground], $tokens[$background]);

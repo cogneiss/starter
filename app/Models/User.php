@@ -124,7 +124,7 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
      *
      * @param  class-string  $notification
      * @param  array<int, string>  $channels
-     * @return array<int, string>
+     * @return list<string>
      */
     public function channelsFor(string $notification, array $channels): array
     {

@@ -57,13 +57,13 @@ final readonly class SavedSearchController
      */
     public function show(Request $request, string $search): RedirectResponse
     {
-        $search = $this->owned($request, $search);
+        $saved = $this->owned($request, $search);
 
-        $resource = resolve(ResourceRegistry::class)->get($search->resource);
+        $resource = resolve(ResourceRegistry::class)->get($saved->resource);
 
         $model = $resource->model();
 
-        $parameters = ResourceQuery::fromParameters($search->query, $resource)
+        $parameters = ResourceQuery::fromParameters($saved->query, $resource)
             ->toQueryParameters($resource);
 
         return redirect()->to($resource->url(new $model).'?'.http_build_query($parameters));
@@ -71,15 +71,15 @@ final readonly class SavedSearchController
 
     public function update(SavedSearchRequest $request, string $search): RedirectResponse
     {
-        $search = $this->owned($request, $search);
+        $saved = $this->owned($request, $search);
 
         if ($request->has('name')) {
-            $search->name = $request->string('name')->value();
-            $search->save();
+            $saved->name = $request->string('name')->value();
+            $saved->save();
         }
 
         if ($request->boolean('is_default')) {
-            $this->makeDefault($search);
+            $this->makeDefault($saved);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('View updated.')]);
@@ -104,11 +104,11 @@ final readonly class SavedSearchController
      */
     private function owned(Request $request, string $search): SavedSearch
     {
-        $search = SavedSearch::ownedBy($request->user())->findOrFail($search);
+        $saved = SavedSearch::ownedBy($request->user())->findOrFail($search);
 
-        Gate::authorize('manage', $search);
+        Gate::authorize('manage', $saved);
 
-        return $search;
+        return $saved;
     }
 
     /**

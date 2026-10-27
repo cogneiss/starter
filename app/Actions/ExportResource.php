@@ -59,7 +59,9 @@ final readonly class ExportResource
             ->with(ResourceQuery::relationsIn(array_column($columns, 'key')));
 
         return response()->streamDownload(function () use ($columns, $rows): void {
-            $handle = fopen('php://output', 'w') ?: throw new RuntimeException('Cannot open the response stream.');
+            $handle = fopen('php://output', 'w');
+
+            throw_if($handle === false, RuntimeException::class, 'Cannot open the response stream.');
 
             fputcsv($handle, array_column($columns, 'label'), escape: '\\');
 

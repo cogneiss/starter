@@ -14,7 +14,7 @@ return [
         'connect' => array_values(array_filter(array_merge(
             [env('POSTHOG_HOST')],
             explode(',', (string) env('CSP_CONNECT_SRC', '')),
-        ))),
+        ), static fn (mixed $value): bool => (bool) $value)),
     ],
 
     /**

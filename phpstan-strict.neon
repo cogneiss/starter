@@ -1,0 +1,27 @@
+# Stricter analysis, kept out of phpstan.neon so the primary `composer test:types`
+# gate stays what it was. Blocking, zero findings, no baseline.
+#
+# Run with: composer test:strict
+includes:
+    - phpstan.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+    - vendor/shipmonk/phpstan-rules/rules.neon
+    - vendor/tomasvotruba/cognitive-complexity/config/extension.neon
+
+parameters:
+    tmpDir: /tmp/phpstan-strict
+
+    # Eloquent exposes query builder methods as static calls on models.
+    strictRules:
+        dynamicCallOnStaticMethod: false
+
+    shipmonkRules:
+        enforceReadonlyPublicProperty:
+            enabled: false
+        forbidCheckedExceptionInCallable:
+            enabled: false
+
+    cognitive_complexity:
+        class: 50
+        function: 15

@@ -16,6 +16,9 @@ use Laravel\Passkeys\Passkey;
 
 final readonly class UserPasskeyController implements HasMiddleware
 {
+    /**
+     * @return list<Middleware>
+     */
     public static function middleware(): array
     {
         return Features::optionEnabled(Features::passkeys(), 'confirmPassword')

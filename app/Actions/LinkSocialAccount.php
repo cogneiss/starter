@@ -27,7 +27,7 @@ final readonly class LinkSocialAccount
     public function handle(string $provider, SocialiteUser $identity): User
     {
         $email = (string) $identity->getEmail();
-        $providerUserId = (string) $identity->getId();
+        $providerUserId = $identity->getId();
 
         $account = SocialAccount::query()
             ->where('provider', $provider)
@@ -44,7 +44,7 @@ final readonly class LinkSocialAccount
 
         return DB::transaction(function () use ($provider, $providerUserId, $identity, $email, $user): User {
             $user ??= $this->users->handle([
-                'name' => (string) ($identity->getName() ?? $email),
+                'name' => $identity->getName() ?? $email,
                 'email' => $email,
                 'email_verified_at' => now(),
             ], Str::password(32));

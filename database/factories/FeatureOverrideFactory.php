@@ -29,7 +29,7 @@ final class FeatureOverrideFactory extends Factory
 
     public function expired(): self
     {
-        return $this->state(fn (array $attributes): array => [
+        return $this->state(fn (): array => [
             'expires_at' => now()->subDay(),
         ]);
     }

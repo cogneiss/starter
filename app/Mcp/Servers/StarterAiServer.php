@@ -43,9 +43,6 @@ final class StarterAiServer extends Server
     back as a confirm token the person approves in the application itself.
     MARKDOWN;
 
-    /**
-     * @var list<class-string<Server\Tool>>
-     */
     protected array $tools = [
         ListRecords::class,
         ShowRecord::class,

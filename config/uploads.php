@@ -11,7 +11,7 @@ return [
      * default accepts everything and says so loudly; point this at `clamav` on
      * anything that takes files from people you do not know.
      */
-    'scanner' => env('UPLOAD_SCANNER') ?: 'null',
+    'scanner' => filled(env('UPLOAD_SCANNER')) ? env('UPLOAD_SCANNER') : 'null',
 
     'scanners' => [
         'null' => NullScanner::class,
@@ -19,5 +19,5 @@ return [
     ],
 
     /** How long an unpromoted upload survives before `uploads:prune` removes it. */
-    'ttl_hours' => (int) (env('UPLOAD_TTL_HOURS') ?: 24),
+    'ttl_hours' => ($ttlHours = (int) env('UPLOAD_TTL_HOURS')) > 0 ? $ttlHours : 24,
 ];

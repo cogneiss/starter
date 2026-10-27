@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Events\OrganizationNotified;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Channels\DatabaseChannel;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -25,9 +25,8 @@ final class OrganizationDatabaseChannel extends DatabaseChannel
     /**
      * Store the row, then nudge the organization's open tabs.
      */
-    public function send(mixed $notifiable, Notification $notification): ?DatabaseNotification
+    public function send(mixed $notifiable, Notification $notification): Model
     {
-        /** @var DatabaseNotification|null $row */
         $row = parent::send($notifiable, $notification);
 
         // Outside a tenant — a console notification, say — there is no channel

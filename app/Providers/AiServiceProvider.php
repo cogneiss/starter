@@ -61,12 +61,12 @@ final class AiServiceProvider extends ServiceProvider
     {
         $directory = app_path('Ai/Agents');
 
-        $files = is_dir($directory) ? (glob($directory.'/*.php') ?: []) : [];
+        $files = glob($directory.'/*.php');
 
         /** @var list<class-string> $discovered */
         $discovered = array_map(
             static fn (string $file): string => 'App\\Ai\\Agents\\'.basename($file, '.php'),
-            $files,
+            $files === false ? [] : $files,
         );
 
         return [AnonymousAgent::class, StructuredAnonymousAgent::class, ...$discovered];

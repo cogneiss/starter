@@ -83,6 +83,6 @@ final class IndexAiDocument implements OrganizationAware, ShouldQueue
         return array_values(array_filter(array_map(
             fn (string $chunk): string => Str::of($chunk)->trim()->toString(),
             mb_str_split($content, self::CHUNK),
-        )));
+        ), static fn (string $chunk): bool => (bool) $chunk));
     }
 }

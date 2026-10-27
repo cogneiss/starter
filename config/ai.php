@@ -112,11 +112,11 @@ return [
         'egress' => array_values(array_filter(array_map(
             trim(...),
             explode(',', (string) env('AI_EGRESS_ALLOWLIST', '')),
-        ))),
+        ), static fn (string $value): bool => (bool) $value)),
         'denied_topics' => array_values(array_filter(array_map(
             trim(...),
             explode(',', (string) env('AI_DENIED_TOPICS', '')),
-        ))),
+        ), static fn (string $value): bool => (bool) $value)),
     ],
 
     /*

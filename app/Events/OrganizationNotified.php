@@ -26,7 +26,7 @@ final class OrganizationNotified implements ShouldBroadcast
     public function __construct(private readonly string $organizationId) {}
 
     /**
-     * @return array<int, Channel>
+     * @return list<Channel>
      */
     public function broadcastOn(): array
     {

@@ -49,13 +49,13 @@ return [
     ],
 
     'posthog' => [
-        'key' => env('POSTHOG_KEY') ?: null,
-        'host' => env('POSTHOG_HOST') ?: 'https://app.posthog.com',
+        'key' => filled(env('POSTHOG_KEY')) ? env('POSTHOG_KEY') : null,
+        'host' => filled(env('POSTHOG_HOST')) ? env('POSTHOG_HOST') : 'https://app.posthog.com',
     ],
 
     'sentry' => [
-        'dsn' => env('SENTRY_DSN') ?: null,
-        'release' => env('SENTRY_RELEASE') ?: null,
+        'dsn' => filled(env('SENTRY_DSN')) ? env('SENTRY_DSN') : null,
+        'release' => filled(env('SENTRY_RELEASE')) ? env('SENTRY_RELEASE') : null,
     ],
 
     'slack' => [

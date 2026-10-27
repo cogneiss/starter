@@ -59,13 +59,13 @@ final readonly class OrganizationMemberController
         SuspendOrganizationMembership $suspend,
         ReactivateOrganizationMembership $reactivate,
     ): RedirectResponse {
-        $membership = $this->membership($membership);
+        $member = $this->membership($membership);
 
-        Gate::authorize('update', $membership);
+        Gate::authorize('update', $member);
 
         if ($request->has('role')) {
             try {
-                $updateRole->handle($membership, $request->string('role')->value());
+                $updateRole->handle($member, $request->string('role')->value());
             } catch (ValidationException $exception) {
                 // An inline edit puts the row back to what the server last said
                 // the moment the patch is refused, so the reason has to arrive
@@ -82,8 +82,8 @@ final readonly class OrganizationMemberController
 
         if ($request->has('status')) {
             $request->enum('status', MembershipStatus::class) === MembershipStatus::Suspended
-                ? $suspend->handle($membership)
-                : $reactivate->handle($membership);
+                ? $suspend->handle($member)
+                : $reactivate->handle($member);
         }
 
         Inertia::flash('toast', [
@@ -96,11 +96,11 @@ final readonly class OrganizationMemberController
 
     public function destroy(string $membership, RemoveOrganizationMembership $action): RedirectResponse
     {
-        $membership = $this->membership($membership);
+        $member = $this->membership($membership);
 
-        Gate::authorize('delete', $membership);
+        Gate::authorize('delete', $member);
 
-        $action->handle($membership);
+        $action->handle($member);
 
         Inertia::flash('toast', [
             'type' => 'success',

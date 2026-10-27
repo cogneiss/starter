@@ -13,7 +13,7 @@ final class UserMagicLink extends Notification
     public function __construct(private readonly string $token) {}
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function via(object $notifiable): array
     {

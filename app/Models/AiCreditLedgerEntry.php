@@ -75,7 +75,7 @@ final class AiCreditLedgerEntry extends Model
      * Editing a ledger row rewrites history and breaks every balance after it.
      *
      * @param  array<string, mixed>  $attributes
-     * @param  array<string, mixed>  $options
+     * @param  array<int|string, mixed>  $options
      */
     public function update(array $attributes = [], array $options = []): bool
     {

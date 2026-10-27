@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cb3f4d4212a15d04bc3028f8fa3b1995",
+    "content-hash": "3ae888adb4625eea35e50a0030845b50",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -12322,6 +12322,112 @@
             "time": "2026-03-17T11:56:53+00:00"
         },
         {
+            "name": "heyosseus/sloppy",
+            "version": "v1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Heyosseus/sloppy.git",
+                "reference": "08020870dc78f41132df0d0ce178a426df41977d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Heyosseus/sloppy/zipball/08020870dc78f41132df0d0ce178a426df41977d",
+                "reference": "08020870dc78f41132df0d0ce178a426df41977d",
+                "shasum": ""
+            },
+            "require": {
+                "nikic/php-parser": "^5.3",
+                "php": "^8.3",
+                "symfony/console": "^7.0 || ^8.0",
+                "symfony/finder": "^7.0 || ^8.0",
+                "symfony/polyfill-ctype": "^1.27",
+                "symfony/polyfill-mbstring": "^1.27",
+                "symfony/process": "^7.0 || ^8.0",
+                "symfony/yaml": "^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "illuminate/console": "^12.0 || ^13.0",
+                "illuminate/contracts": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.18",
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "pestphp/pest": "^3.7 || ^4.0",
+                "pestphp/pest-plugin-laravel": "^3.1 || ^4.0",
+                "pestphp/pest-plugin-type-coverage": "^3.2 || ^4.0",
+                "rector/rector": "^2.0"
+            },
+            "suggest": {
+                "ext-xmlreader": "Used to read clover and cobertura coverage reports, which raise untested changed files in the review order. Without it coverage is skipped and nothing else changes.",
+                "filament/filament": "Required for the Filament panel plugin and health widget.",
+                "heyosseus/phpstan-sloppy": "The PHPStan extension: reports Sloppy findings as PHPStan errors, inside your existing PHPStan run and baseline.",
+                "illuminate/console": "Required for the php artisan sloppy commands. Not needed for the standalone bin/sloppy binary.",
+                "laravel/pint": "Used by sloppy fix to format the files Rector rewrote.",
+                "pestphp/pest": "Required for the expectCleanSloppyDiff() test expectation.",
+                "rector/rector": "Required by sloppy fix, which hands the fixable findings to Rector."
+            },
+            "bin": [
+                "bin/sloppy",
+                "bin/sloppy-mcp"
+            ],
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Heyosseus\\Sloppy\\SloppyServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "pest/Expectations.php"
+                ],
+                "psr-4": {
+                    "Heyosseus\\Sloppy\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "heyosseus",
+                    "email": "ratiruxadzee@gmail.com"
+                }
+            ],
+            "description": "Static analysis for the debt AI coding agents leave behind, on any PHP project: 33 rules, architecture policies and module boundaries you describe, git-diff review, coverage-aware reading order, PHPStan baseline-growth detection, a Rector and Pint fix pass, Pest expectations, CI annotations, agent rulesets, Claude Code hooks and an MCP server. Runs inside PHPStan through the separate heyosseus/phpstan-sloppy extension. Extra rules and dashboards for Laravel. Deterministic, local, no LLM.",
+            "homepage": "https://github.com/heyosseus/sloppy",
+            "keywords": [
+                "Pint",
+                "ai",
+                "ai-agents",
+                "ci",
+                "code-quality",
+                "code-review",
+                "filament",
+                "laravel",
+                "mcp",
+                "pest",
+                "php",
+                "rector",
+                "slop",
+                "static-analysis",
+                "technical-debt"
+            ],
+            "support": {
+                "issues": "https://github.com/heyosseus/sloppy/issues",
+                "source": "https://github.com/heyosseus/sloppy"
+            },
+            "funding": [
+                {
+                    "url": "https://ko-fi.com/ratirukhadze",
+                    "type": "ko_fi"
+                }
+            ],
+            "time": "2026-10-21T09:23:31+00:00"
+        },
+        {
             "name": "iamcal/sql-parser",
             "version": "v0.7",
             "source": {
@@ -15011,11 +15117,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.3",
+            "version": "2.3.2",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4b57dc8ca7456b635d1661845f44bc060b02c6b0",
-                "reference": "4b57dc8ca7456b635d1661845f44bc060b02c6b0",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/18bc23a0682f08591529377d271b5c4dfe9ed1dd",
+                "reference": "18bc23a0682f08591529377d271b5c4dfe9ed1dd",
                 "shasum": ""
             },
             "require": {
@@ -15071,7 +15177,110 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T14:06:26+00:00"
+            "time": "2026-10-24T11:36:00+00:00"
+        },
+        {
+            "name": "phpstan/phpstan-deprecation-rules",
+            "version": "2.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan-deprecation-rules.git",
+                "reference": "67bedd65c24bc72840afc45aed48b1059dd44bec"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/67bedd65c24bc72840afc45aed48b1059dd44bec",
+                "reference": "67bedd65c24bc72840afc45aed48b1059dd44bec",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4 || ^8.0",
+                "phpstan/phpstan": "^2.1.39"
+            },
+            "require-dev": {
+                "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^9.6",
+                "shipmonk/name-collision-detector": "^2.1"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "rules.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan rules for detecting usage of deprecated classes, methods, properties, constants and traits.",
+            "keywords": [
+                "static analysis"
+            ],
+            "support": {
+                "issues": "https://github.com/phpstan/phpstan-deprecation-rules/issues",
+                "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/2.0.5"
+            },
+            "time": "2026-07-22T06:50:43+00:00"
+        },
+        {
+            "name": "phpstan/phpstan-strict-rules",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan-strict-rules.git",
+                "reference": "24ec51589f896f048d0d36de373d993b5cf71786"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/24ec51589f896f048d0d36de373d993b5cf71786",
+                "reference": "24ec51589f896f048d0d36de373d993b5cf71786",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4 || ^8.0",
+                "phpstan/phpstan": "^2.3"
+            },
+            "require-dev": {
+                "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^9.6",
+                "shipmonk/name-collision-detector": "^2.1"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "rules.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Extra strict and opinionated rules for PHPStan",
+            "keywords": [
+                "static analysis"
+            ],
+            "support": {
+                "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.1.0"
+            },
+            "time": "2026-10-01T21:30:37+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -18309,6 +18518,66 @@
             "time": "2026-09-18T07:50:08+00:00"
         },
         {
+            "name": "shipmonk/phpstan-rules",
+            "version": "4.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shipmonk-rnd/phpstan-rules.git",
+                "reference": "67e54e4338910502d56ca079f1037708d34658a7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/67e54e4338910502d56ca079f1037708d34658a7",
+                "reference": "67e54e4338910502d56ca079f1037708d34658a7",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phpstan/phpstan": "^2.1.33"
+            },
+            "require-dev": {
+                "editorconfig-checker/editorconfig-checker": "^10.6.0",
+                "ergebnis/composer-normalize": "^2.45.0",
+                "phpstan/phpstan-deprecation-rules": "^2.0.1",
+                "phpstan/phpstan-phpunit": "^2.0.4",
+                "phpstan/phpstan-strict-rules": "^2.0.3",
+                "phpunit/phpunit": "^10.5.46",
+                "shipmonk/coding-standard": "^0.3.0",
+                "shipmonk/composer-dependency-analyser": "^1.8.1",
+                "shipmonk/coverage-guard": "^1.1.0",
+                "shipmonk/dead-code-detector": "^1.0",
+                "shipmonk/name-collision-detector": "^2.1.1",
+                "shipmonk/phpstan-dev": "^0.1.5"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "rules.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ShipMonk\\PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Various extra strict PHPStan rules we found useful in ShipMonk.",
+            "keywords": [
+                "PHPStan",
+                "static analysis"
+            ],
+            "support": {
+                "issues": "https://github.com/shipmonk-rnd/phpstan-rules/issues",
+                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.4.1"
+            },
+            "time": "2026-10-01T13:39:05+00:00"
+        },
+        {
             "name": "staabm/side-effects-detector",
             "version": "1.0.5",
             "source": {
@@ -19086,6 +19355,72 @@
                 }
             ],
             "time": "2025-12-08T11:19:18+00:00"
+        },
+        {
+            "name": "tomasvotruba/cognitive-complexity",
+            "version": "1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/TomasVotruba/cognitive-complexity.git",
+                "reference": "3315ff25b2011ef1065277521744eba28769af09"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/TomasVotruba/cognitive-complexity/zipball/3315ff25b2011ef1065277521744eba28769af09",
+                "reference": "3315ff25b2011ef1065277521744eba28769af09",
+                "shasum": ""
+            },
+            "require": {
+                "nikic/php-parser": "^5.3",
+                "php": ">=7.4",
+                "phpstan/phpstan": "^2.0"
+            },
+            "require-dev": {
+                "php-parallel-lint/php-parallel-lint": "^1.4",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpunit/phpunit": "^13.3",
+                "rector/jack": "^1.1",
+                "rector/rector": "^2.6",
+                "symplify/easy-coding-standard": "^13.3",
+                "symplify/phpstan-rules": "^14.17",
+                "tomasvotruba/type-coverage": "^2.3",
+                "tomasvotruba/unused-public": "^2.2",
+                "tracy/tracy": "^2.12"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "config/extension.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "TomasVotruba\\CognitiveComplexity\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan rules to measure cognitive complexity of your classes and methods",
+            "support": {
+                "issues": "https://github.com/TomasVotruba/cognitive-complexity/issues",
+                "source": "https://github.com/TomasVotruba/cognitive-complexity/tree/1.3.0"
+            },
+            "funding": [
+                {
+                    "url": "https://www.paypal.me/rectorphp",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/tomasvotruba",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-09-29T20:40:25+00:00"
         },
         {
             "name": "tomasvotruba/type-coverage",

@@ -139,7 +139,7 @@ final class AppServiceProvider extends ServiceProvider
         // move an organization between tiers without a deploy.
         Feature::define(
             KnownFeatures::API_RATE_TIER,
-            fn (?Organization $organization): string => config()->string('api.rate_tiers.default'),
+            fn (): string => config()->string('api.rate_tiers.default'),
         );
     }
 }

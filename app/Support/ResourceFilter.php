@@ -201,7 +201,7 @@ final readonly class ResourceFilter
 
         [$name, $field] = explode('.', $this->column, 2);
 
-        $relation = $query->getModel()->{$name}();
+        $relation = $query->getRelation($name);
         assert($relation instanceof BelongsTo);
 
         return ['facet' => $relation->getRelated()->newQuery()
@@ -243,13 +243,10 @@ final readonly class ResourceFilter
             return null;
         }
 
-        $chosen = [];
-
-        foreach ($value as $option) {
-            if (is_string($option) && in_array($option, $this->options, true)) {
-                $chosen[] = $option;
-            }
-        }
+        $chosen = array_filter(
+            $value,
+            fn (mixed $option): bool => is_string($option) && in_array($option, $this->options, true),
+        );
 
         // Sorted and deduplicated, so two URLs that tick the same boxes in a
         // different order are the same URL.
@@ -268,6 +265,12 @@ final readonly class ResourceFilter
         };
     }
 
+    private function number(mixed $value): int|float|null
+    {
+        // Summing one numeric string is the cast PHP does for `+`: '5' is 5, '5.5' is 5.5.
+        return is_numeric($value) ? array_sum([$value]) : null;
+    }
+
     /**
      * @return array{min: int|float|null, max: int|float|null}|null
      */
@@ -277,8 +280,8 @@ final readonly class ResourceFilter
             return null;
         }
 
-        $min = is_numeric($value['min'] ?? null) ? $value['min'] + 0 : null;
-        $max = is_numeric($value['max'] ?? null) ? $value['max'] + 0 : null;
+        $min = $this->number($value['min'] ?? null);
+        $max = $this->number($value['max'] ?? null);
 
         if ($min === null && $max === null) {
             return null;

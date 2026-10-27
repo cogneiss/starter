@@ -33,14 +33,14 @@ final class OrganizationInvitationFactory extends Factory
 
     public function expired(): self
     {
-        return $this->state(fn (array $attributes): array => [
+        return $this->state(fn (): array => [
             'expires_at' => now()->subDay(),
         ]);
     }
 
     public function accepted(): self
     {
-        return $this->state(fn (array $attributes): array => [
+        return $this->state(fn (): array => [
             'accepted_at' => now(),
         ]);
     }

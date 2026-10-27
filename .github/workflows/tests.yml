@@ -293,6 +293,13 @@ jobs:
       - name: Wiki Rot
         run: composer test:wiki
 
+      # Advisory: reports only what the PR introduced; existing debt is in
+      # .sloppy-baseline.json. Never blocks.
+      - name: Sloppy (advisory)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: vendor/bin/sloppy diff origin/${{ github.base_ref }} --merge-base --fail-on=never
+
   # Reports, never blocks. `wiki:lint` in the `static` job is the gate: a page
   # that contradicts the code is a correctness failure. Undocumented files and
   # orphaned pages are posted as a summary instead, because blocking "this new

@@ -64,5 +64,5 @@ return [
     ],
 
     /** Days an audit entry is kept before audit:prune deletes it. */
-    'retention' => (int) (env('AUDIT_RETENTION_DAYS') ?: 365),
+    'retention' => ($retentionDays = (int) env('AUDIT_RETENTION_DAYS')) > 0 ? $retentionDays : 365,
 ];

@@ -564,6 +564,7 @@ green:
 | `composer test:dead-code` | PHPStan's dead-code rules over `app/`.                                 |
 | `composer test:deps`      | `composer-unused` — Composer packages nothing requires.                |
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies.                |
+| `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity. |
 | `composer test:wiki`      | `php artisan wiki:lint` — the wiki rules, all five blocking.           |
 
 Scheduled — these report, they never block:
@@ -606,6 +607,7 @@ Local loops:
 | `php artisan wiki:audit`                       | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
 | `bun run knip:fix`                             | Apply knip's removals instead of only reporting them.                         |
 | `bun run types`                                | Type-check the front end with `tsc --noEmit`, no build.                       |
+| `bun run test:dupes`                           | Report copy-pasted front-end code with jscpd. Advisory, not a gate.           |
 
 CI runs all of the blocking gates on every push and pull request against `main`,
 with Composer, Bun, Playwright, Rector, and PHPStan caches warm.

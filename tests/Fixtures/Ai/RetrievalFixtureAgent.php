@@ -29,7 +29,7 @@ final class RetrievalFixtureAgent implements Agent, HasMiddleware, HasTools, Org
     }
 
     /**
-     * @return list<object>
+     * @return list<SearchKnowledge>
      */
     public function tools(): array
     {

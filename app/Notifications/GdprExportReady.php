@@ -12,7 +12,7 @@ final class GdprExportReady extends Notification
     public function __construct(private readonly string $file) {}
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function via(object $notifiable): array
     {

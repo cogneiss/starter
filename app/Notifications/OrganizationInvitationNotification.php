@@ -17,7 +17,7 @@ final class OrganizationInvitationNotification extends Notification
     ) {}
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function via(object $notifiable): array
     {

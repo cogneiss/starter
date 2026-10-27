@@ -73,21 +73,21 @@ final class UserFactory extends Factory
 
     public function superAdmin(): self
     {
-        return $this->state(fn (array $attributes): array => [
+        return $this->state(fn (): array => [
             'is_super_admin' => true,
         ]);
     }
 
     public function unverified(): self
     {
-        return $this->state(fn (array $attributes): array => [
+        return $this->state(fn (): array => [
             'email_verified_at' => null,
         ]);
     }
 
     public function withoutTwoFactor(): self
     {
-        return $this->state(fn (array $attributes): array => [
+        return $this->state(fn (): array => [
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,

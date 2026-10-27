@@ -83,7 +83,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // The API is JSON no matter what Accept header the client sent: a
         // failure must never come back as a redirect or an HTML page.
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request, Throwable $throwable): bool => $request->is('api/*') || $request->expectsJson(),
+            fn (Request $request): bool => $request->is('api/*') || $request->expectsJson(),
         );
 
         // Framework-reported errors flow to the configured reporter; report()

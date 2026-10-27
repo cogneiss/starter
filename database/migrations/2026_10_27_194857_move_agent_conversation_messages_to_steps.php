@@ -71,24 +71,7 @@ return new class extends AiMigration
 
         foreach ($rows as $row) {
             $meta = $this->decoded($row->meta);
-            $calls = [];
-
-            foreach ($this->decoded($row->tool_calls) as $call) {
-                if (! is_array($call) || ! is_string($call['id'] ?? null) || ! isset($results[$call['id']])) {
-                    continue;
-                }
-
-                $result = $results[$call['id']];
-
-                $calls[] = [
-                    ...$call,
-                    'result' => $result['result'] ?? null,
-                    ...array_filter([
-                        'denied' => $result['denied'] ?? false,
-                        'failed' => $result['failed'] ?? false,
-                    ]),
-                ];
-            }
+            $calls = $this->callsWithResults($this->decoded($row->tool_calls), $results);
 
             $content = is_string($row->content) ? $row->content : '';
             $reasoning = is_string($meta['reasoning'] ?? null) ? $meta['reasoning'] : '';
@@ -104,6 +87,37 @@ return new class extends AiMigration
                 'meta' => json_encode($meta),
             ]);
         }
+    }
+
+    /**
+     * Attach each call's recorded result, dropping calls that never got one.
+     *
+     * @param  array<mixed>  $calls
+     * @param  array<string, array<mixed>>  $results
+     * @return list<array<mixed>>
+     */
+    protected function callsWithResults(array $calls, array $results): array
+    {
+        $paired = [];
+
+        foreach ($calls as $call) {
+            if (! is_array($call) || ! is_string($call['id'] ?? null) || ! isset($results[$call['id']])) {
+                continue;
+            }
+
+            $result = $results[$call['id']];
+
+            $paired[] = [
+                ...$call,
+                'result' => $result['result'] ?? null,
+                ...array_filter([
+                    'denied' => $result['denied'] ?? false,
+                    'failed' => $result['failed'] ?? false,
+                ], static fn (mixed $flag): bool => (bool) $flag),
+            ];
+        }
+
+        return $paired;
     }
 
     /**

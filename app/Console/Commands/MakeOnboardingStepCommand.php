@@ -19,7 +19,7 @@ final class MakeOnboardingStepCommand extends Command
 {
     public function handle(Filesystem $files): int
     {
-        $name = Str::studly((string) $this->argument('name'));
+        $name = Str::studly($this->argument('name'));
 
         if (in_array(preg_match('/^[A-Za-z]+$/', $name), [0, false], true)) {
             $this->components->error('The step name has to be alphabetic, e.g. ConnectBilling.');

@@ -55,6 +55,17 @@ final readonly class EnsureTokenMatchesOrganization
      */
     private function namesForeignOrganization(Request $request, Organization $organization): bool
     {
+        return array_any($this->namedOrganizations($request), fn (string $candidate): bool => $candidate !== $organization->id && $candidate !== $organization->slug);
+    }
+
+    /**
+     * Every non-empty string the request uses to name an organization, whatever
+     * channel it arrived on.
+     *
+     * @return list<string>
+     */
+    private function namedOrganizations(Request $request): array
+    {
         $named = [];
 
         foreach (self::ORGANIZATION_HEADERS as $header) {
@@ -68,19 +79,17 @@ final readonly class EnsureTokenMatchesOrganization
 
         $named[] = $this->subdomain($request);
 
+        $candidates = [];
+
         foreach ($named as $value) {
             foreach (is_array($value) ? $value : [$value] as $candidate) {
-                if (! is_string($candidate) || $candidate === '') {
-                    continue;
-                }
-
-                if ($candidate !== $organization->id && $candidate !== $organization->slug) {
-                    return true;
+                if (is_string($candidate) && $candidate !== '') {
+                    $candidates[] = $candidate;
                 }
             }
         }
 
-        return false;
+        return $candidates;
     }
 
     /**

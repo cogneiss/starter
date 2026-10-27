@@ -31,7 +31,7 @@ final readonly class SocialAuthDriver implements AuthDriver
     /**
      * The providers a visitor may actually use right now.
      *
-     * @return array<int, string>
+     * @return list<string>
      */
     public static function enabledProviders(): array
     {

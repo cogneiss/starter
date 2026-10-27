@@ -51,6 +51,6 @@ return [
     |
     */
 
-    'purge_after_days' => (int) (env('GDPR_PURGE_AFTER_DAYS') ?: 30),
+    'purge_after_days' => ($purgeDays = (int) env('GDPR_PURGE_AFTER_DAYS')) > 0 ? $purgeDays : 30,
 
 ];

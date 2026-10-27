@@ -19,7 +19,14 @@ final class DiskCheck implements Check
         return rescue(static function (): HealthStatus {
             $path = config()->string('health.disk_path');
 
-            $percentFree = disk_free_space($path) / disk_total_space($path) * 100;
+            $free = disk_free_space($path);
+            $total = disk_total_space($path);
+
+            if ($free === false || $total === false) {
+                return HealthStatus::Degraded;
+            }
+
+            $percentFree = $free / $total * 100;
 
             return $percentFree >= config()->float('health.disk_minimum_free_percent')
                 ? HealthStatus::Ok

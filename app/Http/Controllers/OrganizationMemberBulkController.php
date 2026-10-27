@@ -64,11 +64,13 @@ final readonly class OrganizationMemberBulkController
                     ]);
                 }
 
-                match ($action) {
-                    BulkMembershipAction::Suspend => $suspend->handle($record),
-                    BulkMembershipAction::Reactivate => $reactivate->handle($record),
-                    BulkMembershipAction::Remove => $remove->handle($record),
+                $handler = match ($action) {
+                    BulkMembershipAction::Suspend => $suspend,
+                    BulkMembershipAction::Reactivate => $reactivate,
+                    BulkMembershipAction::Remove => $remove,
                 };
+
+                $handler->handle($record);
             },
             $request->user(),
         );

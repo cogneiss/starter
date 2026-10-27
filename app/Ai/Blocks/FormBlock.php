@@ -40,15 +40,15 @@ final class FormBlock extends Data implements AiBlock
         public string $action,
         array $values = [],
     ) {
-        $action = ConfirmableActions::find($this->action)
+        $confirmable = ConfirmableActions::find($this->action)
             ?? throw new InvalidArgumentException("There is no confirmable action named [{$this->action}].");
 
         $this->fields = array_map(
             fn (ReflectionProperty $property): AiFormField => new AiFormField(
                 name: $property->getName(),
-                value: (string) ($values[$property->getName()] ?? ''),
+                value: $values[$property->getName()] ?? '',
             ),
-            new ReflectionClass($action->dataClass())->getProperties(ReflectionProperty::IS_PUBLIC),
+            new ReflectionClass($confirmable->dataClass())->getProperties(ReflectionProperty::IS_PUBLIC),
         );
 
         $this->summary = Str::headline($this->action);

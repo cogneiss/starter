@@ -391,7 +391,7 @@ final class ResourceQuery extends Data
         } else {
             [$name, $field] = explode('.', $this->sort, 2);
 
-            $relation = $query->getModel()->{$name}();
+            $relation = $query->getRelation($name);
             assert($relation instanceof BelongsTo);
 
             // Ordering through a relation is a correlated subquery rather than a

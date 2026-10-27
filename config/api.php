@@ -8,8 +8,8 @@ return [
      * prune commands delete it.
      */
     'retention' => [
-        'tokens' => (int) (env('API_TOKEN_RETENTION_DAYS') ?: 30),
-        'logs' => (int) (env('API_LOG_RETENTION_DAYS') ?: 90),
+        'tokens' => ($tokenDays = (int) env('API_TOKEN_RETENTION_DAYS')) > 0 ? $tokenDays : 30,
+        'logs' => ($logDays = (int) env('API_LOG_RETENTION_DAYS')) > 0 ? $logDays : 90,
     ],
 
     /**

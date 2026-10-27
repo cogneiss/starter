@@ -1,0 +1,273 @@
+{
+    "schema": 1,
+    "tool": "sloppy",
+    "generated_at": "2026-10-27T22:30:32+00:00",
+    "score": 88,
+    "total": 33,
+    "entries": [
+        {
+            "id": "0b884ca4c3bc28b2",
+            "rule": "SL101",
+            "file": "app/Admin/AdminResources.php",
+            "fingerprint": "AdminResources::pages",
+            "count": 1,
+            "message": "AdminResources::pages() spans 156 lines with 5 statements, cyclomatic complexity 2, nesting depth 1 and 67 calls to 10 distinct collaborators."
+        },
+        {
+            "id": "513ce4d0b043bb9d",
+            "rule": "SL101",
+            "file": "app/Jobs/SendWebhookDelivery.php",
+            "fingerprint": "SendWebhookDelivery::handle",
+            "count": 1,
+            "message": "SendWebhookDelivery::handle() spans 91 lines with 39 statements, cyclomatic complexity 13, nesting depth 2 and 30 calls to 15 distinct collaborators."
+        },
+        {
+            "id": "a83e0c5112a0a71b",
+            "rule": "SL102",
+            "file": "app/Console/Commands/DoctorCommand.php",
+            "fingerprint": "DoctorCommand",
+            "count": 1,
+            "message": "DoctorCommand spans 541 lines with 29 methods (1 public), 83 statements and talks to 17 distinct collaborators."
+        },
+        {
+            "id": "bc86e4c2f75ddaf3",
+            "rule": "SL102",
+            "file": "app/Support/ResourceQuery.php",
+            "fingerprint": "ResourceQuery",
+            "count": 1,
+            "message": "ResourceQuery spans 384 lines with 17 methods (8 public), 91 statements and talks to 20 distinct collaborators."
+        },
+        {
+            "id": "19cc4d544ba4afb3",
+            "rule": "SL107",
+            "file": "app/Actions/ApplyBulkAction.php",
+            "fingerprint": "ApplyBulkAction::apply:ValidationException",
+            "count": 1,
+            "message": "ApplyBulkAction::apply() catches ValidationException and returns without recording the failure."
+        },
+        {
+            "id": "f6a9d62a3b0afbe6",
+            "rule": "SL107",
+            "file": "app/Actions/StreamBlocks.php",
+            "fingerprint": "StreamBlocks::decode:JsonException",
+            "count": 1,
+            "message": "StreamBlocks::decode() catches JsonException and returns without recording the failure."
+        },
+        {
+            "id": "ab5dc493cb730ba7",
+            "rule": "SL107",
+            "file": "app/Ai/Blocks/BlockCollection.php",
+            "fingerprint": "BlockCollection::block:Throwable",
+            "count": 1,
+            "message": "BlockCollection::block() catches Throwable and returns without recording the failure."
+        },
+        {
+            "id": "85d17388d4e14748",
+            "rule": "SL107",
+            "file": "app/Ai/Tools/ShowResourceRecord.php",
+            "fingerprint": "ShowResourceRecord::handle:QueryException",
+            "count": 1,
+            "message": "ShowResourceRecord::handle() catches QueryException and returns without recording the failure."
+        },
+        {
+            "id": "6ecbde0cc81e400e",
+            "rule": "SL107",
+            "file": "app/Console/Commands/AiUsageCommand.php",
+            "fingerprint": "AiUsageCommand::since:Throwable",
+            "count": 1,
+            "message": "AiUsageCommand::since() catches Throwable and returns without recording the failure."
+        },
+        {
+            "id": "d55d6a627e241fdb",
+            "rule": "SL107",
+            "file": "app/Jobs/SendWebhookDelivery.php",
+            "fingerprint": "SendWebhookDelivery::handle:ConnectionException",
+            "count": 1,
+            "message": "SendWebhookDelivery::handle() catches ConnectionException and returns without recording the failure."
+        },
+        {
+            "id": "6e6612aff75b6684",
+            "rule": "SL107",
+            "file": "app/Support/FormFriction.php",
+            "fingerprint": "FormFriction::tripped:DecryptException",
+            "count": 1,
+            "message": "FormFriction::tripped() catches DecryptException and returns without recording the failure."
+        },
+        {
+            "id": "8d541bd76d71eeb6",
+            "rule": "SL107",
+            "file": "app/Support/Health/HealthReport.php",
+            "fingerprint": "HealthReport::run:Throwable",
+            "count": 1,
+            "message": "HealthReport::run() catches Throwable and returns without recording the failure."
+        },
+        {
+            "id": "8948293fa51769fd",
+            "rule": "SL111",
+            "file": "app/Support/ResourceFilter.php",
+            "fingerprint": "ResourceFilter::normalizeRange~ResourceFilter::normalizeDateRange",
+            "count": 1,
+            "message": "ResourceFilter::normalizeRange() differs from ResourceFilter::normalizeDateRange() at app/Support/ResourceFilter.php:301 by 2 token(s) out of 219 -- 0.9% of the body."
+        },
+        {
+            "id": "beb4fbf7c2240ea0",
+            "rule": "SL204",
+            "file": "app/Actions/CreateOrganization.php",
+            "fingerprint": "CreateOrganization::uniqueSlug:Organization.query.withTrashed.where.exists",
+            "count": 1,
+            "message": "CreateOrganization::uniqueSlug() queries Organization inside a loop (query()->withTrashed()->where()->exists())."
+        },
+        {
+            "id": "8a9fb208750861bf",
+            "rule": "SL204",
+            "file": "app/Actions/DeleteAccount.php",
+            "fingerprint": "DeleteAccount::handle:DB.table.where.delete",
+            "count": 1,
+            "message": "DeleteAccount::handle() writes to DB inside a loop (table()->where()->delete())."
+        },
+        {
+            "id": "82d50cfeb0cb58b8",
+            "rule": "SL204",
+            "file": "app/Actions/SyncPermissions.php",
+            "fingerprint": "SyncPermissions::handle:Permission.query.create",
+            "count": 1,
+            "message": "SyncPermissions::handle() writes to Permission inside a loop (query()->create())."
+        },
+        {
+            "id": "2aa15590c23c268e",
+            "rule": "SL204",
+            "file": "app/Jobs/BuildGdprExport.php",
+            "fingerprint": "BuildGdprExport::handle:DB.table.where.get",
+            "count": 1,
+            "message": "BuildGdprExport::handle() queries DB inside a loop (table()->where()->get())."
+        },
+        {
+            "id": "ff172cee04430e89",
+            "rule": "SL204",
+            "file": "app/Jobs/IndexAiDocument.php",
+            "fingerprint": "IndexAiDocument::handle:AiDocument.query.create",
+            "count": 1,
+            "message": "IndexAiDocument::handle() writes to AiDocument inside a loop (query()->create())."
+        },
+        {
+            "id": "2d7885052cc58ea7",
+            "rule": "SL204",
+            "file": "app/Listeners/DispatchWebhookEvents.php",
+            "fingerprint": "DispatchWebhookEvents::handle:WebhookDelivery.query.create",
+            "count": 1,
+            "message": "DispatchWebhookEvents::handle() writes to WebhookDelivery inside a loop (query()->create())."
+        },
+        {
+            "id": "92d186bca7be103e",
+            "rule": "SL213",
+            "file": "Routes/web.php",
+            "fingerprint": "GET /auth/{provider}/callback",
+            "count": 1,
+            "message": "GET /auth/{provider}/callback is routed to update(), an action that changes data, over GET."
+        },
+        {
+            "id": "5d654f5c6039d81b",
+            "rule": "SL213",
+            "file": "Routes/web.php",
+            "fingerprint": "GET /magic-link/{token}",
+            "count": 1,
+            "message": "GET /magic-link/{token} is routed to update(), an action that changes data, over GET."
+        },
+        {
+            "id": "9b08a48623f2279c",
+            "rule": "SL213",
+            "file": "Routes/web.php",
+            "fingerprint": "GET /verify-email/{id}/{hash}",
+            "count": 1,
+            "message": "GET /verify-email/{id}/{hash} is routed to update(), an action that changes data, over GET."
+        },
+        {
+            "id": "749435b364be0a8e",
+            "rule": "SL213",
+            "file": "routes/web.php",
+            "fingerprint": "GET /auth/{provider}/callback",
+            "count": 1,
+            "message": "GET /auth/{provider}/callback is routed to update(), an action that changes data, over GET."
+        },
+        {
+            "id": "18b284eb9912cfc7",
+            "rule": "SL213",
+            "file": "routes/web.php",
+            "fingerprint": "GET /magic-link/{token}",
+            "count": 1,
+            "message": "GET /magic-link/{token} is routed to update(), an action that changes data, over GET."
+        },
+        {
+            "id": "ab5a3affd86ecea4",
+            "rule": "SL213",
+            "file": "routes/web.php",
+            "fingerprint": "GET /verify-email/{id}/{hash}",
+            "count": 1,
+            "message": "GET /verify-email/{id}/{hash} is routed to update(), an action that changes data, over GET."
+        },
+        {
+            "id": "bbb4a7bc53a00f2b",
+            "rule": "SL215",
+            "file": "Database/Migrations/0001_01_01_000000_create_users_table.php",
+            "fingerprint": "0001_01_01_000000_create_users_table",
+            "count": 1,
+            "message": "Migration 0001_01_01_000000_create_users_table changes the schema in up() but has no down()."
+        },
+        {
+            "id": "2ae2547c4be9217b",
+            "rule": "SL215",
+            "file": "Database/Migrations/0001_01_01_000001_create_cache_table.php",
+            "fingerprint": "0001_01_01_000001_create_cache_table",
+            "count": 1,
+            "message": "Migration 0001_01_01_000001_create_cache_table changes the schema in up() but has no down()."
+        },
+        {
+            "id": "f986476396263481",
+            "rule": "SL215",
+            "file": "Database/Migrations/0001_01_01_000002_create_jobs_table.php",
+            "fingerprint": "0001_01_01_000002_create_jobs_table",
+            "count": 1,
+            "message": "Migration 0001_01_01_000002_create_jobs_table changes the schema in up() but has no down()."
+        },
+        {
+            "id": "fdc6d6c72873e47c",
+            "rule": "SL215",
+            "file": "Database/Migrations/2026_10_27_194857_move_agent_conversation_messages_to_steps.php",
+            "fingerprint": "2026_10_27_194857_move_agent_conversation_messages_to_steps",
+            "count": 1,
+            "message": "Migration 2026_10_27_194857_move_agent_conversation_messages_to_steps changes the schema in up() but has no down()."
+        },
+        {
+            "id": "f6b9c37217ecb070",
+            "rule": "SL215",
+            "file": "database/migrations/0001_01_01_000000_create_users_table.php",
+            "fingerprint": "0001_01_01_000000_create_users_table",
+            "count": 1,
+            "message": "Migration 0001_01_01_000000_create_users_table changes the schema in up() but has no down()."
+        },
+        {
+            "id": "622c511f41e1e0c3",
+            "rule": "SL215",
+            "file": "database/migrations/0001_01_01_000001_create_cache_table.php",
+            "fingerprint": "0001_01_01_000001_create_cache_table",
+            "count": 1,
+            "message": "Migration 0001_01_01_000001_create_cache_table changes the schema in up() but has no down()."
+        },
+        {
+            "id": "f731d3063a0a5a1a",
+            "rule": "SL215",
+            "file": "database/migrations/0001_01_01_000002_create_jobs_table.php",
+            "fingerprint": "0001_01_01_000002_create_jobs_table",
+            "count": 1,
+            "message": "Migration 0001_01_01_000002_create_jobs_table changes the schema in up() but has no down()."
+        },
+        {
+            "id": "ddf40b47e029dcf5",
+            "rule": "SL215",
+            "file": "database/migrations/2026_10_27_194857_move_agent_conversation_messages_to_steps.php",
+            "fingerprint": "2026_10_27_194857_move_agent_conversation_messages_to_steps",
+            "count": 1,
+            "message": "Migration 2026_10_27_194857_move_agent_conversation_messages_to_steps changes the schema in up() but has no down()."
+        }
+    ]
+}

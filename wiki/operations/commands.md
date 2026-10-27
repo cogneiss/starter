@@ -28,6 +28,7 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 | `composer test:dead-code` | PHPStan's dead-code rules over `app/`                            |
 | `composer test:deps`      | `composer-unused` — Composer packages nothing requires           |
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies           |
+| `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity |
 | `composer test:wiki`      | `wiki:lint` — dead code refs, dangling links, stale pages        |
 
 ## Reporting — scheduled, never blocking
@@ -37,6 +38,7 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 | `composer test:sqlite` | The whole suite against SQLite instead of Postgres, minus vector search, nightly |
 | `composer test:mutate` | Mutation score over `app/`, weekly                                               |
 | `composer test:evals`  | Grade prompts against real providers, weekly and on request                      |
+| `bun run test:dupes`   | jscpd copy-paste report over `resources/js`, advisory                            |
 | `composer sbom`        | Write `sbom.json` (CycloneDX), attached to each release                          |
 
 The default connection is Postgres, because pgvector is where retrieval lives

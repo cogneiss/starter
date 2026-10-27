@@ -48,7 +48,7 @@ final class CreateSessionRequest extends FormRequest
     {
         return $this->string('email')
             ->lower()
-            ->append('|'.$this->ip())
+            ->append('|'.($this->ip() ?? ''))
             ->transliterate()
             ->value();
     }
