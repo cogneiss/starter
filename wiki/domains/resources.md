@@ -13,7 +13,7 @@ code_refs:
     - app/Console/Commands/MakeResourceCommand.php
     - app/Console/Commands/ResourceCacheCommand.php
     - app/Console/Commands/ResourceClearCommand.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The resource spine

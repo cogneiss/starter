@@ -11,7 +11,7 @@ code_refs:
     - app/Models/ImpersonationLog.php
     - app/Models/SocialAccount.php
     - app/Enums/MembershipStatus.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Models

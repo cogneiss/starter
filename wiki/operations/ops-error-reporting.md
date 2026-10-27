@@ -8,7 +8,7 @@ code_refs:
     - app/Support/Reporting/NullErrorReporter.php
     - config/services.php
     - tests/Feature/ErrorReporterTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The error reporting seam

@@ -12,7 +12,7 @@ code_refs:
     - config/api.php
     - tests/Feature/ApiUsageTest.php
     - tests/Feature/RateTierTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # API usage logging and rate tiers

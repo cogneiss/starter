@@ -9,7 +9,7 @@ code_refs:
     - app/Http/Middleware/EnsureTokenMatchesOrganization.php
     - tests/Feature/ApiResourceTest.php
     - tests/Feature/ApiCatalogueTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The registry-driven read API
@@ -34,7 +34,10 @@ Three routes, all behind `auth:sanctum`,
 The organization comes from the token ([[operations/ops-api-tokens]]), and the
 query is scoped before it runs. A foreign id — a record that belongs to
 another organization — answers 404, indistinguishable from an id that never
-existed. There is no 403 to enumerate against.
+existed. There is no 403 to enumerate against. A request that names a
+different organization by header, input, query string or subdomain is a 404
+too, before the token's own organization is bound
+(`app/Http/Middleware/EnsureTokenMatchesOrganization.php`).
 
 Reads are the whole surface on purpose. Writes stay in the application, where
 policies, Precognition and the confirm-token flow already govern them; a

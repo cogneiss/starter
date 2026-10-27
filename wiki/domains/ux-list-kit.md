@@ -14,7 +14,7 @@ code_refs:
     - tests/Feature/Resources/CsvExportScopeTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The server-driven list kit
@@ -61,7 +61,9 @@ The keys a list owns are fixed: `q`, `sort`, `dir`, `page`, `per`, `f`.
 viewer's abilities, and the export uses the same call, so a column somebody may
 not see on screen is not in their CSV either. Which columns a person hid and how
 wide the table is are per-user comfort settings and live in `localStorage`, not
-in the URL and not in the database — see [SETUP.md](../../SETUP.md).
+in the URL and not in the database — see [SETUP.md](../../SETUP.md). The key
+is the page path plus the signed-in user's id, and a stored value of the wrong
+shape is discarded rather than trusted (`resources/js/components/data-table.tsx`).
 
 ## Bulk actions
 

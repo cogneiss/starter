@@ -14,7 +14,7 @@ code_refs:
     - app/Data/RecordPeekData.php
     - tests/Feature/FriendlyErrorTest.php
     - tests/Mutations/phase7-peek-scope.patch
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Interface primitives

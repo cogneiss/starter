@@ -11,7 +11,7 @@ code_refs:
     - app/Notifications/OrganizationInvitationNotification.php
     - app/Notifications/UserMagicLink.php
     - app/Actions/SeedOrganizationRoles.php
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # Events, listeners and notifications

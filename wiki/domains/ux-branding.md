@@ -12,7 +12,7 @@ code_refs:
     - tests/Datasets/BrandPairs.php
     - tests/Feature/Middleware/BrandInjectionTest.php
     - tests/Mutations/phase9-contrast.patch
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # Per-organization branding

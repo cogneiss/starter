@@ -21,7 +21,7 @@ code_refs:
     - tests/Feature/OnboardingGateNoLoopTest.php
     - tests/Feature/OnboardingWidgetPropsAbsentTest.php
     - tests/Mutations/phase12-widget-ability.patch
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # Onboarding and the activation checklist

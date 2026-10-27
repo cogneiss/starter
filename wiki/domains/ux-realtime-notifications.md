@@ -18,7 +18,7 @@ code_refs:
     - tests/Feature/RealtimeNoKeyTest.php
     - tests/Mutations/phase10-channel.patch
     - tests/Mutations/phase10-unread-scope.patch
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # In-app notifications and realtime

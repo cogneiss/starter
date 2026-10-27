@@ -19,7 +19,7 @@ code_refs:
     - app/Support/Impersonation.php
     - app/Actions/SummarizeAiUsage.php
     - app/Ai/Agents/InvitationDrafter.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Organizations

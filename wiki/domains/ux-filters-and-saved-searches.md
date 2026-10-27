@@ -15,7 +15,7 @@ code_refs:
     - tests/Feature/Resources/SavedSearchScopeTest.php
     - tests/Mutations/phase4-serializer.patch
     - tests/Mutations/phase6-predicate.patch
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # Faceted filters, URL state and saved searches

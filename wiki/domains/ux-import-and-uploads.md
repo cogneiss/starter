@@ -26,7 +26,7 @@ code_refs:
     - tests/Feature/TempUploadNotDirectlyDownloadableTest.php
     - tests/Feature/PruneUploadsTest.php
     - tests/Mutations/phase13-policy.patch
-updated: 2026-08-31
+updated: 2026-10-28
 ---
 
 # Bulk import and temporary uploads
@@ -86,7 +86,8 @@ Which scanner runs is `config/uploads.php`: `null` accepts everything and says
 so, `clamav` shells out to a real one. Point `UPLOAD_SCANNER` at `clamav`
 anywhere that takes files from people you do not know.
 
-Unpromoted uploads expire after `UPLOAD_TTL_HOURS` (24 by default):
+Unpromoted uploads expire after `UPLOAD_TTL_HOURS` (24 by default, and also when the
+value is blank or not a positive number, `config/uploads.php`):
 
 ```bash
 php artisan uploads:prune

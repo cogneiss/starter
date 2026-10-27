@@ -10,7 +10,7 @@ code_refs:
     - config/audit.php
     - tests/Feature/AuditLogTest.php
     - tests/Feature/AuditRedactionTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The audit log
@@ -39,6 +39,7 @@ themselves audited.
 ## Retention
 
 `php artisan audit:prune` deletes entries older than
-`AUDIT_RETENTION_DAYS` (365 by default, `config/audit.php`). GDPR deletion
+`AUDIT_RETENTION_DAYS` (365 by default, and also when the value is blank or not a positive number,
+`config/audit.php`). GDPR deletion
 anonymises the actor on old rows rather than destroying the trail —
 [[operations/ops-gdpr]].

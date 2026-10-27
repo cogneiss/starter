@@ -12,7 +12,7 @@ code_refs:
     - resources/js/pages/admin/index.tsx
     - tests/Feature/Controllers/AdminAccessTest.php
     - tests/Feature/Controllers/AdminPagesTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The admin control plane
