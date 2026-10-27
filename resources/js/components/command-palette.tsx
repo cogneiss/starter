@@ -95,12 +95,10 @@ export function CommandPalette() {
 
         return groups.map((group) => ({
             group,
-            results: group.results.map(
-                (result): Positioned => ({
-                    result,
-                    index: index++,
-                }),
-            ),
+            results: group.results.map((result): Positioned => ({
+                result,
+                index: index++,
+            })),
         }));
     }, [groups]);
 
