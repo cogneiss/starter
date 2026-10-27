@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     /*
      *  A list of files that should be ignored during the discovering process.
@@ -19,7 +21,7 @@ return [
      *  Configure the cache driver for discoverers
      */
     'cache' => [
-        'driver' => \Spatie\StructureDiscoverer\Cache\LaravelDiscoverCacheDriver::class,
+        'driver' => Spatie\StructureDiscoverer\Cache\LaravelDiscoverCacheDriver::class,
         'store' => null,
     ],
 ];

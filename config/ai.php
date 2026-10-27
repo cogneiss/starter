@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Ai\Actions\InviteMember;
+use Laravel\Ai\Enums\Lab;
+
 return [
 
     /*
@@ -11,15 +16,183 @@ return [
     | default for AI operations when no explicit provider is provided
     | for the operation. This should be any provider defined below.
     |
+    | An operation may also be given a list of providers instead of one name,
+    | in which case the SDK fails over left to right:
+    | `prompt('...', provider: [Lab::Anthropic, Lab::OpenAI])`. The tier map
+    | below does this automatically once a second key is present.
+    |
     */
 
-    'default' => 'openai',
+    'default' => env('AI_DEFAULT_PROVIDER', 'anthropic'),
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
     'default_for_embeddings' => 'openai',
     'default_for_reranking' => 'cohere',
-    'default_for_classification' => 'typesafe',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fake Gateway
+    |--------------------------------------------------------------------------
+    |
+    | With no provider key configured, every agent is answered by the fake
+    | gateway so that a fresh checkout boots and demos without an account
+    | anywhere. Set AI_FAKE=true to pin that behaviour on a machine that does
+    | have keys. See App\Support\AiAvailability.
+    |
+    */
+
+    'fake' => (bool) env('AI_FAKE', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Model Tier
+    |--------------------------------------------------------------------------
+    |
+    | The tier agents fall back to when they express no preference. Reported by
+    | `php artisan app:doctor`.
+    |
+    */
+
+    'default_tier' => env('AI_DEFAULT_TIER', 'cheap'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Tiers
+    |--------------------------------------------------------------------------
+    |
+    | Agents pick a tier, never a model name, so that swapping a model is one
+    | edit here instead of a sweep through app/Ai/Agents. Resolve a tier with
+    | App\Support\AiTier::for('cheap').
+    |
+    */
+
+    'tiers' => [
+        'cheap' => [
+            'provider' => Lab::Anthropic,
+            'model' => env('AI_MODEL_CHEAP', 'claude-haiku-4-5-20251001'),
+        ],
+        'smart' => [
+            'provider' => Lab::Anthropic,
+            'model' => env('AI_MODEL_SMART'),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Quotas and Budget
+    |--------------------------------------------------------------------------
+    |
+    | Counted against ai_audit_logs and the credit ledger by App\Support\AiQuota
+    | and enforced by App\Ai\Middleware\EnforceQuota before a prompt reaches a
+    | provider. The budget is integer micros: 50_000_000 is fifty dollars.
+    |
+    */
+
+    'quotas' => [
+        'user_requests_per_hour' => (int) env('AI_QUOTA_USER_HOUR', 60),
+        'org_requests_per_day' => (int) env('AI_QUOTA_ORG_DAY', 2000),
+        'org_budget_micros_per_month' => (int) env('AI_BUDGET_ORG_MONTH', 50_000_000),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guardrails
+    |--------------------------------------------------------------------------
+    |
+    | Comma separated, both empty by default. `egress` is the exact list of
+    | hosts App\Support\AiEgress lets an agent reach — membership, not a domain
+    | pattern, and an empty list means an agent reaches nothing at all.
+    | `denied_topics` are substrings App\Ai\Middleware\FilterTopics refuses a
+    | prompt for before it costs anything.
+    |
+    */
+
+    'guardrails' => [
+        'egress' => array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('AI_EGRESS_ALLOWLIST', '')),
+        ))),
+        'denied_topics' => array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('AI_DENIED_TOPICS', '')),
+        ))),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Confirmable Actions
+    |--------------------------------------------------------------------------
+    |
+    | Agents never write. They propose one of the `ai.actions` keys below, and
+    | the person is shown a confirmation that expires after `ttl` minutes and is
+    | good for one use. The map is the allowlist: a class name coming out of a
+    | model is never resolved, so the worst an injected prompt can do is name a
+    | key that is already permitted, to a person who is already permitted to
+    | run it.
+    |
+    */
+
+    'confirm' => [
+        'ttl' => (int) env('AI_CONFIRM_TTL', 15),
+    ],
+
+    'actions' => [
+        // App\Ai\Actions\InviteMember is a face, not an implementation: the
+        // write it performs on confirmation is App\Actions\CreateOrganizationInvitation,
+        // the same action the invitation form posts to.
+        'invite-member' => InviteMember::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Briefing
+    |--------------------------------------------------------------------------
+    |
+    | How long, in seconds, one organization's dashboard briefing is reused for.
+    | The figures behind it move slowly and the briefing is rendered on every
+    | dashboard load, so regenerating it per request buys nothing and is billed
+    | per request. Read it as config('ai.briefing.ttl').
+    |
+    */
+
+    'briefing' => [
+        'ttl' => (int) env('AI_BRIEFING_TTL', 900),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Assistant Memory
+    |--------------------------------------------------------------------------
+    |
+    | How many remembered facts one person may carry in one organization. The
+    | cap is a prompt-size decision as much as a storage one: every fact is
+    | read into the system prompt on every request, so an uncapped memory is a
+    | bill that grows on its own. Past the cap the least recently touched fact
+    | is dropped. Read it as config('ai.memory.max_facts').
+    |
+    */
+
+    'memory' => [
+        'max_facts' => (int) env('AI_MEMORY_MAX_FACTS', 20),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Pricing
+    |--------------------------------------------------------------------------
+    |
+    | Micros per million tokens, per provider and model — 1_000_000 is one
+    | dollar per million. A model that is not listed costs zero and is recorded
+    | as such: App\Support\AiPricing never guesses a price into the ledger.
+    |
+    */
+
+    'pricing' => [
+        'anthropic' => [
+            'claude-haiku-4-5-20251001' => ['input' => 1_000_000, 'output' => 5_000_000],
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -34,9 +207,8 @@ return [
 
     'caching' => [
         'embeddings' => [
-            'cache' => false,
+            'cache' => true,
             'store' => env('CACHE_STORE', 'database'),
-            'individually' => true,
         ],
     ],
 
@@ -63,9 +235,9 @@ return [
             'key' => env('AZURE_OPENAI_API_KEY'),
             'url' => env('AZURE_OPENAI_URL'),
             'api_version' => env('AZURE_OPENAI_API_VERSION', '2025-04-01-preview'),
-            'deployment' => env('AZURE_OPENAI_DEPLOYMENT', 'gpt-6-sol'),
+            'deployment' => env('AZURE_OPENAI_DEPLOYMENT', 'gpt-4o'),
             'embedding_deployment' => env('AZURE_OPENAI_EMBEDDING_DEPLOYMENT', 'text-embedding-3-small'),
-            'image_deployment' => env('AZURE_OPENAI_IMAGE_DEPLOYMENT', 'gpt-image-2.5-flare'),
+            'image_deployment' => env('AZURE_OPENAI_IMAGE_DEPLOYMENT', 'gpt-image-1'),
             'store' => env('AZURE_OPENAI_STORE', true),
         ],
 
@@ -143,11 +315,6 @@ return [
         'openrouter' => [
             'driver' => 'openrouter',
             'key' => env('OPENROUTER_API_KEY'),
-        ],
-
-        'typesafe' => [
-            'driver' => 'typesafe',
-            'key' => env('TYPESAFE_API_KEY'),
         ],
 
         'voyageai' => [
