@@ -13,6 +13,11 @@
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
+    "packages": [
+        "spatie/laravel-activitylog",
+        "spatie/laravel-permission",
+        "laramint/laravel-brain"
+    ],
     "sail": false,
     "skills": [
         "infer-conventions",
@@ -25,6 +30,9 @@
         "wayfinder-development",
         "inertia-react-development",
         "tailwindcss-development",
+        "activitylog-development",
+        "laravel-permission-development",
+        "laravel-brain",
         "ai-layer",
         "org-access",
         "platform-ops",

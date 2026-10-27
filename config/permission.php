@@ -1,10 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
-use App\Models\Role;
 use Spatie\Permission\DefaultTeamResolver;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 return [
 
@@ -112,7 +110,7 @@ return [
          * foreign key is other than `team_id`.
          */
 
-        'team_foreign_key' => 'organization_id',
+        'team_foreign_key' => 'team_id',
     ],
 
     /*
@@ -150,7 +148,7 @@ return [
      * (view the latest version of this package's migration file)
      */
 
-    'teams' => true,
+    'teams' => false,
 
     /*
      * The class to use to resolve the permissions team id

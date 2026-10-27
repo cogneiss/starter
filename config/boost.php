@@ -19,22 +19,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Test Enforcement Guideline
-    |--------------------------------------------------------------------------
-    |
-    | Left unset, Boost decides whether to emit its test-enforcement guideline
-    | by shelling out to `artisan test --list-tests` and counting the results.
-    | That makes the generated files depend on whether a subprocess happened to
-    | succeed, so the drift gate in tests/Feature/Docs/GuidelinesAreCurrentTest
-    | goes red for reasons that have nothing to do with the diff. Pinned to true
-    | because this project does enforce tests.
-    |
-    */
-
-    'enforce_tests' => true,
-
-    /*
-    |--------------------------------------------------------------------------
     | Boost Project Rules
     |--------------------------------------------------------------------------
     |
@@ -122,6 +106,6 @@ return [
     |
     */
 
-    'browser_log_levels' => explode(',', (string) env('BOOST_BROWSER_LOG_LEVELS', 'error,warning,info,debug')),
+    'browser_log_levels' => explode(',', env('BOOST_BROWSER_LOG_LEVELS', 'error,warning,info,debug')),
 
 ];
