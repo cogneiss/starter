@@ -156,6 +156,9 @@
             "cyclonedx/cyclonedx-php-composer": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore-abandoned": ["symplify/rule-doc-generator-contracts"]
         }
     },
     "minimum-stability": "dev",

@@ -15,7 +15,7 @@ code_refs:
     - tests/Feature/WebhookSignatureTest.php
     - tests/Feature/WebhookSsrfTest.php
     - tests/Feature/WebhookDeliveryTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Signed outgoing webhooks

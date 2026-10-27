@@ -13,7 +13,7 @@ code_refs:
     - config/fortify.php
     - app/Actions/CreateSessionFromMagicLink.php
     - app/Actions/LinkSocialAccount.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Authentication
@@ -22,17 +22,17 @@ Fortify does the protocol work, configured in `config/fortify.php` and
 `app/Providers/FortifyServiceProvider.php`. The controllers here are the kit's own
 screens on top of it.
 
-| Path                  | Where it lives                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| Registration          | name, email, password; sends a verification email and signs the user in              |
-| Password login        | `SessionController`, with "remember me" and rate limiting                            |
-| Social login          | `SocialAuthController` + `app/Actions/LinkSocialAccount.php`                         |
-| Magic link            | `UserMagicLinkController` + `app/Actions/CreateSessionFromMagicLink.php`             |
-| Passkeys              | `UserPasskeyController` — WebAuthn through Fortify, passwordless from the login page |
-| Two-factor            | `UserTwoFactorAuthenticationController` — TOTP, QR code, single-use recovery codes   |
-| Password reset        | Fortify's flow, with the usual token expiry and throttling                           |
-| Email verification    | `UserEmailVerificationController`, plus a `verified` guard on the dashboard          |
-| Password confirmation | re-prompts before sensitive settings changes                                         |
+| Path                  | Where it lives                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| Registration          | name, email, password; sends a verification email and signs the user in             |
+| Password login        | `SessionController`, with "remember me" and rate limiting                           |
+| Social login          | `SocialAuthController` + `app/Actions/LinkSocialAccount.php`                        |
+| Magic link            | `UserMagicLinkController` + `app/Actions/CreateSessionFromMagicLink.php`            |
+| Passkeys              | `UserPasskeyController` — WebAuthn through Fortify, passwordless, 10 tries a minute |
+| Two-factor            | `UserTwoFactorAuthenticationController` — TOTP, QR code, single-use recovery codes  |
+| Password reset        | Fortify's flow, with the usual token expiry and throttling                          |
+| Email verification    | `UserEmailVerificationController`, plus a `verified` guard on the dashboard         |
+| Password confirmation | re-prompts before sensitive settings changes                                        |
 
 ## The rules that cut across all of them
 
@@ -50,6 +50,9 @@ screens on top of it.
   existing _verified_ account links to it; an unverified match is refused, because
   accepting it would let anyone who can receive OAuth for an address take over an
   account that never proved it owned that address.
+- **Passkey sign-in is throttled like password login.** The `passkeys` limiter in
+  `FortifyServiceProvider` allows 10 attempts a minute per credential id and IP,
+  falling back to the session when no credential id is sent.
 - **An organization can require two-factor for everyone in it.** Members without
   it are held on the setup screen by the `two-factor` middleware
   ([[domains/http-layer]]).

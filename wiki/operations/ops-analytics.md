@@ -11,7 +11,7 @@ code_refs:
     - app/Http/Middleware/HonorDoNotTrack.php
     - config/services.php
     - tests/Feature/AnalyticsTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # The analytics seam

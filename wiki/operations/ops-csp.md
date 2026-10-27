@@ -8,7 +8,7 @@ code_refs:
     - tests/Feature/CspTest.php
     - tests/Browser/CspTest.php
     - tests/Feature/FormFrictionTest.php
-updated: 2026-09-01
+updated: 2026-10-28
 ---
 
 # Content Security Policy and form friction
