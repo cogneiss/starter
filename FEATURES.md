@@ -13,7 +13,7 @@ touch. Setup instructions live in [README.md](README.md).
 | Password login        | Email and password, with "remember me" and rate limiting.                                                                                                                                                  |
 | Social login          | Google, GitHub and Microsoft through Socialite. Off by default; an OAuth email that matches an existing verified account links to it instead of creating a second one, and an unverified match is refused. |
 | Magic link            | Request a one-time login link by email. Tokens last 15 minutes, work once, and never reveal whether an address is registered.                                                                              |
-| Passkeys              | Register and sign in with WebAuthn (Touch ID, Face ID, Windows Hello, hardware keys) via Fortify. Passwordless sign-in from the login page.                                                                |
+| Passkeys              | Register and sign in with WebAuthn (Touch ID, Face ID, Windows Hello, hardware keys) via Fortify. Passwordless, and throttled to 10 attempts a minute.                                                     |
 | Two-factor auth       | TOTP with a QR code, confirmation step, and single-use recovery codes. Enabling it requires a password confirmation.                                                                                       |
 | Password reset        | Emailed reset link with the usual token expiry and throttling.                                                                                                                                             |
 | Email verification    | Signed verification links, resend endpoint, and a `verified` guard on the dashboard.                                                                                                                       |
@@ -360,9 +360,12 @@ reason, or fix the code.
 - **Laravel Boost** MCP server (including browser log capture at
   `_boost/browser-logs`) plus per-domain skills and guidelines in `.ai/`, so AI
   agents get version-correct docs and this project's conventions. Ten skills
-  ship (Laravel best practices, Fortify, Inertia+React, Wayfinder, Pest,
-  Tailwind, Pennant, Socialite, gitnexus, infer-conventions), mirrored into
-  `.agents/`, `.claude/`, `.cursor/`, `.github/`, and `.junie/`.
+  ship (Laravel best practices, AI SDK, Fortify, Inertia+React, Wayfinder,
+  testing best practices, Tailwind, Pennant, Socialite, infer-conventions),
+  mirrored into `.agents/`, `.claude/`, `.cursor/`, `.github/`, and `.junie/`.
+  Six `gitnexus-*` skills (CLI, exploring, debugging, impact analysis,
+  refactoring, guide) ship in `.agents/` and `.claude/` for anyone who installs
+  gitnexus.
 - `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.junie/guidelines.md`, and
   `opencode.json` ship configured. `boost.json` records which agents and skills
   are installed; `php artisan boost:install --guidelines --skills` regenerates
