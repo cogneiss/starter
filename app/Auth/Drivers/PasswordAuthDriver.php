@@ -27,6 +27,7 @@ final readonly class PasswordAuthDriver implements AuthDriver
     {
         return Inertia::render('session/create', [
             'canResetPassword' => Route::has('password.request'),
+            'canRegister' => Route::has('register'),
             'status' => $request->session()->get('status'),
             'socialProviders' => SocialAuthDriver::enabledProviders(),
         ]);

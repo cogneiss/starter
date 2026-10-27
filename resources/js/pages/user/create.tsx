@@ -13,7 +13,13 @@ import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-export default function Register({ friction }: { friction: Friction }) {
+export default function Register({
+    friction,
+    passwordRules,
+}: {
+    friction: Friction;
+    passwordRules: string;
+}) {
     return (
         <AuthLayout
             title="Create an account"
@@ -67,6 +73,7 @@ export default function Register({ friction }: { friction: Friction }) {
                                     required
                                     autoComplete="new-password"
                                     name="password"
+                                    passwordrules={passwordRules}
                                     placeholder="Password"
                                 />
                                 <InputError message={errors.password} />
@@ -81,6 +88,7 @@ export default function Register({ friction }: { friction: Friction }) {
                                     required
                                     autoComplete="new-password"
                                     name="password_confirmation"
+                                    passwordrules={passwordRules}
                                     placeholder="Confirm password"
                                 />
                                 <InputError

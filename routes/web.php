@@ -58,6 +58,13 @@ Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 // the request again rather than telling a person to reload and retype.
 Route::get('csrf-token', fn () => response()->noContent())->name('csrf-token');
 
+// Passkey endpoints... a password manager reads this to find where a person
+// enrolls and manages passkeys.
+Route::get('.well-known/passkey-endpoints', fn () => response()->json([
+    'enroll' => route('passkey.show'),
+    'manage' => route('passkey.show'),
+]))->name('well-known.passkeys');
+
 Route::middleware(['auth', 'verified', 'organization', 'two-factor', 'onboarded', HandlePrecognitiveRequests::class])->group(function (): void {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
@@ -189,7 +196,7 @@ Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::
 Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     // User...
     Route::delete('user', [UserController::class, 'destroy'])
-        ->middleware('not-impersonating')
+        ->middleware(['verified', 'not-impersonating'])
         ->name('user.destroy');
 
     // User Profile...
@@ -211,10 +218,10 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
 
     // User Password...
     Route::get('settings/password', [UserPasswordController::class, 'edit'])
-        ->middleware('not-impersonating')
+        ->middleware(['verified', 'not-impersonating'])
         ->name('password.edit');
     Route::put('settings/password', [UserPasswordController::class, 'update'])
-        ->middleware(['throttle:6,1', 'not-impersonating'])
+        ->middleware(['verified', 'throttle:6,1', 'not-impersonating'])
         ->name('password.update');
 
     // Appearance...
@@ -227,7 +234,7 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
 
     // User Two-Factor Authentication...
     Route::get('settings/two-factor', [UserTwoFactorAuthenticationController::class, 'show'])
-        ->middleware('not-impersonating')
+        ->middleware(['verified', 'not-impersonating'])
         ->name('two-factor.show');
 
     // Browser Sessions...
@@ -239,7 +246,7 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
 
     // User Passkeys...
     Route::get('settings/passkeys', [UserPasskeyController::class, 'show'])
-        ->middleware('not-impersonating')
+        ->middleware(['verified', 'not-impersonating'])
         ->name('passkey.show');
 
     // User Impersonation...

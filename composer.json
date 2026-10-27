@@ -37,6 +37,7 @@
         "laravel/pao": "^1.1.5",
         "laravel/pint": "^1.32.1",
         "laravel/tinker": "^3.0.2",
+        "laravel/vet": "^0.2.1",
         "mockery/mockery": "^1.6.15",
         "nunomaduro/collision": "^8.9.5",
         "pestphp/pest": "^5.3.4",
@@ -74,7 +75,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"bun run dev\" --names=server,queue,logs,vite --kill-others"
+            "@php artisan dev"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -90,6 +91,9 @@
             "@update:requirements",
             "@php artisan boost:install --guidelines --skills --no-interaction",
             "@php -r \"copy('AGENTS.md', 'GEMINI.md');\""
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -138,8 +142,8 @@
         ],
         "test": [
             "@test:lint",
-            "@test:type-coverage",
             "@test:types",
+            "@test:type-coverage",
             "@test:unit"
         ]
     },
@@ -155,12 +159,15 @@
         "allow-plugins": {
             "cyclonedx/cyclonedx-php-composer": true,
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "laravel/vet": true
         },
         "audit": {
-            "ignore-abandoned": ["symplify/rule-doc-generator-contracts"]
+            "ignore-abandoned": [
+                "symplify/rule-doc-generator-contracts"
+            ]
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

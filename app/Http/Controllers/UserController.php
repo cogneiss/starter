@@ -13,6 +13,7 @@ use App\Support\FormFriction;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,6 +23,7 @@ final readonly class UserController
     {
         return Inertia::render('user/create', [
             'friction' => $friction->props(),
+            'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
 

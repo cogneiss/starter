@@ -24,7 +24,7 @@ export default function Dashboard({
     checklist: Checklist;
 }) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Dashboard" />
 
             <h1 className="sr-only">Dashboard</h1>
@@ -54,6 +54,8 @@ export default function Dashboard({
                     <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Dashboard.layout = [AppLayout, { breadcrumbs }];

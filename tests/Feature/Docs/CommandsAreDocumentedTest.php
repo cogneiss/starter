@@ -20,6 +20,7 @@ const UNDOCUMENTED_BY_DESIGN = [
     'post-update-cmd',
     'post-root-package-install',
     'post-create-project-cmd',
+    'pre-package-uninstall',
     'hooks:install',
     'test:lint',
     'test:type-coverage',

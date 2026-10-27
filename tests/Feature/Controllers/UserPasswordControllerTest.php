@@ -7,7 +7,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Inertia\Support\SessionKey;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 it('renders reset password page', function (): void {
     $response = $this->fromRoute('home')
@@ -17,7 +17,8 @@ it('renders reset password page', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('user-password/create')
             ->has('email')
-            ->has('token'));
+            ->has('token')
+            ->where('passwordRules', PasswordRule::defaults()->toPasswordRulesString()));
 });
 
 it('may reset password', function (): void {
@@ -131,7 +132,19 @@ it('renders edit password page', function (): void {
         ->get(route('password.edit'));
 
     $response->assertOk()
-        ->assertInertia(fn ($page) => $page->component('user-password/edit'));
+        ->assertInertia(fn ($page) => $page
+            ->component('user-password/edit')
+            ->where('passwordRules', PasswordRule::defaults()->toPasswordRulesString()));
+});
+
+it('requires verified email to edit password', function (): void {
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->actingAs($user)
+        ->fromRoute('dashboard')
+        ->get(route('password.edit'));
+
+    $response->assertRedirectToRoute('verification.notice');
 });
 
 it('may update password', function (): void {
@@ -148,12 +161,7 @@ it('may update password', function (): void {
         ]);
 
     $response->assertRedirectToRoute('password.edit')
-        ->assertSessionHas(SessionKey::FLASH_DATA, [
-            'toast' => [
-                'type' => 'success',
-                'message' => __('Password updated.'),
-            ],
-        ]);
+        ->assertInertiaFlash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
 });

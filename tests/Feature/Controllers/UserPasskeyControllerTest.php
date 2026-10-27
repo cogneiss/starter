@@ -88,3 +88,22 @@ it('throttles passkey sign-in attempts for one credential', function (): void {
 
     $this->post(route('passkey.login'), $attempt)->assertTooManyRequests();
 });
+
+it('requires a verified email to view passkeys', function (): void {
+    $user = User::factory()->unverified()->withoutTwoFactor()->create();
+
+    $response = $this->actingAs($user)
+        ->get(route('passkey.show'));
+
+    $response->assertRedirectToRoute('verification.notice');
+});
+
+it('exposes passkey endpoints', function (): void {
+    $response = $this->get(route('well-known.passkeys'));
+
+    $response->assertOk()
+        ->assertExactJson([
+            'enroll' => route('passkey.show'),
+            'manage' => route('passkey.show'),
+        ]);
+});
