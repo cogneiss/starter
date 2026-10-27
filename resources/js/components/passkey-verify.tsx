@@ -1,4 +1,3 @@
-import type { UrlMethodPair } from '@inertiajs/core';
 import { router } from '@inertiajs/react';
 import { usePasskeyVerify } from '@laravel/passkeys/react';
 import { KeyRound } from 'lucide-react';
@@ -10,8 +9,8 @@ import { dashboard } from '@/routes';
 
 type Props = {
     routes?: {
-        options: UrlMethodPair;
-        submit: UrlMethodPair;
+        options: { url: string };
+        submit: { url: string };
     };
     label?: string;
     loadingLabel?: string;
