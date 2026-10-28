@@ -17,4 +17,19 @@ foreach (['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GEMINI_API_KEY'] as $key) {
     $_SERVER[$key] = '';
 }
 
+/**
+ * A linked worktree (where .git is a file, not a directory) tests against its
+ * own database, testing_<worktree>, which bin/worktree-setup creates, so two
+ * worktrees running the suite at once never wipe each other's schema. Only the
+ * phpunit.xml default is replaced; an explicit DB_DATABASE such as test:sqlite's
+ * :memory: is left alone.
+ */
+if (is_file(__DIR__.'/../.git') && getenv('DB_DATABASE') === 'testing') {
+    $database = 'testing_'.mb_strtolower((string) preg_replace('/[^A-Za-z0-9]+/', '_', basename(dirname(__DIR__))));
+
+    putenv('DB_DATABASE='.$database);
+    $_ENV['DB_DATABASE'] = $database;
+    $_SERVER['DB_DATABASE'] = $database;
+}
+
 require __DIR__.'/../vendor/autoload.php';

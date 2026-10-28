@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+#
+# Make a fresh linked worktree runnable on its own: copy .env from the main
+# worktree, point it at a database named after the worktree, install, migrate
+# and build. Two worktrees then never share a schema, a test database or a
+# public/hot file, so parallel agents cannot clobber each other.
+#
+# Called by .githooks/post-checkout when `git worktree add` (or `claude
+# --worktree`) creates a worktree; safe to rerun by hand from the worktree root.
+#
+# ponytail: databases outlive `git worktree remove`; drop starter_<slug> and
+# testing_<slug> by hand if they pile up.
+
+set -e
+
+main="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+slug="$(php -r 'echo strtolower(preg_replace("/[^A-Za-z0-9]+/", "_", basename(getcwd())));')"
+
+if [ ! -f .env ] && [ -f "$main/.env" ]; then
+    cp "$main/.env" .env
+fi
+[ -f .env ] || cp .env.example .env
+
+php -r '$f = ".env"; file_put_contents($f, preg_replace("/^DB_DATABASE=.*$/m", "DB_DATABASE=starter_".$argv[1], file_get_contents($f)));' -- "$slug"
+
+echo "worktree-setup: databases starter_$slug and testing_$slug"
+
+composer install --no-interaction
+bun install
+php artisan migrate --force
+DB_DATABASE="testing_$slug" php artisan migrate --force
+bun run build
