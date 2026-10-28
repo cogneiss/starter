@@ -173,10 +173,12 @@ export function CommandPalette() {
             );
         }
 
-        if (event.key === 'Enter') {
+        const target = flat[selected];
+
+        if (event.key === 'Enter' && target !== undefined) {
             event.preventDefault();
             reset(false);
-            router.visit(flat[selected].result.url);
+            router.visit(target.result.url);
         }
     }
 

@@ -22,7 +22,7 @@ export function OrganizationSwitcher() {
     // B2C apps never see the concept: a lone personal organization stays hidden.
     if (
         organization === null ||
-        (organizations.length === 1 && organizations[0].personal)
+        (organizations.length === 1 && organizations[0]?.personal === true)
     ) {
         return null;
     }

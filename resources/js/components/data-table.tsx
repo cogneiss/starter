@@ -157,7 +157,7 @@ export function DataTable<TRow extends RowData>({
 }: DataTableProps<TRow>) {
     const page = usePage();
     const user = useAuthUser();
-    const path = page.url.split('?')[0];
+    const path = page.url.split('?')[0] ?? page.url;
     const [term, setTerm] = useState(list.query.q);
     const [pending, setPending] = useState(false);
     const [failed, setFailed] = useState(false);

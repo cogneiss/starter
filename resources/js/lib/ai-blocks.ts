@@ -12,9 +12,9 @@ const KNOWN_TYPES = new Set([
 ]);
 
 function csrfToken(): string {
-    const cookie = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    const token = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
 
-    return cookie === null ? '' : decodeURIComponent(cookie[1]);
+    return token === undefined ? '' : decodeURIComponent(token);
 }
 
 /**

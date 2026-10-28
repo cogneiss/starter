@@ -12,6 +12,9 @@ export default defineConfig({
             typeAware: true,
             typeCheck: true,
         },
+        categories: {
+            correctness: 'error',
+        },
         plugins: [
             'eslint',
             'typescript',
