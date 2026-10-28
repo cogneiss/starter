@@ -39,7 +39,8 @@ report on the pushed range prints last and never blocks. It takes a few
 minutes. Mutation testing stays on demand (`composer test:mutate`).
 
 `.githooks/post-merge`, and `.githooks/post-checkout` on a branch switch, run
-`composer install` or `bun install` when `composer.lock` or `bun.lock` changed.
+`composer install` or `bun install` when `composer.lock` or `bun.lock` changed,
+and `php artisan migrate --graceful` when the change brought new migrations.
 
 Claude Code sessions get two extra project hooks from `.claude/settings.json`.
 Both read their input with PHP, so they need nothing beyond what the project

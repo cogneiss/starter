@@ -94,8 +94,8 @@ Nothing else to do. To verify: `git config core.hooksPath` should print
 | `pre-commit`    | Rector, Pint, `vp fmt` and `vp lint --fix` on staged files, then re-stages them. A partially staged file is only checked, never rewritten. |
 | `commit-msg`    | Rejects a subject that is not a conventional commit.                                                                                       |
 | `pre-push`      | The full gate: `composer test`, dead code, unused packages, knip, wiki lint, audit, duplicate code. A few minutes; needs Xdebug loaded.    |
-| `post-merge`    | `composer install` or `bun install` when `composer.lock` or `bun.lock` changed.                                                            |
-| `post-checkout` | The same dependency sync on a branch switch.                                                                                               |
+| `post-merge`    | `composer install` or `bun install` when `composer.lock` or `bun.lock` changed; `php artisan migrate` when `database/migrations` changed.  |
+| `post-checkout` | The same sync on a branch switch.                                                                                                          |
 | `post-commit`   | Graph rebuilds, below.                                                                                                                     |
 
 After every commit, `.githooks/post-commit` refreshes four graphs so they stay in

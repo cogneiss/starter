@@ -73,8 +73,8 @@ While you are working, `composer test:fast` is the quick loop — parallel,
 compact, stops at the first failure. `composer test` is the gate that has to
 pass before you push; it is the same one CI runs, and the `pre-push` hook runs
 it for you. The `pre-commit` hook fixes formatting on staged files, and pulling
-or switching branches reinstalls dependencies when a lock file changed, so
-there is no command to remember.
+or switching branches reinstalls dependencies when a lock file changed and
+migrates when new migrations arrived, so there is no command to remember.
 
 If anything misbehaves, run `php artisan app:doctor` — it checks PHP, extensions,
 the coverage driver, `.env`, the database, migrations, bun, the browser-test

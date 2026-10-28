@@ -105,7 +105,8 @@ it('fails when a health check fails hard', function (): void {
         $checks = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['checks'])
             ->keyBy('name');
 
-        expect($checks['Health: cache (failed)']['ok'])->toBeFalse();
+        expect($checks['Health: cache (failed)']['ok'])->toBeFalse()
+            ->and($checks['Health: cache (failed)']['fix'])->toContain('CACHE_STORE');
     });
 });
 

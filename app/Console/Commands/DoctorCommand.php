@@ -33,6 +33,19 @@ final class DoctorCommand extends Command
 
     private const string GENERATED_TYPES = 'resources/js/types/generated.d.ts';
 
+    /**
+     * The fix for each GET /health check, keyed by check name. The checks
+     * themselves never carry a message, so the endpoint cannot leak one.
+     */
+    private const array HEALTH_FIXES = [
+        'database' => 'See the database connection line above.',
+        'cache' => 'Check CACHE_STORE in .env and that its store is reachable.',
+        'queue' => 'Nothing processed the test job. Start a worker: composer dev, or php artisan queue:work',
+        'schedule' => 'Start the scheduler: composer dev, or php artisan schedule:work',
+        'disk' => 'Free some disk space on the volume that holds storage/.',
+        'debug-mode' => 'Set APP_DEBUG=false outside local.',
+    ];
+
     public function handle(Filesystem $files, Migrator $migrator, FileScanner $scanner, HealthReport $health): int
     {
         $checks = [
@@ -495,7 +508,7 @@ final class DoctorCommand extends Command
         return array_map(fn (array $check): array => $this->check(
             sprintf('Health: %s (%s)', $check['name'], $check['status']),
             $check['status'] !== HealthStatus::Failed->value,
-            'The same check GET /health runs — see app/Support/Health.',
+            self::HEALTH_FIXES[$check['name']] ?? 'The same check GET /health runs — see app/Support/Health.',
         ), $health->run()['checks']);
     }
 

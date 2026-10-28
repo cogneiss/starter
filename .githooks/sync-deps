@@ -1,10 +1,11 @@
 #!/usr/bin/env sh
 #
-# Install dependencies when a pull or checkout changed a lock file, so the tree
-# never runs against stale vendor/ or node_modules/. Called by post-merge and
-# post-checkout with the old and new commit.
+# Install dependencies when a pull or checkout changed a lock file, and migrate
+# when it brought new migrations, so the tree never runs against stale vendor/,
+# node_modules/ or schema. Called by post-merge and post-checkout with the old
+# and new commit.
 
-changed="$(git diff --name-only "$1" "$2" -- composer.lock bun.lock 2>/dev/null)"
+changed="$(git diff --name-only "$1" "$2" -- composer.lock bun.lock database/migrations 2>/dev/null)"
 
 case "$changed" in
     *composer.lock*) composer install --no-interaction ;;
@@ -12,6 +13,10 @@ esac
 
 case "$changed" in
     *bun.lock*) bun install ;;
+esac
+
+case "$changed" in
+    *database/migrations/*) php artisan migrate --graceful --no-interaction ;;
 esac
 
 exit 0
