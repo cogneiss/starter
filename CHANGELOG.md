@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/cogneiss/starter/compare/v0.3.0...v0.4.0) (2026-10-28)
+
+
+### Features
+
+* **dx:** pre-commit format check, pre-push static gates, Claude Code gate guard and formatter hooks ([c52cc11](https://github.com/cogneiss/starter/commit/c52cc11497ced9679ba589bfe0377becf245bace))
+* **js:** stricter type-aware oxlint, jsx-a11y and Tailwind class checks; add typography plugin ([6fcd39b](https://github.com/cogneiss/starter/commit/6fcd39b358028fb97852fa5285869e81b8d9da81))
+* **php:** gate on PHPStan strict, deprecation, ShipMonk and cognitive-complexity rules ([a9a872d](https://github.com/cogneiss/starter/commit/a9a872dcfe71bbe272d45fb53e31190c0d6e3ff0))
+
+
+### Bug Fixes
+
+* **health:** restore 100% coverage on DiskCheck by asserting the unreachable false branch ([1b397dc](https://github.com/cogneiss/starter/commit/1b397dcfdc3e380df8917e2f080c9fc5ab538578))
+* **js:** clear React lint warnings ([9f28fb7](https://github.com/cogneiss/starter/commit/9f28fb796eebe0e2e27d8bc0d6cd6400601d5387))
+* **js:** drop unlisted @inertiajs/core import in passkey-verify ([be6f991](https://github.com/cogneiss/starter/commit/be6f99178b6ffbc9c77b12a6ad7173ff24d1887c))
+* remove unused published stubs and reach 100% coverage ([1edc015](https://github.com/cogneiss/starter/commit/1edc0157e0de3a57532041bf0f7b7e90d9379c17))
+* restore customised files overwritten by vendor:publish ([cf7e650](https://github.com/cogneiss/starter/commit/cf7e6508c6b03ebe102a4d01265303e00667329d))
+
 ## [0.3.0](https://github.com/cogneiss/starter/compare/v0.2.0...v0.3.0) (2026-10-27)
 
 
