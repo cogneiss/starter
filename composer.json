@@ -75,6 +75,7 @@
             "@php artisan ai:install --no-interaction",
             "@php artisan db:seed --class=RoleTemplateSeeder --force",
             "bun install",
+            "bunx playwright install chromium",
             "bun run build",
             "@php -r \"echo PHP_EOL, 'Setup done. If anything misbehaves, run: php artisan app:doctor', PHP_EOL;\""
         ],

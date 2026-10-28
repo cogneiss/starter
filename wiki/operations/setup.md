@@ -21,8 +21,8 @@ composer setup
 ```
 
 That runs `composer install`, copies `.env.example` to `.env` if there is none,
-generates the key, migrates, seeds the role templates, runs `bun install` and
-builds the frontend. Then:
+generates the key, migrates, seeds the role templates, runs `bun install`,
+installs the Chromium the browser tests drive, and builds the frontend. Then:
 
 ```bash
 php artisan app:doctor
