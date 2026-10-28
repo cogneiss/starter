@@ -22,9 +22,7 @@ final class DiskCheck implements Check
             $free = disk_free_space($path);
             $total = disk_total_space($path);
 
-            if ($free === false || $total === false) {
-                return HealthStatus::Degraded;
-            }
+            assert($free !== false && $total !== false, 'Laravel turns the disk_*_space warning into an exception, which rescue() reports as degraded.');
 
             $percentFree = $free / $total * 100;
 
