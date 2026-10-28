@@ -46,9 +46,7 @@ hold the application's forms, not on each route.
 
 `tests/Feature/PrecognitionParityTest.php` walks every registered route, finds
 the ones whose action type-hints a `FormRequest`, and requires the middleware on
-each — or an entry in the allowlist. A route whose controller class no longer
-exists is skipped: `MakeResourceEndToEndTest` adds a Widget route and deletes
-its controller again, and a parallel worker can boot in between.
+each — or an entry in the allowlist.
 
 ## The allowlist is deliberately hard to widen
 

@@ -6,7 +6,7 @@ code_refs:
     - config/essentials.php
     - tests/Pest.php
     - tests/Unit/Conventions/MassAssignmentBoundaryTest.php
-updated: 2026-10-28
+updated: 2026-10-29
 ---
 
 # Better defaults from Essentials

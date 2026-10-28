@@ -7,7 +7,8 @@ code_refs:
     - tests/TestCase.php
     - tests/Unit/ArchTest.php
     - tests/Browser/AccessibilityTest.php
-updated: 2026-09-01
+    - tests/Feature/Console/MakeResourceEndToEndTest.php
+updated: 2026-10-29
 ---
 
 # Testing
@@ -70,6 +71,16 @@ the UX suites share `resourceSearchDefects()`, `motionStyles()`,
 platform-ops suites share `apiBearer()` for a live token and its Authorization
 header, `fakeWebhookDns()` so a webhook test never resolves a real hostname,
 and `frictionToken()` for the timed token a public form's own submit carries.
+
+The suite runs in parallel, so no test writes into the checkout. The few that
+share a file on disk take a named lock from `withRepositoryLock()`; for example,
+`withWikiWorklistLock()` covers `wiki/_meta/audit.json`. The resource
+generator's end-to-end test, `tests/Feature/Console/MakeResourceEndToEndTest.php`,
+works in a temporary copy of the repository and runs the generated tests there.
+The copy has the source files, with vendor packages linked rather than copied.
+Composer's autoloader, the bin proxies and Pest are real copies, because each
+finds the autoloader from its own real path. A worker booting meanwhile never
+sees a half-generated application.
 
 Scoped models need an organization bound: use `resolve(OrganizationContext::class)->runAs()`
 ([[domains/multi-tenancy]]). Use factory states before hand-building a model —

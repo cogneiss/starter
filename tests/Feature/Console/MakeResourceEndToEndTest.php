@@ -6,25 +6,74 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 /**
+ * A working copy of this checkout in a temporary directory: the committed and
+ * untracked source, `.env` and the built assets, with every vendor package and
+ * node_modules linked rather than copied. A file's `__DIR__` is its real path,
+ * so whatever locates the autoloader from it is copied instead: Composer's own
+ * autoloader, so `App\` resolves against the copy and a class generated there
+ * is found, the bin proxies, and Pest, whose binary looks for it four levels up.
+ */
+function checkoutCopy(string $copy): void
+{
+    File::deleteDirectory($copy);
+
+    $source = Process::path(base_path())->run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'])->throw();
+
+    foreach (array_filter(explode("\0", $source->output())) as $path) {
+        if (is_file(base_path($path))) {
+            File::ensureDirectoryExists(dirname($copy.'/'.$path));
+            File::copy(base_path($path), $copy.'/'.$path);
+        }
+    }
+
+    File::copy(base_path('.env'), $copy.'/.env');
+    File::link(base_path('public/build'), $copy.'/public/build');
+    File::link(base_path('node_modules'), $copy.'/node_modules');
+
+    File::ensureDirectoryExists($copy.'/vendor');
+    File::copy(base_path('vendor/autoload.php'), $copy.'/vendor/autoload.php');
+
+    foreach (File::directories(base_path('vendor')) as $package) {
+        if (in_array(basename($package), ['bin', 'composer', 'pestphp'], true)) {
+            File::copyDirectory($package, $copy.'/vendor/'.basename($package));
+        } else {
+            File::link($package, $copy.'/vendor/'.basename($package));
+        }
+    }
+
+    // A copy drops the executable bit the generator runs vendor/bin/pint by.
+    foreach (File::files($copy.'/vendor/bin') as $proxy) {
+        File::chmod($proxy->getPathname(), 0755);
+    }
+}
+
+/**
  * The generator's whole promise is that its output is green on arrival, so the
- * only honest way to test it is to generate into the real application and run
- * the tests it just wrote, in a real process that picks up the new routes,
- * migration and permission. Everything it touched is put back afterwards, and
- * the checkout lock keeps any other worker from reading the tree meanwhile.
+ * only honest way to test it is to generate into a real application and run the
+ * tests it just wrote, in a real process that picks up the new routes, migration
+ * and permission. That application is a copy of this one, so the parallel
+ * workers running beside it never see a half-generated tree.
  */
 it('generates a resource whose own tests pass and whose code needs no formatting', function (): void {
-    withCheckoutLock(function (): void {
-        Process::preventStrayProcesses(false);
+    Process::preventStrayProcesses(false);
 
-        // Restored from the copy taken here rather than by regenerating, so a
-        // failure part way through cannot leave the committed files rewritten.
-        $touched = ['routes/web.php', 'app/Support/PermissionCatalog.php', 'resources/js/types/generated.d.ts'];
-        $original = array_combine($touched, array_map(
-            static fn (string $path): string => File::get(base_path($path)),
-            $touched,
-        ));
+    $copy = sys_get_temp_dir().'/make-resource-e2e-'.getmypid();
 
-        $generated = [
+    try {
+        checkoutCopy($copy);
+
+        test()->artisan('app:make-resource', ['name' => 'Widget', '--force' => true, '--base' => $copy])->assertSuccessful();
+
+        $result = Process::path($copy)->timeout(600)->run([
+            PHP_BINARY, 'artisan', 'test', '--compact', '--filter=Widget',
+        ]);
+
+        expect($result->successful())->toBeTrue($result->output().$result->errorOutput());
+
+        // Generated code goes into a repository whose lint step is a gate, so a
+        // stub that Pint wants to rewrite is a broken stub.
+        $pint = Process::path($copy)->timeout(600)->run([
+            'vendor/bin/pint', '--test',
             'app/Models/Widget.php',
             'database/factories/WidgetFactory.php',
             'app/Data/WidgetData.php',
@@ -37,37 +86,11 @@ it('generates a resource whose own tests pass and whose code needs no formatting
             'tests/Unit/Actions/CreateWidgetTest.php',
             'tests/Unit/Models/WidgetTest.php',
             'tests/Unit/Data/WidgetDataTest.php',
-        ];
+            ...File::glob($copy.'/database/migrations/*_create_widgets_table.php'),
+        ]);
 
-        try {
-            test()->artisan('app:make-resource', ['name' => 'Widget', '--force' => true])->assertSuccessful();
-
-            $result = Process::path(base_path())->timeout(600)->run([
-                PHP_BINARY, 'artisan', 'test', '--compact', '--filter=Widget',
-            ]);
-
-            expect($result->successful())->toBeTrue($result->output().$result->errorOutput());
-
-            // Generated code goes into a repository whose lint step is a gate, so a
-            // stub that Pint wants to rewrite is a broken stub.
-            $pint = Process::path(base_path())->timeout(600)->run([
-                'vendor/bin/pint', '--test', ...$generated, ...File::glob('database/migrations/*_create_widgets_table.php'),
-            ]);
-
-            expect($pint->successful())->toBeTrue($pint->output().$pint->errorOutput());
-        } finally {
-            foreach ($original as $path => $contents) {
-                File::put(base_path($path), $contents);
-            }
-
-            File::delete([
-                ...array_map(base_path(...), $generated),
-                ...File::glob(base_path('database/migrations/*_create_widgets_table.php')),
-            ]);
-
-            File::deleteDirectory(base_path('resources/js/pages/widget'));
-
-            Process::path(base_path())->run([PHP_BINARY, 'artisan', 'wayfinder:generate', '--with-form']);
-        }
-    });
+        expect($pint->successful())->toBeTrue($pint->output().$pint->errorOutput());
+    } finally {
+        File::deleteDirectory($copy);
+    }
 })->group('slow');

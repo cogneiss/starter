@@ -127,17 +127,6 @@ function withWikiWorklistLock(Closure $work): void
 }
 
 /**
- * Serialises the tests that mutate this checkout's own source tree. The resource
- * generator writes real routes, a real permission and a real migration before
- * putting them back, and any test that reads the working tree meanwhile sees a
- * half-generated application rather than the committed one.
- */
-function withCheckoutLock(Closure $work): void
-{
-    withRepositoryLock('checkout', $work);
-}
-
-/**
  * One named advisory lock, held for the duration of the given work.
  */
 function withRepositoryLock(string $name, Closure $work): void
