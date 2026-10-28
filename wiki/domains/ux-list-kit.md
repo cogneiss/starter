@@ -12,9 +12,10 @@ code_refs:
     - resources/js/components/data-table.tsx
     - tests/Feature/Controllers/ListsResourcesTest.php
     - tests/Feature/Resources/CsvExportScopeTest.php
+    - tests/Browser/DataTableTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-10-28
+updated: 2026-10-29
 ---
 
 # The server-driven list kit
@@ -64,6 +65,14 @@ wide the table is are per-user comfort settings and live in `localStorage`, not
 in the URL and not in the database — see [SETUP.md](../../SETUP.md). The key
 is the page path plus the signed-in user's id, and a stored value of the wrong
 shape is discarded rather than trusted (`resources/js/components/data-table.tsx`).
+
+While a search, sort or page change is in flight, only the table body is busy:
+it carries `data-pending` and `aria-busy`, and the toolbar stays usable. The
+busy state is held for at least 600 ms so a fast response does not flicker. Each
+new request cancels the hold left over from the one before, otherwise that old
+timer would clear the busy state while the new request is still loading.
+`tests/Browser/DataTableTest.php` checks that only the body went busy, on each
+step.
 
 ## Bulk actions
 

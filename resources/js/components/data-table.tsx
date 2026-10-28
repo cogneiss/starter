@@ -163,6 +163,7 @@ export function DataTable<TRow extends RowData>({
     const [failed, setFailed] = useState(false);
     const debounce = useRef<number | undefined>(undefined);
     const startedAt = useRef(0);
+    const pendingFloor = useRef<number | undefined>(undefined);
 
     const preferencesKey = `table:${PREFERENCES_VERSION}:${path}:${user.id}`;
     const [preferences, setPreferences] = useState<Preferences>(() =>
@@ -176,7 +177,13 @@ export function DataTable<TRow extends RowData>({
     const [action, setAction] = useState(bulk?.actions[0]?.value ?? '');
     const [exported, setExported] = useState(false);
 
-    useEffect(() => () => window.clearTimeout(debounce.current), []);
+    useEffect(
+        () => () => {
+            window.clearTimeout(debounce.current);
+            window.clearTimeout(pendingFloor.current);
+        },
+        [],
+    );
 
     useEffect(() => {
         window.localStorage.setItem(
@@ -193,6 +200,8 @@ export function DataTable<TRow extends RowData>({
             preserveScroll: true,
             preserveState: true,
             onStart: () => {
+                // A floor left over from the previous visit would clear this one's busy state mid-request.
+                window.clearTimeout(pendingFloor.current);
                 startedAt.current = performance.now();
                 setFailed(false);
                 setPending(true);
@@ -200,7 +209,7 @@ export function DataTable<TRow extends RowData>({
             onError: () => setFailed(true),
             onFinish: () => {
                 // Hold the busy state to its floor before clearing it.
-                window.setTimeout(
+                pendingFloor.current = window.setTimeout(
                     () => setPending(false),
                     Math.max(
                         0,

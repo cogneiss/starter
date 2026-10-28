@@ -42,6 +42,11 @@ function signInWithAListOfMembers(): void
  */
 function watchWhatGoesPending(Webpage|AwaitableWebpage $page): void
 {
+    // Start from idle, so the previous step's busy state is not mistaken for this one's.
+    for ($attempt = 0; $attempt < 100 && $page->script('document.querySelector(\'[data-pending="true"]\') !== null'); $attempt++) {
+        Sleep::usleep(20_000);
+    }
+
     $page->script(<<<'JS'
         window.__pending = [];
 

@@ -20,15 +20,12 @@ use Illuminate\Routing\Router;
  */
 
 /**
- * The form request an action type-hints, if it takes one. A controller class
- * that no longer exists is skipped: MakeResourceEndToEndTest writes a Widget
- * route and deletes the controller again, and a parallel worker can boot in
- * between.
+ * The form request an action type-hints, if it takes one.
  */
 function formRequestOf(RoutingRoute $route): ?string
 {
     try {
-        $reflection = $route->getControllerClass() === null || ! class_exists($route->getControllerClass())
+        $reflection = $route->getControllerClass() === null
             ? null
             : new ReflectionMethod($route->getController(), $route->getActionMethod());
     } catch (ReflectionException) {
