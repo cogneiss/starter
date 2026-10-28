@@ -54,6 +54,30 @@
             "name": "full gate green",
             "status": "passing",
             "command": "composer test"
+        },
+        {
+            "id": 9,
+            "name": "LSP plugins enabled with binaries on PATH",
+            "status": "passing",
+            "command": "command -v intelephense && command -v typescript-language-server && rg -q \"php-lsp@claude-plugins-official\" .claude/settings.json && rg -q \"typescript-lsp@claude-plugins-official\" .claude/settings.json"
+        },
+        {
+            "id": 10,
+            "name": "guard-gates asks before an agent edits a mutation patch",
+            "status": "passing",
+            "command": "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"tests/Mutations/x.patch\"}}' | .claude/hooks/guard-gates.sh | rg -q ask"
+        },
+        {
+            "id": 11,
+            "name": "each worktree gets its own database",
+            "status": "passing",
+            "command": "test -x bin/worktree-setup && rg -q worktree-setup .githooks/post-checkout && rg -q testing_ tests/bootstrap.php"
+        },
+        {
+            "id": 12,
+            "name": "shared list URLs are a fixed point",
+            "status": "passing",
+            "command": "php artisan test --compact tests/Feature/Resources/UrlRoundTripTest.php"
         }
     ]
 }

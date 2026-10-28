@@ -9,7 +9,13 @@ code_refs:
     - .githooks/pre-push
     - .githooks/post-merge
     - .githooks/sync-deps
+    - .githooks/post-checkout
     - .claude/settings.json
+    - .claude/hooks/guard-gates.sh
+    - .claude/hooks/verify-on-stop.sh
+    - bin/worktree-setup
+    - tests/bootstrap.php
+    - composer.json
 updated: 2026-10-28
 ---
 
@@ -42,12 +48,49 @@ minutes. Mutation testing stays on demand (`composer test:mutate`).
 `composer install` or `bun install` when `composer.lock` or `bun.lock` changed,
 and `php artisan migrate --graceful` when the change brought new migrations.
 
-Claude Code sessions get two extra project hooks from `.claude/settings.json`.
-Both read their input with PHP, so they need nothing beyond what the project
-already requires. The first formats each file right after the agent writes it. The second refuses
-any command that skips git hooks, and asks a human before an agent edits gate
-config: PHPStan, Rector, Pint, knip, the Sloppy baseline, `vite.config.ts`, the
-arch test, the workflows, and the hooks themselves.
+## Claude Code sessions check themselves
+
+`.claude/settings.json` gives every Claude Code session three project hooks.
+They read their input with PHP, so they need nothing beyond what the project
+already requires.
+
+- `.claude/hooks/format-file.sh` formats each file right after the agent writes it.
+- `.claude/hooks/guard-gates.sh` refuses any command that skips git hooks, and
+  asks a human before an agent edits gate config: PHPStan, Rector, Pint, knip,
+  the Sloppy baseline, `vite.config.ts`, the arch test, the mutation patches in
+  `tests/Mutations/`, the workflows, `bin/worktree-setup` and the hooks
+  themselves. Once `/contract` has frozen its criteria (`.work/feature_list.json`
+  exists), it also asks before `.work/contract.md` changes, so an agent cannot
+  rewrite the contract to fit the code it wrote. It only sees the Edit and Write
+  tools. A shell redirect into the same file gets past it, which is one reason
+  the git hooks still run the full gate.
+- `.claude/hooks/verify-on-stop.sh` runs PHPStan, the tests touching
+  uncommitted files and `tsc` before the agent may report done, and hands any
+  failure back to it. It runs once per stop, so an error the agent cannot fix
+  does not loop.
+
+The same settings file enables the `php-lsp` and `typescript-lsp` plugins, so
+the agent gets go-to-definition, references and type errors from Intelephense
+and `typescript-language-server` instead of guessing from grep. `composer setup`
+installs both binaries globally with bun. Without them the plugins stay quiet
+and nothing else breaks.
+
+## Each worktree gets its own database
+
+Agents working in parallel (`claude --worktree`, `git worktree add`) would
+otherwise share one `.env`, one schema and one `testing` database, and a
+`RefreshDatabase` run in one worktree wipes the tables another is using.
+`.githooks/post-checkout` spots a brand-new linked worktree (the old head is the
+null sha) and runs `bin/worktree-setup`. That copies `.env` from the main
+checkout, points `DB_DATABASE` at `starter_<worktree>`, installs, migrates that
+database and `testing_<worktree>`, and builds the assets. `tests/bootstrap.php`
+sends the suite to `testing_<worktree>` whenever `.git` is a file, and leaves an
+explicit `DB_DATABASE` alone (the `:memory:` of `composer test:sqlite`, say).
+Parallel runs append `_test_N` to that name as usual.
+
+Vite needed nothing: each worktree has its own `public/hot`, and the dev server
+takes the next free port when 5173 is busy. Removing a worktree does not drop its
+databases; drop `starter_<worktree>` and `testing_<worktree>` by hand.
 
 ## Tests are not optional
 
