@@ -1,5 +1,3 @@
-# UX layer guidelines
-
 - The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it.
 - Lists are server-driven. Search, filters, sorting, pagination, column visibility, saved views, bulk actions and CSV export all happen in the query, through `ListsResources`. Never filter a collection in React.
 - Forms validate live through Precognition against the same form request. Never restate a validation rule in TypeScript; `tests/Feature/PrecognitionParityTest.php` fails on drift.

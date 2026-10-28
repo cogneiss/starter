@@ -1,5 +1,3 @@
-# AI layer guidelines
-
 - The AI layer lives in `app/Ai` (agents, tools, blocks, confirmable actions, middleware) and `app/Mcp`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing any of it.
 - No real provider call in the blocking suite. `tests/Pest.php` fakes every agent under `app/Ai/Agents` with `preventStrayPrompts()`; `tests/Evals/` is the only exception and it is excluded from `composer test`.
 - `laravel/mcp` arrives transitively through `laravel/ai` 1.x and `laravel/boost` (1.x). Do not require it directly; it moves with `laravel/ai`.

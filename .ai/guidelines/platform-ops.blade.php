@@ -1,10 +1,7 @@
-# Platform ops guidelines
-
 - The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing any of it.
 - Scope at the query level. A foreign id returns 404, not 403 — in the API and in the admin area, where `/admin` itself is a 404 without the `platform` ability.
 - Tokens are shown once at creation and stored hashed. Never log a token, a webhook secret, a signature or a provider key; `tests/Feature/WebhookSecretLogCanaryTest.php` sweeps for a canary.
 - Sentry and PostHog are seams: blank keys bind null implementations and the whole suite boots with an empty `.env`. `ZeroKeyBootTest` fails a change that makes anything require a key.
-- `.env.example` keeps every provider key blank.
 
 @scoped(['routes/api.php', 'app/Http/Controllers/Api/**', 'app/Http/Middleware/**', 'app/Webhooks/**', 'app/Admin/**', 'app/Support/Analytics/**', 'app/Support/Reporting/**', 'app/Support/Health/**', 'config/api.php', 'config/webhooks.php', 'config/audit.php'])
 - Every API request resolves its organization from the token, never from a header, a route parameter or a request body. `EnsureTokenMatchesOrganization` enforces it; `tests/Feature/ApiTokenScopeTest.php` attacks it.

@@ -1,8 +1,6 @@
 <laravel-boost-guidelines>
 === .ai/ai rules ===
 
-# AI layer guidelines
-
 - The AI layer lives in `app/Ai` (agents, tools, blocks, confirmable actions, middleware) and `app/Mcp`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing any of it.
 - No real provider call in the blocking suite. `tests/Pest.php` fakes every agent under `app/Ai/Agents` with `preventStrayPrompts()`; `tests/Evals/` is the only exception and it is excluded from `composer test`.
 - `laravel/mcp` arrives transitively through `laravel/ai` 1.x and `laravel/boost` (1.x). Do not require it directly; it moves with `laravel/ai`.
@@ -10,33 +8,22 @@
 
 === .ai/app.actions rules ===
 
-# App/Actions guidelines
-
 - This application uses the Action pattern and prefers for much logic to live in reusable and composable Action classes.
 - Actions live in `app/Actions`, they are named based on what they do, with no suffix.
-- Actions will be called from many different places: jobs, commands, HTTP requests, API requests, MCP requests, and more.
-- Create dedicated Action classes for business logic with a single `handle()` method.
 - Create new actions with `php artisan make:action "{name}" --no-interaction`
 
 === .ai/general rules ===
-
-# General Guidelines
 
 - Don't include any superfluous PHP Annotations, except ones that start with `@` for typing variables.
 
 === .ai/platform-ops rules ===
 
-# Platform ops guidelines
-
 - The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing any of it.
 - Scope at the query level. A foreign id returns 404, not 403 — in the API and in the admin area, where `/admin` itself is a 404 without the `platform` ability.
 - Tokens are shown once at creation and stored hashed. Never log a token, a webhook secret, a signature or a provider key; `tests/Feature/WebhookSecretLogCanaryTest.php` sweeps for a canary.
 - Sentry and PostHog are seams: blank keys bind null implementations and the whole suite boots with an empty `.env`. `ZeroKeyBootTest` fails a change that makes anything require a key.
-- `.env.example` keeps every provider key blank.
 
 === .ai/ux rules ===
-
-# UX layer guidelines
 
 - The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it.
 - Lists are server-driven. Search, filters, sorting, pagination, column visibility, saved views, bulk actions and CSV export all happen in the query, through `ListsResources`. Never filter a collection in React.
