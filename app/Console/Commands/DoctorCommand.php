@@ -46,6 +46,7 @@ final class DoctorCommand extends Command
             $this->migrations($migrator),
             $this->bun(),
             $this->frontendDependencies($files),
+            $this->browserTestChromium(),
             $this->viteManifest($files),
             $this->generatedTypeScript(),
             $this->writableDirectories(),
@@ -119,7 +120,7 @@ final class DoctorCommand extends Command
         return $this->check(
             'Coverage driver',
             extension_loaded('xdebug') || extension_loaded('pcov'),
-            'composer test:unit needs one. Run it through Herd: herd coverage composer test:unit',
+            'composer test:unit and the pre-push hook need one. Load Xdebug in php.ini with xdebug.mode=off; SETUP.md, "First time on a new machine", has the Herd line',
         );
     }
 
@@ -161,7 +162,10 @@ final class DoctorCommand extends Command
         return $this->check(
             sprintf('Database connection (%s)', $this->driver()),
             $reachable,
-            'Check DB_* in .env. On the sqlite fallback: touch database/database.sqlite',
+            sprintf(
+                "Start Postgres and create the database: herd services:start postgresql && psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE %s;'. Otherwise check DB_* in .env. On the sqlite fallback: touch database/database.sqlite",
+                config()->string('database.connections.pgsql.database', 'starter'),
+            ),
         );
     }
 
@@ -214,6 +218,25 @@ final class DoctorCommand extends Command
             'node_modules',
             $files->isDirectory(base_path('node_modules')),
             'bun install',
+        );
+    }
+
+    /**
+     * Asks Playwright where its Chromium should be, so the answer follows the
+     * installed Playwright version rather than a guessed cache path.
+     *
+     * @return array{name: string, ok: bool, fix: string}
+     */
+    private function browserTestChromium(): array
+    {
+        $installed = Process::path(base_path())->run(
+            'bun -e "process.exit(require(\'fs\').existsSync(require(\'playwright\').chromium.executablePath()) ? 0 : 1)"',
+        );
+
+        return $this->check(
+            'Browser-test Chromium',
+            $installed->successful(),
+            'bunx playwright install chromium',
         );
     }
 

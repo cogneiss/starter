@@ -77,8 +77,8 @@ or switching branches reinstalls dependencies when a lock file changed, so
 there is no command to remember.
 
 If anything misbehaves, run `php artisan app:doctor` — it checks PHP, extensions,
-the coverage driver, `.env`, the database, migrations, bun, the Vite manifest and
-the generated TypeScript, and prints the command that fixes whatever failed.
+the coverage driver, `.env`, the database, migrations, bun, the browser-test
+Chromium, the Vite manifest and the generated TypeScript, and prints the command that fixes whatever failed.
 
 ### Environment
 

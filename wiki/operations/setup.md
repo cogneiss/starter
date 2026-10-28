@@ -30,7 +30,7 @@ php artisan app:doctor
 
 Doctor is the answer to "is it me or is it broken": PHP version, extensions,
 coverage driver, `.env` and `APP_KEY`, database reachability, pending migrations,
-`bun`, `node_modules`, the Vite manifest, stale generated TypeScript, and
+`bun`, `node_modules`, the browser-test Chromium, the Vite manifest, stale generated TypeScript, and
 writable `storage`/`bootstrap/cache`. It also runs the same six checks
 `GET /health` answers with — database, cache, queue round-trip, schedule
 heartbeat, disk headroom, debug mode — failing only on a hard failure, since a

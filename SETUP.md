@@ -8,20 +8,20 @@ Everything after these steps is automated. On macOS with
 1. Load Xdebug so the coverage gate can run. Herd ships it without loading it.
    Open Herd → Settings → PHP → Open php.ini and append:
 
-   ```ini
-   zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-85-arm64.so
-   xdebug.mode=off
-   ```
+    ```ini
+    zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-85-arm64.so
+    xdebug.mode=off
+    ```
 
-   The mode stays off, so it costs nothing until `composer test:unit` sets
-   `XDEBUG_MODE=coverage`. `php -m | grep -i xdebug` confirms it loaded.
+    The mode stays off, so it costs nothing until `composer test:unit` sets
+    `XDEBUG_MODE=coverage`. `php -m | grep -i xdebug` confirms it loaded.
 
 2. Start Postgres and create the database:
 
-   ```bash
-   herd services:start postgresql
-   psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE starter;'
-   ```
+    ```bash
+    herd services:start postgresql
+    psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE starter;'
+    ```
 
 3. Run `composer setup`, then `php artisan app:doctor`. Doctor names anything
    still missing and prints the fix.
@@ -646,7 +646,7 @@ command that fixes it:
 ```
   PHP 8.5.0 ............................. PASS
   Coverage driver ....................... FAIL
-  ⇂ Coverage driver: composer test:unit needs one. Run it through Herd: herd coverage composer test:unit
+  ⇂ Coverage driver: composer test:unit and the pre-push hook need one. Load Xdebug in php.ini with xdebug.mode=off; SETUP.md, "First time on a new machine", has the Herd line
 ```
 
 Exit code is 1 if any check failed, so it drops straight into a script; `--json`

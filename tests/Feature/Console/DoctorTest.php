@@ -16,6 +16,7 @@ function fakeHealthyShell(): void
 {
     Process::fake([
         'which bun' => Process::result(),
+        '*playwright*' => Process::result(),
         '*typescript:transform' => Process::result(),
         'git status*' => Process::result(output: ''),
     ]);
@@ -63,7 +64,7 @@ it('emits valid JSON', function (): void {
 
         $decoded = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
-        expect($decoded['checks'])->toHaveCount(19)
+        expect($decoded['checks'])->toHaveCount(20)
             ->and($decoded['checks'][0])->toHaveKeys(['name', 'ok', 'fix']);
 
         // Everything but the coverage driver, which depends on how PHP was invoked.
@@ -144,6 +145,7 @@ it('fails when the database cannot be reached', function (): void {
     $checks = collect(json_decode($output, true, flags: JSON_THROW_ON_ERROR)['checks'])->keyBy('name');
 
     expect($checks['Database connection (sqlite)']['ok'])->toBeFalse()
+        ->and($checks['Database connection (sqlite)']['fix'])->toContain('CREATE DATABASE')
         // Nothing can be said about migrations without a database either.
         ->and($checks['Migrations']['ok'])->toBeFalse();
 });
@@ -171,6 +173,23 @@ it('fails when bun is not installed', function (): void {
         ->assertExitCode(1)
         ->expectsOutputToContain('bun on PATH')
         ->expectsOutputToContain('check(s) failed.');
+});
+
+it('fails when the browser-test Chromium is not installed', function (): void {
+    Process::fake([
+        'which bun' => Process::result(),
+        '*playwright*' => Process::result(exitCode: 1),
+        '*typescript:transform' => Process::result(),
+        'git status*' => Process::result(output: ''),
+    ]);
+
+    expect(Artisan::call('app:doctor', ['--json' => true]))->toBe(1);
+
+    $checks = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['checks'])
+        ->keyBy('name');
+
+    expect($checks['Browser-test Chromium']['ok'])->toBeFalse()
+        ->and($checks['Browser-test Chromium']['fix'])->toBe('bunx playwright install chromium');
 });
 
 it('fails when the generated TypeScript is stale', function (): void {

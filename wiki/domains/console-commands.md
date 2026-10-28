@@ -63,7 +63,7 @@ audit ([[domains/ux-branding]]).
 
 The onboarding command. It checks the PHP version against `composer.json`,
 required extensions, a coverage driver, `.env` and `APP_KEY`, database
-reachability, pending migrations, `bun`, `node_modules`, the Vite manifest, stale
+reachability, pending migrations, `bun`, `node_modules`, the browser-test Chromium, the Vite manifest, stale
 generated TypeScript, and writable `storage`/`bootstrap/cache`. It also runs the
 same six checks `GET /health` runs — database, cache, queue, schedule heartbeat,
 disk headroom and debug mode — one line each; a degraded check still passes the
