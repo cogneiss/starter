@@ -43,7 +43,7 @@ This isn't just another Laravel boilerplate—it's a statement that PHP applicat
 
 ## Getting Started
 
-> **Requires [PHP 8.5+](https://php.net/releases/) and a code coverage driver like [xdebug](https://xdebug.org/docs/install)**.
+> **Requires [PHP 8.5+](https://php.net/releases/), [bun](https://bun.sh), Postgres and a code coverage driver like [xdebug](https://xdebug.org/docs/install)**. On [Herd](https://herd.laravel.com), Xdebug ships but is not loaded; [SETUP.md](SETUP.md#first-time-on-a-new-machine) has the one `php.ini` line that loads it.
 
 This kit is not published to Packagist. Clone it:
 
@@ -58,7 +58,8 @@ Navigate to your project and complete the setup:
 ```bash
 cd example-app
 
-# Setup the project (installs, keys, migrates, seeds the role templates, builds)
+# Setup the project (installs, keys, migrates, seeds the role templates,
+# installs the browser-test Chromium, builds, wires up the git hooks)
 composer setup
 
 # Optional: seed a user you can sign in with (test@example.com / password)
@@ -70,7 +71,10 @@ composer dev
 
 While you are working, `composer test:fast` is the quick loop — parallel,
 compact, stops at the first failure. `composer test` is the gate that has to
-pass before you push; it is the same one CI runs.
+pass before you push; it is the same one CI runs, and the `pre-push` hook runs
+it for you. The `pre-commit` hook fixes formatting on staged files, and pulling
+or switching branches reinstalls dependencies when a lock file changed, so
+there is no command to remember.
 
 If anything misbehaves, run `php artisan app:doctor` — it checks PHP, extensions,
 the coverage driver, `.env`, the database, migrations, bun, the Vite manifest and
@@ -94,15 +98,6 @@ knobs worth knowing:
 Social login stays off until you fill in a provider's keys and enable the
 feature flag — see [SETUP.md](SETUP.md). The same is true of the AI layer:
 with no key set the app boots, every page renders and `composer test` passes.
-
-### Optional: Browser Testing Setup
-
-If you plan to use Pest's browser testing capabilities:
-
-```bash
-bun add playwright
-bunx playwright install
-```
 
 ### Verify Installation
 

@@ -1,5 +1,31 @@
 # Development Setup
 
+## First time on a new machine
+
+Everything after these steps is automated. On macOS with
+[Herd](https://herd.laravel.com) (PHP 8.5) and [bun](https://bun.sh):
+
+1. Load Xdebug so the coverage gate can run. Herd ships it without loading it.
+   Open Herd → Settings → PHP → Open php.ini and append:
+
+   ```ini
+   zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-85-arm64.so
+   xdebug.mode=off
+   ```
+
+   The mode stays off, so it costs nothing until `composer test:unit` sets
+   `XDEBUG_MODE=coverage`. `php -m | grep -i xdebug` confirms it loaded.
+
+2. Start Postgres and create the database:
+
+   ```bash
+   herd services:start postgresql
+   psql postgres://127.0.0.1:5432/postgres -U postgres -c 'CREATE DATABASE starter;'
+   ```
+
+3. Run `composer setup`, then `php artisan app:doctor`. Doctor names anything
+   still missing and prints the fix.
+
 ## Prerequisites
 
 ```bash
@@ -43,7 +69,7 @@ omits them. Just run `graphify .` again — it retries only the missed files.
 
 | Situation                   | Run                                                                                                                             |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Fresh clone, once           | `composer setup` — install, `.env`, key, migrate, seed the role templates, `bun install`, build.                                |
+| Fresh clone, once           | `composer setup` — install, `.env`, key, migrate, seed the role templates, `bun install`, browser-test Chromium, build.         |
 | Every day after that        | `php artisan dev` (or `composer dev`) — server, queue worker, log tail and Vite together, killed as a group when you stop them. |
 | Something behaves strangely | `php artisan app:doctor` — checks this machine can run, test and build the app.                                                 |
 
@@ -62,6 +88,15 @@ git config core.hooksPath .githooks
 
 Nothing else to do. To verify: `git config core.hooksPath` should print
 `.githooks`.
+
+| Hook            | Runs                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pre-commit`    | Rector, Pint, `vp fmt` and `vp lint --fix` on staged files, then re-stages them. A partially staged file is only checked, never rewritten. |
+| `commit-msg`    | Rejects a subject that is not a conventional commit.                                                                                       |
+| `pre-push`      | The full gate: `composer test`, dead code, unused packages, knip, wiki lint, audit, duplicate code. A few minutes; needs Xdebug loaded.    |
+| `post-merge`    | `composer install` or `bun install` when `composer.lock` or `bun.lock` changed.                                                            |
+| `post-checkout` | The same dependency sync on a branch switch.                                                                                               |
+| `post-commit`   | Graph rebuilds, below.                                                                                                                     |
 
 After every commit, `.githooks/post-commit` refreshes four graphs so they stay in
 sync with the code:

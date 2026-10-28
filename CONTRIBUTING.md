@@ -6,12 +6,13 @@ request merged.
 ## Setup
 
 ```bash
-composer setup   # install, key, migrate, build — also wires up the git hooks
+composer setup   # install, key, migrate, Chromium, build — also wires up the git hooks
 composer dev     # server, queue, logs and Vite
 ```
 
 `php artisan app:doctor` tells you what is wrong with the machine if any of that
-misbehaves. Longer setup notes live in [SETUP.md](SETUP.md).
+misbehaves. On a new machine, load a coverage driver first;
+[SETUP.md](SETUP.md#first-time-on-a-new-machine) has the steps.
 
 ## Commit messages
 
@@ -30,9 +31,10 @@ changelog.
 
 ## Formatting
 
-Do not spend time on it. Push your branch and the autofix bot runs Rector, Pint
-and the frontend formatter and commits the result back. Locally,
-`composer lint` does the same thing. Formatting is never a review comment here.
+Do not spend time on it. The `pre-commit` hook runs Rector, Pint and the
+frontend formatter on your staged files and stages the result. On a push, the
+autofix bot does the same and commits it back. Formatting is never a review
+comment here.
 
 (The bot is skipped on pull requests from forks, on purpose — it would need
 write access to a branch we do not control. On a fork, run `composer lint`
@@ -53,8 +55,8 @@ All of these run on every pull request and all of them have to be green:
 | `composer test:wiki`      | Wiki pages that cite a moved file, or that have gone stale              |
 | gitleaks                  | Anything that looks like a credential                                   |
 
-Run `composer test` before you push. `composer test:fast` is the quick loop
-while you work.
+The `pre-push` hook runs all of these except gitleaks, so a red gate stops the
+push on your machine. `composer test:fast` is the quick loop while you work.
 
 The SQLite, mutation and eval runs happen on a schedule and never block you.
 
