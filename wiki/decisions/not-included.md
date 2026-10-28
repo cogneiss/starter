@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-10-28
+updated: 2026-10-29
 ---
 
 # Not included
@@ -102,6 +102,13 @@ above as _only useful to an AI assistant layer that is not here_ — is now half
 answered: `app/Ai/ConfirmableActions.php` is the registry of writes an agent may
 propose ([[domains/ai-confirm-tokens]]). It is explicit rather than derived from
 an adapter, because a write an agent can reach is worth listing by hand.
+
+## Developer tooling
+
+Three language-level code graphs (graphify, code-review-graph and gitnexus) were
+rebuilt after every commit until 2026-10-29. They were dropped for lack of
+evidence that they made agents more accurate here; `FEATURES.md` now lists
+Laravel Brain as the only code graph ([[architecture/graph-before-grep]]).
 
 ## Drafted, not shipped
 
