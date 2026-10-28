@@ -5,7 +5,7 @@
 # A file that also has unstaged edits is only checked: fixing it would stage hunks
 # you held back. What the fixers cannot repair still fails the commit.
 
-php_files="$(git diff --cached --name-only --diff-filter=ACMR -- '*.php')"
+php_files="$(git diff --cached --name-only --diff-filter=ACMR -- '*.php' ':(exclude)*.blade.php')"
 web_files="$(git diff --cached --name-only --diff-filter=ACMR -- 'resources/*.ts' 'resources/*.tsx' 'resources/*.css')"
 
 fully_staged() {
