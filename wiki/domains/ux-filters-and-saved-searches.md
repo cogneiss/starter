@@ -61,8 +61,12 @@ which `tests/Feature/Resources/FacetScopeTest.php` covers.
 Serialisation is symmetric by construction: `ResourceFilter::serialize()` writes
 what `normalize()` reads. `tests/Feature/Resources/UrlRoundTripTest.php` takes a
 view, writes its URL, reopens it and asserts the same rows, sort, page and
-filter values come back. `tests/Mutations/phase4-serializer.patch` breaks the
-serializer and that test is what notices.
+filter values come back. Another case feeds it messy input (defaults spelled
+out, an unknown sort column, nonsense paging, malformed filter values, a padded
+search term) and asserts the URL it writes is a fixed point: reopening it writes
+the same URL again, so a shared link never drifts on the next click.
+`tests/Mutations/phase4-serializer.patch` breaks the serializer and the round-trip
+cases are what notice.
 
 ## Saved searches
 

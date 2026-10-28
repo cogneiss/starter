@@ -53,6 +53,24 @@ it('carries every filter type through the URL, not just the scalar ones', functi
         ->and($reopened->filters[$key] ?? null)->not->toBeNull();
 })->with(['status', 'tier', 'active', 'tokens', 'used']);
 
+it('settles on one canonical URL however the parameters arrive', function (array $parameters): void {
+    $resource = new AuditLogResource();
+
+    $canonical = ResourceQuery::fromRequest(requestFor($parameters), $resource)->toQueryParameters($resource);
+    $again = ResourceQuery::fromRequest(requestFor($canonical), $resource)->toQueryParameters($resource);
+
+    expect($again)->toBe($canonical);
+})->with([
+    'nothing' => [[]],
+    'defaults spelled out' => [['q' => '', 'page' => '1', 'dir' => 'asc', 'f' => []]],
+    'unknown sort column' => [['sort' => 'password', 'dir' => 'desc']],
+    'direction without a sort' => [['dir' => 'desc']],
+    'nonsense paging' => [['page' => '-4', 'per' => '7']],
+    'unknown filter key' => [['f' => ['nope' => 'x', 'status' => 'ok']]],
+    'malformed filter values' => [['f' => ['tokens' => 'abc', 'used' => ['from' => 'not-a-date'], 'tier' => 'cheap']]],
+    'padded term' => [['q' => '  summarise  ']],
+]);
+
 /**
  * @param  array<string, mixed>  $parameters
  */
