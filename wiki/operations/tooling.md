@@ -54,7 +54,7 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
 - `.ai/rules/` holds the committed, path-scoped project rules, mapped by
   `.ai/rules/index.md`. Boost's `record-rule` tool adds to it, so a decision
   reached once is inherited rather than re-derived.
-- **Code knowledge graphs** answer structural questions from an index
+- **A code knowledge graph** (Laravel Brain) answers structural questions from an index
   ([[operations/code-knowledge-graphs]]).
 
 ## Security tooling

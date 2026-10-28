@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-10-28
+updated: 2026-10-29
 ---
 
 # Setting up a clone
@@ -83,8 +83,8 @@ test is allowed to reach a provider ([[domains/ai-evals]]).
 
 `composer install` points `core.hooksPath` at `.githooks`, which wires up the
 commit-message check ([[operations/releases]]), the fix-and-check pre-commit, the
-full pre-push gate, the dependency sync after a pull, and the graph rebuild
-([[operations/code-knowledge-graphs]]). Nothing to run by hand
+full pre-push gate, the dependency sync after a pull, and the Laravel Brain
+rescan ([[operations/code-knowledge-graphs]]). Nothing to run by hand
 ([[operations/contributing]]).
 
 The pre-push gate measures coverage, so PHP needs a coverage driver. Herd ships
@@ -98,6 +98,3 @@ xdebug.mode=off
 ```
 
 `php artisan app:doctor` reports a missing driver.
-
-The optional graph tools are `pip`/`npm` installs and degrade gracefully when
-absent — the hook detects a missing binary and skips it.

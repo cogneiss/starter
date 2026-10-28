@@ -363,9 +363,6 @@ reason, or fix the code.
   ship (Laravel best practices, AI SDK, Fortify, Inertia+React, Wayfinder,
   testing best practices, Tailwind, Pennant, Socialite, infer-conventions),
   mirrored into `.agents/`, `.claude/`, `.cursor/`, `.github/`, and `.junie/`.
-  Six `gitnexus-*` skills (CLI, exploring, debugging, impact analysis,
-  refactoring, guide) ship in `.agents/` and `.claude/` for anyone who installs
-  gitnexus.
 - `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.junie/guidelines.md`, and
   `opencode.json` ship configured. `boost.json` records which agents and skills
   are installed; `php artisan boost:install --guidelines --skills` regenerates
@@ -373,7 +370,7 @@ reason, or fix the code.
   (`cp AGENTS.md GEMINI.md`) after a Boost update.
 - `.ai/rules/` holds the committed, path-scoped project rules; `.ai/rules/index.md`
   maps globs to rule files, and Boost's `record-rule` tool adds to it.
-- **Code knowledge graphs** wired into a post-commit hook, so AI agents answer
+- **A code knowledge graph** (Laravel Brain) wired into a post-commit hook, so AI agents answer
   structural questions from an index instead of reading dozens of files — see
   below.
 - **gitleaks** scans every pull request, and the full history on a schedule, so
@@ -407,40 +404,29 @@ reason, or fix the code.
   `storage`/`bootstrap/cache`. Every failure prints the command that fixes it.
   `--json` for scripts; exit code 1 if anything failed.
 
-### Code knowledge graphs
+### Code knowledge graph
 
-Four indexes of this codebase, rebuilt automatically after every commit by
-`.githooks/post-commit` (wired up by `composer install`, nothing to run by hand).
-They exist to cut the tokens an AI agent burns rediscovering structure — a
-question like "what breaks if I change this" is one command instead of a
-file-by-file crawl.
-
-| Tool                                                                | Answers                                                                                                                | Ships as                         |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| [Laravel Brain](https://github.com/laramint/laravel-brain)          | Routes, controllers, models and relationships, events, listeners, jobs, middleware, policies, DB operations per method | `require-dev`, already installed |
-| [graphify](https://pypi.org/project/graphifyy/)                     | "How does X relate to Y", where a concept lives                                                                        | optional, `pip`                  |
-| [code-review-graph](https://github.com/tirth8205/code-review-graph) | Blast radius, callers, dead code, large functions                                                                      | optional, `pip`                  |
-| [gitnexus](https://github.com/looptech-ai/gitnexus)                 | Execution flows, a symbol's callers and callees, diff-to-flow mapping                                                  | optional, `npm`                  |
-
-Laravel Brain is the one to reach for first: the other three are language-level
-and see symbols and calls, while only Laravel Brain knows that a route binds to a
-controller or that an event has listeners. Its context exporter returns a
-budgeted slice of a single request path —
+[Laravel Brain](https://github.com/laramint/laravel-brain) (`require-dev`,
+already installed) indexes routes, controllers, models and relationships,
+events, listeners, jobs, middleware, policies and DB operations per method. It is
+rebuilt automatically after every commit by `.githooks/post-commit` (wired up by
+`composer install`, nothing to run by hand). It exists to cut the tokens an AI
+agent burns rediscovering structure. Its context exporter returns a budgeted
+slice of a single request path:
 
 ```bash
 php artisan brain:export-context --route=/settings/profile --budget=2000
 ```
 
-— giving the route's middleware, call chain, complexity hotspots and queries in a
-few hundred words, instead of opening the controller, form request, action and
+That gives the route's middleware, call chain, complexity hotspots and queries in
+a few hundred words, instead of opening the controller, form request, action and
 model. There is also an interactive graph viewer at `/_laravel-brain` in dev.
 
-`.ai/rules/general.md` tells every AI agent which tool answers which question, so
-this routing costs nothing until a query is actually run. The three optional
-tools degrade gracefully — the hook detects a missing binary and skips it. None
-of the four run as an MCP server on purpose: an always-on MCP server re-sends its
-tool schemas every conversation turn whether you use it or not, which is the
-opposite of the point. Setup details are in [SETUP.md](SETUP.md).
+`.ai/rules/general.md` tells every AI agent when to use it, so the routing costs
+nothing until a query is actually run. It does not run as an MCP server on
+purpose: an always-on MCP server re-sends its tool schemas every conversation
+turn whether you use it or not, which is the opposite of the point. Setup details
+are in [SETUP.md](SETUP.md).
 
 ### Agent and AI-native DX
 

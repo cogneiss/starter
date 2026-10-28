@@ -5,14 +5,15 @@ supersedes: []
 code_refs:
     - .githooks/post-commit
     - .ai/rules/general.md
-updated: 2026-08-24
+    - .claude/settings.json
+updated: 2026-10-29
 ---
 
 # Why agents query a graph before grepping
 
-Four code indexes are rebuilt after every commit by `.githooks/post-commit`. An
-agent asking a structural question is meant to query one of them instead of
-fanning out with grep.
+Laravel Brain's index is rebuilt after every commit by `.githooks/post-commit`.
+An agent asking a structural question is meant to query it instead of fanning out
+with grep.
 
 ## The economics
 
@@ -26,19 +27,26 @@ few hundred words:
 php artisan brain:export-context --route=/settings/profile --budget=2000
 ```
 
-Laravel Brain comes first among the four because it is the only one that knows
-framework wiring: a route binds to a controller, a model has relationships, an
-event has listeners. The other three are language-level and see symbols and calls.
+Laravel Brain earns its place because it knows framework wiring: a route binds
+to a controller, a model has relationships, an event has listeners.
 
-## Why none of them run as an MCP server
+## Why the other three graphs were dropped
+
+Until 2026-10-29 the hook also rebuilt three language-level graphs: graphify,
+code-review-graph and gitnexus. They were removed because none had evidence of
+making agents more accurate on this codebase, while each added an install step,
+a hook stage, ignored artifacts and, for gitnexus, six committed skill folders.
+They saw symbols and calls, which the PHP and TypeScript language servers enabled
+in `.claude/settings.json` already answer. Laravel Brain was kept because it
+answers questions those tools cannot.
+
+## Why it does not run as an MCP server
 
 An always-on MCP server re-sends its tool schemas on every conversation turn and
 on every subagent spawn, whether or not it is used. That is a fixed cost paid to
 avoid a variable one, which inverts the point of the whole setup. The CLIs cost
-nothing until invoked, which is why `.ai/rules/general.md` is a routing table
-rather than a set of connected servers, and why `gitnexus analyze` runs with
-`--skip-agents-md` in the hook — left alone it rewrites the agent config files to
-point at its MCP tools.
+nothing until invoked, which is why `.ai/rules/general.md` routes agents to the
+CLI rather than to a connected server.
 
 The same argument rules out `brain:generate-rules`: it writes a project snapshot
 into `CLAUDE.md`, which goes stale on the next commit and is re-read on every

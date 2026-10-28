@@ -29,7 +29,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Automated Code Quality**: Pre-configured tools ensure consistent, pristine code across your entire team
 - **Just Better Laravel Defaults**: Thanks to **[Essentials](https://github.com/nunomaduro/essentials)** / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
-- **Code Knowledge Graphs**: Four indexes of the codebase, rebuilt after every commit, so AI agents answer "what calls this" and "what breaks if I change it" from an index instead of burning tokens crawling files
+- **Code Knowledge Graph**: Laravel Brain indexes routes, models, events and jobs, rebuilt after every commit, so AI agents pull a request path's call chain from an index instead of burning tokens crawling files
 - **An AI layer, not a chatbot**: `laravel/ai` wired into the same architecture as everything else — agents scoped to one organization, read-only tools that call `authorizeFor()`, writes that go through a single-use confirm token, untrusted text fenced before it reaches a model, and every run metered against a per-org budget. It boots and passes the whole suite with zero keys configured, and no test may reach a provider ([`app/Ai/`](app/Ai), [wiki](wiki/domains/ai-layer-overview.md))
 - **A UX layer, not a component dump**: A ⌘K command palette over every registered resource, and a server-driven list kit — search, faceted filters, sorting, column controls, saved views, bulk actions, CSV export and a detail drawer — where every one of those happens in a scoped query, so a foreign id is a 404 and a filtered export cannot leak another organization's rows. Plus live notifications, Precognition forms, an onboarding checklist, scanned bulk imports, brand theming and localization ([`resources/js/components/data-table.tsx`](resources/js/components/data-table.tsx), [wiki](wiki/domains/ux-list-kit.md))
 - **A platform ops layer**: Per-organization API tokens (hashed, shown once) driving a registry-backed read API at `/api/v1`, usage logging with per-plan rate tiers, an append-only audit log, GDPR export and anonymising deletion, a `/health` endpoint, Sentry and PostHog seams that stay silent with no keys, signed outgoing webhook deliveries with retries and an SSRF guard, an enforced CSP, and a super-admin control plane built on the same list kit ([`routes/api.php`](routes/api.php), [`app/Webhooks/`](app/Webhooks), [`app/Admin/`](app/Admin))
@@ -137,11 +137,10 @@ You should see 100% test coverage and all quality checks passing.
 - `composer test:audit`, `composer test:dead-code`, `composer test:deps`, `composer test:knip` - The other blocking CI gates
 - `composer test:sqlite`, `composer test:mutate`, `composer test:evals` - The scheduled runs, on demand
 
-### Code knowledge graphs
+### Code knowledge graph
 
 - `php artisan brain:scan` - Rescans the Laravel graph (routes, models, events, jobs). Runs automatically after every commit
 - `php artisan brain:export-context --route=/settings/profile` - Budgeted AI context for one request path
-- Three more graph tools (graphify, code-review-graph, gitnexus) are optional — see [SETUP.md](SETUP.md)
 
 ### Maintenance
 

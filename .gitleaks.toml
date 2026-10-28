@@ -30,10 +30,6 @@ paths = [
     '''^database/factories/.*''',
     # This file's own regexes look like secrets to the scanner.
     '''^\.gitleaks\.toml$''',
-    # Generated dependency-graph artifacts; rebuilt, never authored.
-    '''^graphify-out/.*''',
-    '''^\.gitnexus/.*''',
-    '''^\.code-review-graph/.*''',
     # Installed dependencies. Not committed, and their maintainers' test keys
     # and PEM fixtures are not this repo's problem. `gitleaks git` never sees
     # them; this only keeps the working-tree scan honest.
