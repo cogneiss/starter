@@ -20,7 +20,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Password() {
+type Props = {
+    passwordRules: string;
+};
+
+export default function Password({ passwordRules }: Props) {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -112,6 +116,7 @@ export default function Password() {
                                 onBlur={() => form.validate('password')}
                                 className="mt-1 block w-full"
                                 autoComplete="new-password"
+                                passwordrules={passwordRules}
                                 placeholder="New password"
                             />
 
@@ -138,6 +143,7 @@ export default function Password() {
                                 }
                                 className="mt-1 block w-full"
                                 autoComplete="new-password"
+                                passwordrules={passwordRules}
                                 placeholder="Confirm password"
                             />
 
