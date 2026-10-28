@@ -5,6 +5,7 @@ supersedes: []
 code_refs:
     - config/essentials.php
     - tests/Pest.php
+    - tests/Unit/Conventions/MassAssignmentBoundaryTest.php
 updated: 2026-10-28
 ---
 
@@ -21,6 +22,9 @@ On by default:
 - Automatic eager loading, and aggressive prefetching.
 - Immutable dates.
 - Unguarded models (the form requests are the boundary, not `$fillable`).
+  `tests/Unit/Conventions/MassAssignmentBoundaryTest.php` keeps that boundary
+  real: it fails if a controller or action reads raw request input such as
+  `$request->all()` or `$request->except()`.
 - Destructive command prohibition in production.
 - Forced HTTPS outside local.
 - A default password for factories.
