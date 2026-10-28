@@ -34,8 +34,14 @@ path="$(field tool_input file_path)"
 path="${path#"$CLAUDE_PROJECT_DIR"/}"
 
 case "$path" in
-    phpstan*.neon|rector.php|pint.json|knip.json|.sloppy-baseline.json|vite.config.ts|tests/Unit/ArchTest.php|.github/workflows/*|.githooks/*|.claude/settings.json|.claude/hooks/*)
+    phpstan*.neon|rector.php|pint.json|knip.json|.sloppy-baseline.json|vite.config.ts|tests/Unit/ArchTest.php|tests/Mutations/*|.github/workflows/*|.githooks/*|.claude/settings.json|.claude/hooks/*|bin/worktree-setup)
         decide ask "$path is part of the quality gate. A human approves every change to it." ;;
 esac
+
+# Once /contract freezes its criteria (feature_list.json exists), the contract
+# is what the work is graded against, so rewriting it to fit the code needs a human.
+if [ "$path" = ".work/contract.md" ] && [ -f "$CLAUDE_PROJECT_DIR/.work/feature_list.json" ]; then
+    decide ask "The contract is frozen. Change the code to meet it, or have a human approve the change of scope."
+fi
 
 exit 0
