@@ -4,7 +4,8 @@ status: current
 supersedes: []
 code_refs:
     - .ai/rules/index.md
-updated: 2026-09-01
+    - config/boost.php
+updated: 2026-10-28
 ---
 
 # Wiki index
@@ -31,7 +32,11 @@ Answer in this order, and put it in exactly one place:
 1. **Is it a constraint that must hold every time a matching file is touched?**
    A rule. `.ai/rules/`, terse and imperative, with a `paths:` glob and a row in
    `.ai/rules/index.md`. Rules are loaded automatically, so they stay short —
-   anything long enough to skim is too long to be a rule.
+   anything long enough to skim is too long to be a rule. `.ai/rules/boost/` is
+   generated, not hand-written: Boost renders each `@scoped([...])` block in
+   `.ai/guidelines/*.blade.php` into it (`rules.scoped_guidelines` in
+   `config/boost.php`). Claude Code reads the whole tree through the
+   `.claude/rules` symlink.
 2. **Is it a procedure for a task — "when you are doing X, do Y, in this order"?**
    A skill. `.ai/skills/<name>/SKILL.md`, authored here and published into the
    agent directories by `php artisan boost:install --skills`. Five ship:
