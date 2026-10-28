@@ -36,7 +36,8 @@ export default defineConfig({
             'typescript/switch-exhaustiveness-check': 'error',
             'typescript/no-floating-promises': 'error',
             'react/no-unstable-nested-components': 'error',
-            'jsx-a11y/no-autofocus': 'warn',
+            // Every autoFocus sits on the first field of a single-purpose auth form or dialog, where focus belongs there anyway.
+            'jsx-a11y/no-autofocus': 'off',
             // Flags valid ARIA widgets (combobox listbox/option, splitter separator, grouped fields) that have no native tag equivalent.
             'jsx-a11y/prefer-tag-over-role': 'off',
             'better-tailwindcss/no-unknown-classes': 'error',
