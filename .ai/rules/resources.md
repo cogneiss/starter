@@ -1,6 +1,9 @@
 ---
 paths:
-  - 'app/Models/**, app/Data/**, app/Resources/**, app/Http/Controllers/**'
+  - 'app/Models/**'
+  - 'app/Data/**'
+  - 'app/Resources/**'
+  - 'app/Http/Controllers/**'
 ---
 
 # Resources

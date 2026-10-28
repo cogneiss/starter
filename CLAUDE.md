@@ -4,13 +4,7 @@
 # AI layer guidelines
 
 - The AI layer lives in `app/Ai` (agents, tools, blocks, confirmable actions, middleware) and `app/Mcp`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing any of it.
-- Tools read; they never write. No `DB` facade, no `ConsumeConfirmToken`. `App\Ai\Tools\ProposeAction` is the one exemption and it writes only the proposal. `tests/Unit/ArchTest.php` fails the build otherwise.
-- Every tool calls `authorizeFor()` on the acting user before returning anything. A tool is a new caller of the existing policies, not an exemption from them.
-- Writes go through propose-then-confirm: register the action in `app/Ai/ConfirmableActions.php`, return a proposal, and let a human spend the single-use token at `POST ai/confirm/{token}`. `ConsumeConfirmToken` stamps `consumed_at` in the same transaction as the write, so a replayed token is refused.
-- Fence untrusted input with `App\Support\UntrustedContent::fence()` before it reaches a model. Never concatenate a record's field into an instruction string.
-- Never write a model-name literal in an agent. Pick a tier — `cheap` or `smart` — and let `config/ai.php` map it to a provider and model.
 - No real provider call in the blocking suite. `tests/Pest.php` fakes every agent under `app/Ai/Agents` with `preventStrayPrompts()`; `tests/Evals/` is the only exception and it is excluded from `composer test`.
-- Agents implement `App\Ai\Contracts\OrganizationScoped` and `Laravel\Ai\Contracts\HasMiddleware`, and never write.
 - `laravel/mcp` arrives transitively through `laravel/ai` 1.x and `laravel/boost` (1.x). Do not require it directly; it moves with `laravel/ai`.
 - Never print, log or commit a provider key. `.env.example` keeps them blank.
 
@@ -22,32 +16,7 @@
 - Actions live in `app/Actions`, they are named based on what they do, with no suffix.
 - Actions will be called from many different places: jobs, commands, HTTP requests, API requests, MCP requests, and more.
 - Create dedicated Action classes for business logic with a single `handle()` method.
-- Inject dependencies via constructor using private properties.
 - Create new actions with `php artisan make:action "{name}" --no-interaction`
-- Wrap complex operations in `DB::transaction()` within actions when multiple models are involved.
-- Some actions won't require dependencies via `__construct` and they can use just the `handle()` method.
-
-<!-- Example action class -->
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Actions;
-
-final readonly class CreateFavorite
-{
-    public function __construct(private FavoriteService $favorites)
-    {
-        //
-    }
-
-    public function handle(User $user, string $favorite): bool
-    {
-        return $this->favorites->add($user, $favorite);
-    }
-}
-```
 
 === .ai/general rules ===
 
@@ -60,12 +29,8 @@ final readonly class CreateFavorite
 # Platform ops guidelines
 
 - The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing any of it.
-- Every API request resolves its organization from the token, never from a header, a route parameter or a request body. `EnsureTokenMatchesOrganization` enforces it; `tests/Feature/ApiTokenScopeTest.php` attacks it.
 - Scope at the query level. A foreign id returns 404, not 403 — in the API and in the admin area, where `/admin` itself is a 404 without the `platform` ability.
 - Tokens are shown once at creation and stored hashed. Never log a token, a webhook secret, a signature or a provider key; `tests/Feature/WebhookSecretLogCanaryTest.php` sweeps for a canary.
-- The read API is registry-driven and read-only. A resource joins by registration; there is no write endpoint, and that absence is deliberate.
-- Rate limits come from `config/api.php` and the organization's tier from the `api-rate-tier` Pennant feature. Usage rows come from `LogApiRequest` and are pruned by `api:prune-logs`.
-- Webhook deliveries are signed with an HMAC of `{timestamp}.{body}`. `SsrfGuard` checks the destination at save time and again after DNS resolution at delivery time — the second check defeats rebinding; never remove it.
 - Sentry and PostHog are seams: blank keys bind null implementations and the whole suite boots with an empty `.env`. `ZeroKeyBootTest` fails a change that makes anything require a key.
 - `.env.example` keeps every provider key blank.
 
@@ -75,12 +40,7 @@ final readonly class CreateFavorite
 
 - The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it.
 - Lists are server-driven. Search, filters, sorting, pagination, column visibility, saved views, bulk actions and CSV export all happen in the query, through `ListsResources`. Never filter a collection in React.
-- Scoping is query-level. `findListed()` resolves a record inside the organization's own query, so a foreign id is a 404. A post-fetch `if ($record->organization_id !== ...)` is not a control.
-- The CSV export is the same scoped, filtered query as the list. An export that rebuilds its own query is a silent bulk leak; `tests/Feature/CrossOrgLeakTest.php` covers it.
-- A bulk action carries either explicit ids or `allMatching`, a predicate `App\Actions\ApplyBulkAction` re-runs against the scoped query. Every record goes through the gate individually, never once for the whole selection.
-- `ResourceQuery::fromRequest()` and `ResourceQuery::toQueryParameters()` are the only two places the URL encoding exists. Change both or a shared link stops reproducing the screen.
 - Forms validate live through Precognition against the same form request. Never restate a validation rule in TypeScript; `tests/Feature/PrecognitionParityTest.php` fails on drift.
-- An upload is written as a temporary record and scanned before it is promoted. With no scanner configured the kit uses `NullScanner` and promotes on trust, which `app:doctor` reports rather than hides.
 - User-facing strings live in `lang/<locale>/` and reach the browser through `resources/js/lib/i18n.ts`. A key present in one locale and missing from another fails the suite.
 - Colours come from the brand tokens and durations from `resources/js/lib/motion.ts`, which returns zero under reduced motion. No hex literals and no hard-coded durations in components.
 
@@ -176,12 +136,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
 
-=== deployments rules ===
-
-# Deployment
-
-- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
-
 === tests rules ===
 
 # Test Enforcement
@@ -223,23 +177,9 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
 
-### Model Creation
-
-- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `php artisan make:model --help` to check the available options.
-
-## APIs & Eloquent Resources
-
-- For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
-
 ## URL Generation
 
 - When generating links to other pages, prefer named routes and the `route()` function.
-
-## Testing
-
-- When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
-- Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
-- When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
 
 === wayfinder/core rules ===
 
@@ -253,22 +193,6 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 - If you have modified any PHP files, you must run `vendor/bin/pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test --format agent`, simply run `vendor/bin/pint --format agent` to fix any formatting issues.
-
-=== pest/core rules ===
-
-# Pest
-
-- This project uses Pest. Create tests with `php artisan make:test --pest {name}`.
-- Do not include the test suite directory in `{name}`. Use `SomeFeatureTest`, not `Feature/SomeFeatureTest`.
-- Read the `testing-best-practices` skill for guidance on coverage, naming, structure, dependency isolation, and review.
-- Do not delete tests or test files without approval. They are part of the application.
-
-## Running Tests
-
-- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `php artisan test --compact`.
-- Rerun a test after each change to it.
-- Run `vendor/bin/pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
-- After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
 
 === inertia-react/core rules ===
 
