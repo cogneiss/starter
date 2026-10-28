@@ -2,20 +2,26 @@
 #
 # PreToolUse guard. An agent may not loosen the quality gates on its own:
 # edits to gate config need a human to approve, and skipping git hooks is refused.
+# JSON is read with PHP, which every contributor already has, so the guard
+# never silently switches off on a machine without jq.
 
-command -v jq >/dev/null 2>&1 || exit 0
+command -v php >/dev/null 2>&1 || exit 0
 
 input="$(cat)"
-tool="$(printf '%s' "$input" | jq -r '.tool_name // empty')"
+
+field() {
+    printf '%s' "$input" | php -r '$v = json_decode(stream_get_contents(STDIN), true); foreach (array_slice($argv, 1) as $k) { $v = $v[$k] ?? ""; } echo is_string($v) ? $v : "";' -- "$@"
+}
 
 decide() {
-    jq -n --arg decision "$1" --arg reason "$2" \
-        '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: $decision, permissionDecisionReason: $reason}}'
+    php -r 'echo json_encode(["hookSpecificOutput" => ["hookEventName" => "PreToolUse", "permissionDecision" => $argv[1], "permissionDecisionReason" => $argv[2]]]);' -- "$1" "$2"
     exit 0
 }
 
+tool="$(field tool_name)"
+
 if [ "$tool" = "Bash" ]; then
-    command="$(printf '%s' "$input" | jq -r '.tool_input.command // empty')"
+    command="$(field tool_input command)"
     case "$command" in
         *--get*core.hooksPath*) ;;
         *--no-verify*|*core.hooksPath*)
@@ -24,7 +30,7 @@ if [ "$tool" = "Bash" ]; then
     exit 0
 fi
 
-path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')"
+path="$(field tool_input file_path)"
 path="${path#"$CLAUDE_PROJECT_DIR"/}"
 
 case "$path" in

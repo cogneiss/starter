@@ -1,4 +1,10 @@
 #!/bin/sh
+
+# On a branch switch, install whatever the lock files now ask for.
+if [ "$3" = 1 ]; then
+    "$(dirname "$0")/sync-deps" "$1" "$2"
+fi
+
 # graphify-checkout-hook-start
 # Auto-rebuilds the knowledge graph (code only) when switching branches.
 # Installed by: graphify hook install

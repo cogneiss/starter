@@ -1,8 +1,20 @@
 #!/usr/bin/env sh
 #
-# The static gates CI would fail on, run before the push leaves the machine.
-# phpstan-strict.neon includes phpstan.neon, so one run covers both levels.
-# The test suite stays in CI: it needs Postgres and takes minutes.
+# The whole local gate, run before the push leaves the machine, so nothing has to
+# be remembered and CI is a second opinion rather than the first. composer test
+# covers lint, Larastan + tsc, strict PHPStan, 100% type coverage and the suite at
+# 100% coverage (Xdebug must be loadable; see wiki/operations/setup.md). The
+# static checks follow, then a sloppy report that never blocks. Mutation testing
+# stays on demand: composer test:mutate. Takes a few minutes.
 
-vendor/bin/phpstan analyse -c phpstan-strict.neon --memory-limit=2G --no-progress || exit 1
-node_modules/.bin/tsc --noEmit || exit 1
+set -e
+
+composer test
+composer test:dead-code
+composer test:deps
+composer test:knip
+composer test:wiki
+composer test:audit
+bun run test:dupes
+
+vendor/bin/sloppy diff '@{upstream}' --merge-base --fail-on=never || true

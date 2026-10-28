@@ -7,6 +7,8 @@ code_refs:
     - .githooks/commit-msg
     - .githooks/pre-commit
     - .githooks/pre-push
+    - .githooks/post-merge
+    - .githooks/sync-deps
     - .claude/settings.json
 updated: 2026-10-28
 ---
@@ -24,15 +26,24 @@ prefixes to pick the next version and write the changelog
 
 ## Format and static checks run before code leaves the machine
 
-`.githooks/pre-commit` checks only the staged files: Pint for PHP, `vp fmt` for
-TypeScript and CSS. It never rewrites anything, so a partly staged file can't pick
-up hunks you didn't stage. Run `composer lint`, stage again and commit.
+`.githooks/pre-commit` fixes the staged files and stages the result: Rector and
+Pint for PHP, `vp fmt` and `vp lint --fix` for TypeScript and CSS. A file that
+also has unstaged edits is only checked, never rewritten, so it can't pick up
+hunks you held back. Whatever the fixers can't repair fails the commit.
 
-`.githooks/pre-push` runs PHPStan with `phpstan-strict.neon` and `tsc --noEmit`,
-which takes a few seconds. The test suite stays in CI, since it needs Postgres.
+`.githooks/pre-push` runs the whole gate, so CI is a second opinion rather than
+the first: `composer test` (lint, Larastan and `tsc`, strict PHPStan, 100% type
+coverage, the suite at 100% coverage), then dead code, unused Composer packages,
+knip, the wiki lint, the dependency audit and the duplicate-code check. A Sloppy
+report on the pushed range prints last and never blocks. It takes a few
+minutes. Mutation testing stays on demand (`composer test:mutate`).
+
+`.githooks/post-merge`, and `.githooks/post-checkout` on a branch switch, run
+`composer install` or `bun install` when `composer.lock` or `bun.lock` changed.
 
 Claude Code sessions get two extra project hooks from `.claude/settings.json`.
-The first formats each file right after the agent writes it. The second refuses
+Both read their input with PHP, so they need nothing beyond what the project
+already requires. The first formats each file right after the agent writes it. The second refuses
 any command that skips git hooks, and asks a human before an agent edits gate
 config: PHPStan, Rector, Pint, knip, the Sloppy baseline, `vite.config.ts`, the
 arch test, the workflows, and the hooks themselves.

@@ -1,26 +1,70 @@
 #!/usr/bin/env sh
 #
-# Refuse a commit whose staged files are not formatted. Check mode only: the
-# hook never rewrites files, so a partially staged file cannot pick up hunks
-# you did not stage. Run `composer lint` to fix, then stage again.
+# Fix, then refuse. Staged files are run through Rector, Pint, vp fmt and vp lint
+# --fix, and the result is staged again, so nobody has to remember composer lint.
+# A file that also has unstaged edits is only checked: fixing it would stage hunks
+# you held back. What the fixers cannot repair still fails the commit.
 
 php_files="$(git diff --cached --name-only --diff-filter=ACMR -- '*.php')"
 web_files="$(git diff --cached --name-only --diff-filter=ACMR -- 'resources/*.ts' 'resources/*.tsx' 'resources/*.css')"
+
+fully_staged() {
+    for file in "$@"; do
+        git diff --quiet -- "$file" && printf '%s\n' "$file"
+    done
+}
+
+export NODE_OPTIONS='--experimental-strip-types'
+
+# Pint can need a second pass (statement_indentation after an inserted blank line),
+# and its shared cache would then hide the leftover from --test. Each run below
+# gets a fresh cache.
+cache="$(mktemp -d)"
+trap 'rm -rf "$cache"' EXIT
+
+# shellcheck disable=SC2086
+php_fix="$(fully_staged $php_files)"
+# shellcheck disable=SC2086
+web_fix="$(fully_staged $web_files)"
+
+if [ -n "$php_fix" ]; then
+    # shellcheck disable=SC2086
+    vendor/bin/rector process $php_fix --no-progress-bar >/dev/null
+    # shellcheck disable=SC2086
+    vendor/bin/pint --quiet --cache-file="$cache/fix" $php_fix
+    # shellcheck disable=SC2086
+    vendor/bin/pint --quiet --cache-file="$cache/refix" $php_fix
+    # shellcheck disable=SC2086
+    git add $php_fix
+fi
+
+if [ -n "$web_fix" ]; then
+    # shellcheck disable=SC2086
+    node_modules/.bin/vp fmt $web_fix >/dev/null
+    # shellcheck disable=SC2086
+    node_modules/.bin/vp lint --fix $web_fix >/dev/null 2>&1
+    # shellcheck disable=SC2086
+    git add $web_fix
+fi
 
 status=0
 
 if [ -n "$php_files" ]; then
     # shellcheck disable=SC2086
-    vendor/bin/pint --test $php_files || status=1
+    vendor/bin/rector process $php_files --dry-run --no-progress-bar || status=1
+    # shellcheck disable=SC2086
+    vendor/bin/pint --test --cache-file="$cache/check" $php_files || status=1
 fi
 
 if [ -n "$web_files" ]; then
     # shellcheck disable=SC2086
-    NODE_OPTIONS='--experimental-strip-types' node_modules/.bin/vp fmt --check $web_files || status=1
+    node_modules/.bin/vp fmt --check $web_files || status=1
+    # shellcheck disable=SC2086
+    node_modules/.bin/vp lint $web_files || status=1
 fi
 
 if [ "$status" -ne 0 ]; then
-    echo "pre-commit: staged files are not formatted. Run composer lint, stage, and commit again." >&2
+    echo "pre-commit: fix what is reported above (partially staged files are checked, not fixed), stage, and commit again." >&2
 fi
 
 exit "$status"

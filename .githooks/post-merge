@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+#
+# After a pull, install whatever the lock files now ask for.
+
+"$(dirname "$0")/sync-deps" ORIG_HEAD HEAD

@@ -82,8 +82,22 @@ test is allowed to reach a provider ([[domains/ai-evals]]).
 ## Git hooks
 
 `composer install` points `core.hooksPath` at `.githooks`, which wires up the
-commit-message check ([[operations/releases]]) and the graph rebuild
-([[operations/code-knowledge-graphs]]). Nothing to run by hand.
+commit-message check ([[operations/releases]]), the fix-and-check pre-commit, the
+full pre-push gate, the dependency sync after a pull, and the graph rebuild
+([[operations/code-knowledge-graphs]]). Nothing to run by hand
+([[operations/contributing]]).
+
+The pre-push gate measures coverage, so PHP needs a coverage driver. Herd ships
+Xdebug without loading it. Add it to Herd's `php.ini` (Herd → Settings → PHP →
+Open php.ini) with the mode off, so it costs nothing until `composer test:unit`
+sets `XDEBUG_MODE=coverage`:
+
+```ini
+zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-85-arm64.so
+xdebug.mode=off
+```
+
+`php artisan app:doctor` reports a missing driver.
 
 The optional graph tools are `pip`/`npm` installs and degrade gracefully when
 absent — the hook detects a missing binary and skips it.
