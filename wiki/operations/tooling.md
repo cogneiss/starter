@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-10-28
+updated: 2026-10-30
 ---
 
 # Tooling
@@ -48,8 +48,8 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
 - `boost.json` records which agents and skills are installed, first-party packs
   included — `ai-layer` sits in that list next to `org-access`, `resource-spine`
   and `testing-gates`. The list tracks the installed packages: `pest-testing`
-  and `echo-development` are gone, and `testing-best-practices` replaced the
-  Pest pack. `php artisan boost:install --guidelines --skills`
+  is gone, `testing-best-practices` replaced the Pest pack, and
+  `echo-development` is published because `laravel-echo` is a dependency. `php artisan boost:install --guidelines --skills`
   regenerates all of them ([[operations/documentation]]).
 - `.ai/rules/` holds the committed, path-scoped project rules, mapped by
   `.ai/rules/index.md`. Boost's `record-rule` tool adds to it, so a decision
