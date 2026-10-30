@@ -60,8 +60,10 @@ final class AppInfo extends Tool
         ];
 
         foreach (self::PACKAGES as $package) {
-            if (InstalledVersions::isInstalled($package)) {
-                $lines[] = $package.': '.InstalledVersions::getPrettyVersion($package);
+            $version = InstalledVersions::isInstalled($package) ? InstalledVersions::getPrettyVersion($package) : null;
+
+            if ($version !== null) {
+                $lines[] = $package.': '.$version;
             }
         }
 
