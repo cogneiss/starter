@@ -630,6 +630,10 @@ uploads, though not as a general file manager: an upload exists to feed a bulk
 import, is quarantined until a scanner returns clean, and expires if nobody
 promotes it. A media library is still absent.
 
+Filament is absent too. The admin area already covers platform operations on
+the same Inertia stack, and a second UI framework would double the component
+layer to maintain.
+
 These were considered for the tenancy and access work and left out on purpose,
 so you can tell a decision from a gap:
 
