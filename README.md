@@ -61,6 +61,8 @@ Create a project with the Laravel installer, or pick it as a community starter k
 laravel new example-app --using=cogneiss/starter
 ```
 
+The installer then runs `php artisan starter:install`, which asks how organizations resolve (`session`, `subdomain` or `single`) and whether to keep the AI layer. Saying no removes `app/Ai`, `app/Mcp`, their routes, config, models and migrations, and the `laravel/ai` package. The defaults keep everything. The command runs once and then deletes itself; `--dry-run` lists what it would remove.
+
 Or clone it:
 
 ```bash

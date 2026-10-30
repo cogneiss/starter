@@ -1,0 +1,210 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Providers\AiServiceProvider;
+
+/**
+ * What `starter:install` may remove, and nothing else. A layer lists the paths
+ * to delete, the composer packages to drop, the env keys to drop and, per file,
+ * the ranges to cut: `[start, end]` removes everything from the start text
+ * through the end text, `[text]` removes just that text. Each start must match
+ * exactly once, so a manifest that drifted from the source fails the run, and
+ * `InstallManifestTest` fails the build first.
+ *
+ * Organizations are not here: every scoped model belongs to one, so tenancy is
+ * a resolver setting (`--tenancy`), not a deletion.
+ */
+return [
+    'marker' => '.starter-fresh',
+
+    'layers' => [
+        'ai' => [
+            'delete' => [
+                'app/Ai',
+                'app/Mcp',
+                'routes/ai.php',
+                'config/ai.php',
+                'config/mcp.php',
+                'app/Providers/AiServiceProvider.php',
+                'app/Console/Commands/AiInstallCommand.php',
+                'app/Console/Commands/AiUsageCommand.php',
+                'app/Actions/ConsumeConfirmToken.php',
+                'app/Actions/CreateConfirmToken.php',
+                'app/Actions/DebitAiCredits.php',
+                'app/Actions/DraftFieldText.php',
+                'app/Actions/GrantAiCredits.php',
+                'app/Actions/StreamBlocks.php',
+                'app/Actions/SummarizeAiUsage.php',
+                'app/Data/AiConfirmTokenData.php',
+                'app/Data/AiUsageData.php',
+                'app/Data/AiUsageRowData.php',
+                'app/Enums/AiAuditStatus.php',
+                'app/Enums/AiBlockType.php',
+                'app/Enums/AiMetricTrend.php',
+                'app/Exceptions/AiQuotaExceededException.php',
+                'app/Exceptions/BlockedEgressException.php',
+                'app/Exceptions/BlockedTopicException.php',
+                'app/Exceptions/InvalidConfirmToken.php',
+                'app/Http/Controllers/AiBlockController.php',
+                'app/Http/Controllers/AiConfirmController.php',
+                'app/Http/Controllers/AiDraftController.php',
+                'app/Http/Controllers/AiProposalController.php',
+                'app/Http/Controllers/OrganizationAiUsageController.php',
+                'app/Jobs/IndexAiDocument.php',
+                'app/Models/AiAuditLog.php',
+                'app/Models/AiConfirmToken.php',
+                'app/Models/AiCreditLedgerEntry.php',
+                'app/Models/AiDocument.php',
+                'app/Models/AiMemory.php',
+                'app/Policies/AiAuditLogPolicy.php',
+                'app/Policies/AiConfirmTokenPolicy.php',
+                'app/Policies/AiCreditLedgerEntryPolicy.php',
+                'app/Policies/AiDocumentPolicy.php',
+                'app/Resources/Definitions/AiConfirmTokenResource.php',
+                'app/Support/AiAvailability.php',
+                'app/Support/AiEgress.php',
+                'app/Support/AiPricing.php',
+                'app/Support/AiQuota.php',
+                'app/Support/AiRetrieval.php',
+                'app/Support/AiTier.php',
+                'database/factories/AiAuditLogFactory.php',
+                'database/factories/AiConfirmTokenFactory.php',
+                'database/factories/AiCreditLedgerEntryFactory.php',
+                'database/factories/AiDocumentFactory.php',
+                'database/factories/AiMemoryFactory.php',
+                'resources/js/pages/block-gallery.tsx',
+                'resources/js/pages/organization/ai-usage.tsx',
+                '.github/workflows/evals.yml',
+                'resources/prompts',
+                'resources/views/mcp',
+                'resources/views/vendor/mcp',
+                'tests/Evals',
+                'tests/Feature/Ai',
+                'tests/Fixtures/Ai',
+                'tests/Browser/AiBlockRenderTest.php',
+                'tests/Browser/AiDraftButtonTest.php',
+                'tests/Feature/Console/AiUsageCommandTest.php',
+                'tests/Feature/Controllers/AiUsagePageTest.php',
+                'tests/Unit/Policies/AiAuditLogPolicyTest.php',
+                'tests/Unit/Policies/AiCreditLedgerEntryPolicyTest.php',
+                'database/migrations/2026_08_24_142453_create_agent_conversations_table.php',
+                'database/migrations/2026_08_24_152301_create_ai_audit_logs_table.php',
+                'database/migrations/2026_08_24_152302_create_ai_credit_ledger_table.php',
+                'database/migrations/2026_08_24_160000_create_ai_confirm_tokens_table.php',
+                'database/migrations/2026_08_25_090000_create_ai_documents_table.php',
+                'database/migrations/2026_08_25_092324_create_ai_memories_table.php',
+                'database/migrations/2026_08_25_092325_add_organization_and_user_to_agent_conversations_table.php',
+                'database/migrations/2026_10_27_194857_move_agent_conversation_messages_to_steps.php',
+                'stubs/agent-middleware.stub',
+                'stubs/agent.stub',
+                'stubs/mcp-app-resource.stub',
+                'stubs/mcp-app-resource.view.stub',
+                'stubs/mcp-prompt.stub',
+                'stubs/mcp-resource.stub',
+                'stubs/mcp-server.stub',
+                'stubs/mcp-tool.stub',
+                'stubs/structured-agent.stub',
+                'stubs/tool.stub',
+                'resources/js/components/ai/ai-draft-button.tsx',
+                'resources/js/components/ai/blocks/AiBlocks.tsx',
+                'resources/js/components/ai/blocks/ConfirmBlock.tsx',
+                'resources/js/components/ai/blocks/FormBlock.tsx',
+            ],
+            'composer' => ['laravel/ai'],
+            'env' => ['FEATURE_AI_BRIEFING_ENABLED', 'AI_DEFAULT_PROVIDER', 'AI_FAKE', 'AI_QUOTA_USER_HOUR', 'AI_QUOTA_ORG_DAY', 'AI_BUDGET_ORG_MONTH', 'AI_EGRESS_ALLOWLIST', 'AI_DENIED_TOPICS', 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'GEMINI_API_KEY'],
+            'edit' => [
+                'bootstrap/providers.php' => [
+                    ['    '.AiServiceProvider::class."::class,\n"],
+                ],
+                'routes/web.php' => [
+                    ["use App\\Ai\\Blocks\\BlockCollection;\n"],
+                    ["use App\\Http\\Controllers\\AiBlockController;\n"],
+                    ["use App\\Http\\Controllers\\AiConfirmController;\n"],
+                    ["use App\\Http\\Controllers\\AiDraftController;\n"],
+                    ["use App\\Http\\Controllers\\AiProposalController;\n"],
+                    ["use App\\Http\\Controllers\\OrganizationAiUsageController;\n"],
+                    ["        Route::get('settings/organization/ai-usage'", "            ->name('organization.ai-usage');\n"],
+                    ["\n    // AI Confirmations...", "        ->name('ai-draft.store');\n"],
+                    ["\n    // Block gallery...", "    ]))->name('block-gallery');\n"],
+                ],
+                'app/Actions/DeleteUser.php' => [
+                    ["use App\\Models\\AiMemory;\n"],
+                    ["            AiMemory::query()->where('user_id', \$user->id)->delete();\n\n"],
+                ],
+                'app/Actions/RemoveOrganizationMembership.php' => [
+                    ["use App\\Models\\AiMemory;\n"],
+                    ["\n            AiMemory::query()\n", "                ->delete();\n"],
+                ],
+                'config/audit.php' => [
+                    ["use App\\Models\\AiAuditLog;\n"],
+                    ["use App\\Models\\AiConfirmToken;\n"],
+                    ["use App\\Models\\AiCreditLedgerEntry;\n"],
+                    ["use App\\Models\\AiDocument;\n"],
+                    ["        AiAuditLog::class,\n"],
+                    ["        AiConfirmToken::class,\n"],
+                    ["        AiCreditLedgerEntry::class,\n"],
+                    ["        AiDocument::class,\n"],
+                ],
+                'config/conventions.php' => [
+                    ["use App\\Models\\AiAuditLog;\n"],
+                    ["use App\\Models\\AiCreditLedgerEntry;\n"],
+                    ["use App\\Models\\AiDocument;\n"],
+                    ["use App\\Models\\AiMemory;\n"],
+                    ['        AiAuditLog::class => ', "\n"],
+                    ['        AiCreditLedgerEntry::class => ', "\n"],
+                    ['        AiDocument::class => ', "\n"],
+                    ['        AiMemory::class => ', "\n"],
+                ],
+                'app/Enums/KnownFeatures.php' => [
+                    ["    case AiAssistEnabled = 'ai-assist-enabled';\n"],
+                    ["    case AiBriefingEnabled = 'ai-briefing-enabled';\n"],
+                ],
+                'app/Support/PermissionCatalog.php' => [
+                    ["            new PermissionDefinition(\n                'ai.view',", "                'Add AI credit to the organization.',\n            ),\n"],
+                ],
+                'app/Console/Commands/DoctorCommand.php' => [
+                    ["use App\\Support\\AiAvailability;\n"],
+                    ["use App\\Support\\AiRetrieval;\n"],
+                    ["use Laravel\\Ai\\Enums\\Lab;\n"],
+                    ["            \$this->retrieval(),\n", "            \$this->aiPricing(),\n"],
+                    ["    /**\n     * Whether retrieval (RAG)", "            'disables' => 'those runs are recorded as costing nothing, so the budget quota never trips',\n        ];\n    }\n\n"],
+                ],
+                'tests/Pest.php' => [
+                    ["use App\\Support\\AiAvailability;\n"],
+                    ["use Laravel\\Ai\\Ai;\n"],
+                    ["use Laravel\\Ai\\Contracts\\Agent;\n"],
+                    ["/**\n * Nothing under `Feature/Ai`", "    ->in('Evals');\n\n"],
+                    ["/**\n * A committed eval fixture", "evalFixture(\$name)['cases']);\n}\n\n"],
+                ],
+                'phpunit.xml' => [
+                    ["        <testsuite name=\"Evals\">\n", "        </testsuite>\n"],
+                ],
+                'composer.json' => [
+                    ['        "test:evals": ', "\n"],
+                ],
+                'resources/js/pages/admin/announcement.tsx' => [
+                    ["import { AiDraftButton } from '@/components/ai/ai-draft-button';\n"],
+                    ["                    <AiDraftButton\n", "                    />\n"],
+                ],
+            ],
+        ],
+
+        'self' => [
+            'delete' => [
+                'app/Console/Commands/StarterInstallCommand.php',
+                'app/Support/Install',
+                'config/install.php',
+                'tests/Feature/Console/InstallWizardCommandTest.php',
+                'tests/Feature/Console/InstallWizardPruneTest.php',
+                'tests/Unit/Support/InstallWizardPrunerTest.php',
+                'tests/Unit/Support/InstallWizardManifestTest.php',
+            ],
+            'edit' => [
+                'composer.json' => [
+                    ["            \"@php artisan starter:install\",\n"],
+                ],
+            ],
+        ],
+    ],
+];

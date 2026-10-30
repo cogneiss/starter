@@ -103,10 +103,11 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env'); touch('.starter-fresh');\""
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
+            "@php artisan starter:install",
             "@php -r \"echo PHP_EOL, 'Next: point DB_* in .env at a Postgres database, then run: composer setup', PHP_EOL;\""
         ],
         "update:requirements": [

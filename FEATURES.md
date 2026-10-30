@@ -358,6 +358,11 @@ reason, or fix the code.
 
 ### Tooling
 
+- **Install wizard**: `php artisan starter:install` runs once after
+  `laravel new --using=cogneiss/starter`. It sets the organization resolver
+  and can remove the AI layer, using the manifest in `config/install.php`.
+  Every path and cut is checked before anything changes, and a test prunes a
+  copy of the kit and boots it.
 - **Pint** for PHP formatting, **Rector** for automated upgrades and refactors.
 - **Vite+** (Rolldown) for the frontend, with oxlint and oxfmt handling lint and
   format, Tailwind class sorting, and import sorting.
