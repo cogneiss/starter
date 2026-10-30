@@ -4,6 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        {{-- The Vite dev client stamps this nonce on the styles it injects, so the CSP admits them --}}
+        <meta property="csp-nonce" nonce="{{ Illuminate\Support\Facades\Vite::cspNonce() }}">
+
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script nonce="{{ Illuminate\Support\Facades\Vite::cspNonce() }}">
             (function() {

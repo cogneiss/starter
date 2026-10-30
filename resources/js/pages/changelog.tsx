@@ -18,7 +18,7 @@ export default function Changelog({ html }: { html: string }) {
                 {t('site.changelog')}
             </h1>
             <div
-                className="prose max-w-none dark:prose-invert"
+                className="prose max-w-none dark:prose-invert prose-code:before:content-none prose-code:after:content-none"
                 data-test="changelog-body"
                 dangerouslySetInnerHTML={{ __html: html }}
             />

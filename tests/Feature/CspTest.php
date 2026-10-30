@@ -75,6 +75,7 @@ it('covers the reverb websocket and configured hosts in connect-src', function (
 
 it('leaves connect-src at self when no reverb host is configured', function (): void {
     config(['broadcasting.connections.reverb.options' => ['host' => null]]);
+    Vite::useHotFile(sys_get_temp_dir().'/csp-test-not-hot');
 
     $policy = (string) $this->get(route('login'))->headers->get('Content-Security-Policy');
 

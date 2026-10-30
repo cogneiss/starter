@@ -15,8 +15,10 @@ final readonly class ChangelogController
     {
         $path = config()->string('site.changelog_path');
 
+        $source = File::exists($path) ? File::get($path) : '';
+
         return Inertia::render('changelog', [
-            'html' => $markdown->handle(File::exists($path) ? File::get($path) : ''),
+            'html' => $markdown->handle(preg_replace('/\A# .*\R/', '', $source) ?? $source),
         ]);
     }
 }

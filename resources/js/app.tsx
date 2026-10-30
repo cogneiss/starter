@@ -18,6 +18,9 @@ import '../css/app.css';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 void createInertiaApp({
+    // The progress bar's injected style carries the CSP nonce the layout publishes
+    nonce: document.querySelector<HTMLMetaElement>('meta[property=csp-nonce]')
+        ?.nonce,
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) =>
         resolvePageComponent<ComponentType>(

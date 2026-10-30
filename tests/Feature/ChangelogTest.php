@@ -10,7 +10,7 @@ it('Changelog renders CHANGELOG.md as html', function (): void {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('changelog')
-            ->where('html', fn (string $html): bool => str_contains($html, '<h2>') && str_contains($html, '<h3>')));
+            ->where('html', fn (string $html): bool => str_contains($html, '<h2>') && str_contains($html, '<h3>') && ! str_contains($html, '<h1>')));
 });
 
 it('Changelog escapes raw html', function (): void {

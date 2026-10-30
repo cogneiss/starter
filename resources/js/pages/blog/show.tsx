@@ -41,7 +41,7 @@ export default function BlogShow({ post }: { post: Post }) {
                     {post.author && ` · ${t('site.blog_by')} ${post.author}`}
                 </p>
                 <div
-                    className="prose mt-8 max-w-none dark:prose-invert"
+                    className="prose mt-8 max-w-none dark:prose-invert prose-code:before:content-none prose-code:after:content-none"
                     data-test="blog-post-body"
                     dangerouslySetInnerHTML={{ __html: post.html }}
                 />
