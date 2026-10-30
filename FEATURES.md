@@ -455,6 +455,11 @@ on five conditions, the sharp one being staleness: change a file a page cites
 without updating the page and CI goes red. That makes documentation drift a test
 failure rather than a good intention.
 
+**An `llms.txt` for agents.** `php artisan wiki:llms` writes `llms.txt` at the repo
+root (llmstxt.org format) from the wiki's titles and opening paragraphs, grouped by
+folder, with repo-relative links. It is generated output; `tests/Feature/Console/WikiLlmsTxtCommandTest.php`
+runs `--check` and fails the suite when the committed file differs from the wiki.
+
 **A documentation worklist.** `php artisan wiki:audit` writes
 `wiki/_meta/audit.json`: pages gone stale, application files no page mentions,
 pages whose refs have all been deleted. `.githooks/post-commit` refreshes it
@@ -597,6 +602,7 @@ Local loops:
 | `php artisan brand:preview <primary> <accent>` | Print the palette two brand hexes derive, with every measured contrast ratio. |
 | `php artisan wiki:lint`                        | The five wiki rules. What `composer test:wiki` runs.                          |
 | `php artisan wiki:audit`                       | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
+| `php artisan wiki:llms`                        | Rewrite `llms.txt` from the wiki; `--check` fails when the committed file drifts. |
 | `bun run knip:fix`                             | Apply knip's removals instead of only reporting them.                         |
 | `bun run types`                                | Type-check the front end with `tsc --noEmit`, no build.                       |
 | `bun run test:dupes`                           | Report copy-pasted front-end code with jscpd. Advisory, not a gate.           |

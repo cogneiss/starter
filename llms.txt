@@ -1,0 +1,95 @@
+# Starter
+
+> A Laravel and Inertia React starter kit with an AI layer, an API and platform operations. The wiki below is the reasoning behind the code; read the page for an area before editing it.
+
+## Architecture
+
+- [Actions and cruddy controllers](wiki/architecture/actions-and-controllers.md): Business logic lives in `app/Actions`, one class with one `handle()` method
+- [Better defaults from Essentials](wiki/architecture/better-defaults.md): On by default
+- [Convention guards G1, G4 and G5](wiki/architecture/convention-guards.md): Three architecture tests in `tests/Unit/Conventions/ConventionTest.php` fail the build when a new file skips a convention
+- [Why organization scoping is fail-closed](wiki/architecture/fail-closed-scoping.md): With no organization bound, a query against a scoped model throws `App\Exceptions\OrganizationContextMissing`
+- [Why blocking gates stay fast and deterministic](wiki/architecture/fast-blocking-gates.md): A gate that blocks a pull request must be fast, deterministic, and about the diff
+- [Why agents query a graph before grepping](wiki/architecture/graph-before-grep.md): Laravel Brain's index is rebuilt after every commit by `.githooks/post-commit`
+- [Why the organization resolves before route model binding](wiki/architecture/resolve-before-routing.md): Route model binding runs a query
+- [Why the resource contract grew from six methods to thirteen](wiki/architecture/six-method-spine.md): Three consumers arrived at once — a scoped search endpoint, a server-driven list kit and a CSV export — and all three needed the same facts about a resource
+- [Why authorization needs two gates](wiki/architecture/two-gate-authorization.md): Every policy method checks two things: a relationship to the record, and a named permission
+- [Type safety, end to end](wiki/architecture/type-safety.md): The chain runs from the database to the React page, and every link is checked by a gate rather than by review
+
+## Decisions
+
+- [Decision log — agent developer experience](wiki/decisions/agent-dx.md): The current plan
+- [Decision log — CI and quality gates](wiki/decisions/ci-quality.md): Thirteen phases, all `passing` in `todo/ci-quality.status.json`: the CI fan-out topology, secret and dependency scanning, the autofix bot, dead code and unused dependencies, the local test loops, test...
+- [Not included](wiki/decisions/not-included.md): Absent on purpose, so a gap can be told from a decision
+- [Decision log — organizations and access](wiki/decisions/org-access.md): Thirteen phases: organizations and fail-closed scoping, roles and the permission catalog, the two-gate authorization guard, feature flags, the membership lifecycle, audited impersonation, the auth dri...
+- [Decision log — the resource spine](wiki/decisions/resource-spine.md): Nine phases, all `passing` in `todo/resource-spine.status.json`: typed payloads with laravel-data, the resource contract and registry, the `app:make-resource` generator, convention guards G1/G4/G5, th...
+
+## Domains
+
+- [AI agents and tools](wiki/domains/ai-agents-and-tools.md): An agent is a class implementing `Laravel\Ai\Contracts\Agent` with the `Promptable` trait, living in `app/Ai/Agents`
+- [AI blocks](wiki/domains/ai-blocks.md): An agent returns blocks, never HTML
+- [AI confirm tokens](wiki/domains/ai-confirm-tokens.md): An agent may propose a write
+- [AI evals](wiki/domains/ai-evals.md): The SDK is `laravel/ai` `^1.3` (`composer.json`); `laravel/mcp` arrives through it and is not required directly
+- [AI injection defense](wiki/domains/ai-injection-defense.md): Organization data is a customer's words
+- [AI layer overview](wiki/domains/ai-layer-overview.md): The starter ships a product AI layer built on `laravel/ai`: agents that answer inside one organization, tools that never outrank the member who triggered them, writes that are proposed rather than per...
+- [AI MCP server](wiki/domains/ai-mcp-server.md): The `.mcp.json` entry carries `"disabled": true`
+- [AI memory](wiki/domains/ai-memory.md): The assistant remembers facts about one person in one organization
+- [AI metering and quotas](wiki/domains/ai-metering-and-quotas.md): Every agent run is recorded, priced and counted
+- [AI retrieval](wiki/domains/ai-retrieval.md): Agents can search the organization's own content
+- [The auth driver seam](wiki/domains/auth-drivers.md): Two drivers ship
+- [Roles, permissions and policies](wiki/domains/authorization.md): RBAC on `spatie/laravel-permission` with organization-scoped teams, configured in `config/permission.php`, which turns teams on (`'teams' => true`) with `organization_id` as the team foreign key and u...
+- [Console commands](wiki/domains/console-commands.md): Eighteen first-party commands
+- [Data objects](wiki/domains/data-objects.md): Eight `spatie/laravel-data` classes in `app/Data`
+- [Events, listeners and notifications](wiki/domains/events-and-notifications.md): Small surface on purpose
+- [Feature flags](wiki/domains/feature-flags.md): Pennant, configured in `config/pennant.php`, with one addition: every flag is declared in `app/Enums/KnownFeatures.php` before it is used
+- [The HTTP layer](wiki/domains/http-layer.md): Forty-six controllers, twenty-three form requests, seventeen middleware, two validation rules (`ValidEmail` and `PublicHttpsUrl`)
+- [Models](wiki/domains/models.md): Twenty models ship in `app/Models`
+- [Multi-tenancy](wiki/domains/multi-tenancy.md): Every user belongs to at least one organization, and everything they create lives inside one
+- [Organization resolvers](wiki/domains/organization-resolvers.md): Three implement `app/Auth/Contracts/OrganizationResolver.php`
+- [The resource spine](wiki/domains/resources.md): One adapter per user-facing model in `app/Resources/Definitions`, auto-discovered by `app/Resources/ResourceRegistry.php`
+- [Per-organization branding](wiki/domains/ux-branding.md): An organization stores two hex colours
+- [Faceted filters, URL state and saved searches](wiki/domains/ux-filters-and-saved-searches.md): A filtered list is a URL
+- [Forms and live validation](wiki/domains/ux-forms-precognition.md): Every form in this application validates against the same rules twice: once as you type, once when you submit
+- [Localization](wiki/domains/ux-i18n.md): One set of translation files, read by the server, handed to the page
+- [Bulk import and temporary uploads](wiki/domains/ux-import-and-uploads.md): Someone uploads a spreadsheet, sees what will happen, and the rows are created one at a time under the same rules a single-record form would apply
+- [The server-driven list kit](wiki/domains/ux-list-kit.md): Search, sort, paginate, choose columns, act on a selection, download the result
+- [Motion and accessibility](wiki/domains/ux-motion-and-a11y.md): A full page load makes the browser announce the new document
+- [Onboarding and the activation checklist](wiki/domains/ux-onboarding.md): A new organization is walked through the few things that have to be true before the product does anything for it, and then the walkthrough gets out of the way permanently
+- [Interface primitives](wiki/domains/ux-primitives.md): Four things every screen needs and every screen otherwise invents its own version of: nothing-here, are-you-sure, something-broke, and a look at one record without leaving the list
+- [In-app notifications and realtime](wiki/domains/ux-realtime-notifications.md): A bell with an unread count, a panel that lists what happened, and a websocket that keeps both current
+- [Scoped search and the command palette](wiki/domains/ux-search-and-palette.md): One endpoint searches every registered resource at once, and one keyboard shortcut opens it
+
+## Features
+
+- [Account settings](wiki/features/account-settings.md): The passkeys, two-factor and password screens, and account deletion, require a verified email (`verified` in `routes/web.php`) as well as not impersonating
+- [Authentication](wiki/features/authentication.md): Fortify does the protocol work, configured in `config/fortify.php` and `app/Providers/FortifyServiceProvider.php`
+- [Interface](wiki/features/interface.md): Inertia v3 and React 19, server-side routing, Tailwind v4
+- [Organizations](wiki/features/organizations.md): The user-facing half of domains/multi-tenancy
+- [Pages](wiki/features/pages.md): What ships rendered, and nothing more
+
+## Operations
+
+- [CI topology](wiki/operations/ci.md): Six workflows
+- [Code knowledge graphs](wiki/operations/code-knowledge-graphs.md): One index of this codebase, Laravel Brain, rebuilt after every commit by `.githooks/post-commit` (wired up by `composer install`, nothing to run by hand)
+- [Commands](wiki/operations/commands.md): Every command lives in `composer.json` or `package.json`, and `FEATURES.md` lists all of them
+- [Contributing](wiki/operations/contributing.md): The same settings file enables the `php-lsp` and `typescript-lsp` plugins, so the agent gets go-to-definition, references and type errors from Intelephense and `typescript-language-server` instead of...
+- [Documentation](wiki/operations/documentation.md): Three layers, each with a different job
+- [The admin control plane](wiki/operations/ops-admin-area.md): A super-admin area at `/admin`, built on the same server-driven list kit as every tenant screen (domains/ux-list-kit) rather than on a second admin framework
+- [The analytics seam](wiki/operations/ops-analytics.md): Product analytics without a hard dependency
+- [Per-organization API tokens](wiki/operations/ops-api-tokens.md): A token belongs to an organization, not to a user
+- [The audit log](wiki/operations/ops-audit-log.md): An append-only record of who did what: model writes captured by `RecordModelActivity` off the Eloquent wildcard events, plus named actions the application records deliberately
+- [Content Security Policy and form friction](wiki/operations/ops-csp.md): The nonce reaches the Vite tags and Inertia's boot script through the request; anything else inline is a build error to fix, not a directive to loosen
+- [The error reporting seam](wiki/operations/ops-error-reporting.md): The application reports through `App\Contracts\ErrorReporter`, an interface with two implementations
+- [GDPR export and deletion](wiki/operations/ops-gdpr.md): Two obligations, two mechanisms: access (export what we hold) and erasure (stop holding it)
+- [The health endpoint](wiki/operations/ops-health.md): Each check is a small class implementing `Check` under `app/Support/Health/Checks`: database connectivity, queue depth, cache round-trip, disk, debug mode (on in production is a failure, not a warning...
+- [The registry-driven read API](wiki/operations/ops-read-api.md): Three routes, all behind `auth:sanctum`, `EnsureTokenMatchesOrganization`, request logging and the rate tier
+- [API usage logging and rate tiers](wiki/operations/ops-usage-and-limits.md): Every request to the read API (operations/ops-read-api) writes one row: which token, which organization, which route, the status and the duration
+- [Signed outgoing webhooks](wiki/operations/ops-webhooks.md): An organization registers an endpoint; model events for registered resources (the catalogue in `WebhookEvents` — every resource × created/updated/deleted) become queued deliveries to it
+- [Releases](wiki/operations/releases.md): Every push to `main` runs `release-please.yml`, which keeps a release pull request open carrying the next version and the generated `CHANGELOG.md` entry
+- [Runtime](wiki/operations/runtime.md): Postgres, database sessions, database queue, database cache and the log mailer out of the box
+- [Setting up a clone](wiki/operations/setup.md): That runs `composer install`, copies `.env.example` to `.env` if there is none, generates the key, migrates, seeds the role templates, runs `bun install`, installs the Chromium the browser tests drive...
+- [Testing](wiki/operations/testing.md): Pest 5, covering every controller, action, rule and middleware
+- [Tooling](wiki/operations/tooling.md): Two skips in those configs are decisions rather than noise
+
+## Overview
+
+- [Wiki index](wiki/index.md): Long-form documentation for this starter kit, written for whoever reads it next — usually an agent that has never opened these files
