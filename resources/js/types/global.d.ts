@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type {
+    AnnouncementBanner,
     AppNotification,
     Impersonator,
     Organization,
@@ -25,6 +26,7 @@ declare module '@inertiajs/core' {
             organization: Organization | null;
             organizations: Organization[];
             impersonating: Impersonator | null;
+            announcements: AnnouncementBanner[];
             locale: string;
             supportedLocales: string[];
             translations: Record<string, string>;

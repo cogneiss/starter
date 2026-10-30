@@ -6,6 +6,7 @@ use App\Models\AiAuditLog;
 use App\Models\AiConfirmToken;
 use App\Models\AiCreditLedgerEntry;
 use App\Models\AiDocument;
+use App\Models\Announcement;
 use App\Models\ApiRequestLog;
 use App\Models\ApiToken;
 use App\Models\FeatureOverride;
@@ -47,6 +48,7 @@ return [
      * not the bound one — but flipping a flag is still an auditable act.
      */
     'extra' => [
+        Announcement::class,
         FeatureOverride::class,
     ],
 

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Actions\VisibleAnnouncements;
+use App\Data\AnnouncementData;
 use App\Data\ImpersonatorData;
 use App\Data\NotificationData;
 use App\Data\OrganizationData;
 use App\Data\UserData;
 use App\Enums\MembershipStatus;
+use App\Models\Announcement;
 use App\Models\Organization;
 use App\Models\User;
 use App\Support\Impersonation;
@@ -67,6 +70,9 @@ final class HandleInertiaRequests extends Middleware
             'organization' => $organization instanceof Organization ? OrganizationData::fromModel($organization) : null,
             'organizations' => $user instanceof User ? $this->organizationsFor($user) : [],
             'impersonating' => $impersonator instanceof User ? ImpersonatorData::fromModel($impersonator) : null,
+            'announcements' => $user instanceof User && $organization instanceof Organization
+                ? $this->announcementsFor($user, $organization)
+                : [],
             'locale' => app()->getLocale(),
             'supportedLocales' => config()->array('app.supported_locales'),
             'translations' => $this->translations(),
@@ -91,6 +97,22 @@ final class HandleInertiaRequests extends Middleware
         return $user->unreadNotifications()
             ->getQuery()
             ->where('organization_id', $organization->id);
+    }
+
+    /**
+     * Active announcements for this organization the user has not dismissed:
+     * one query, with the audience and the dismissal both in its where clause.
+     *
+     * @return array<int, AnnouncementData>
+     */
+    private function announcementsFor(User $user, Organization $organization): array
+    {
+        return resolve(VisibleAnnouncements::class)
+            ->handle($organization->id, $user)
+            ->latest('starts_at')
+            ->get()
+            ->map(fn (Announcement $announcement): AnnouncementData => AnnouncementData::fromModel($announcement))
+            ->all();
     }
 
     /**

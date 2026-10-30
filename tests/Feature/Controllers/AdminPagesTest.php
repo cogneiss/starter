@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\CreateApiToken;
 use App\Admin\AdminResources;
 use App\Models\Activity;
+use App\Models\Announcement;
 use App\Models\ApiToken;
 use App\Models\FeatureOverride;
 use App\Models\ImpersonationLog;
@@ -35,6 +36,7 @@ function seedAdminPages(): array
     RoleTemplate::factory()->create(['name' => 'Night Auditor']);
     ImpersonationLog::factory()->create(['impersonator_user_id' => $impersonator->id]);
     Activity::factory()->create(['organization_id' => $organization->id, 'description' => 'created ApiToken']);
+    Announcement::factory()->create(['organization_id' => $organization->id, 'title' => 'Planned maintenance window']);
     ApiToken::factory()->create(['organization_id' => $organization->id, 'name' => 'ci token alpha']);
     WebhookEndpoint::factory()->create(['organization_id' => $organization->id, 'url' => 'https://hooks.example.test/alpha']);
 
@@ -53,6 +55,7 @@ it('serves search, a filter, sort and CSV export on every declared admin page', 
         'role-templates' => 'Night Auditor',
         'impersonation-log' => 'Ersonator',
         'audit-log' => 'created ApiToken',
+        'announcements' => 'maintenance window',
         'api-tokens' => 'ci token alpha',
         'webhook-endpoints' => 'hooks.example.test',
     ];

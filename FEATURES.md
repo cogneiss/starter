@@ -189,7 +189,11 @@ credential resolves, never to a header or a route parameter.
    `app/Jobs/SendWebhookDelivery.php`).
 9. **Admin control plane** — a super-admin area on the same list kit, gated by
    the `platform` ability behind a 404 (`app/Admin/AdminResources.php`,
-   `app/Http/Middleware/EnsurePlatformAdmin.php`).
+   `app/Http/Middleware/EnsurePlatformAdmin.php`). It also writes
+   announcements: scheduled, per-organization or global banners that members
+   dismiss for good (`app/Models/Announcement.php`,
+   `app/Actions/DismissAnnouncement.php`,
+   `resources/js/components/announcement-banners.tsx`).
 
 ## Developer experience
 

@@ -17,6 +17,27 @@ return [
         'nl' => 'Nederlands',
     ],
 
+    'announcements' => [
+        'region' => 'Announcements',
+        'dismiss' => 'Dismiss announcement',
+        'title' => 'Announcements',
+        'description' => 'Banners shown to members inside the app',
+        'new' => 'New announcement',
+        'edit' => 'Edit',
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+        'title_field' => 'Title',
+        'body_field' => 'Message',
+        'level_field' => 'Level',
+        'starts_field' => 'Starts',
+        'ends_field' => 'Ends (optional)',
+        'audience_field' => 'Audience',
+        'audience_all' => 'Every organization',
+        'level_info' => 'Info',
+        'level_warning' => 'Warning',
+    ],
+
     'dashboard' => [
         'activity' => [
             'title' => 'Activity',

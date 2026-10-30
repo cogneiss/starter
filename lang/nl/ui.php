@@ -15,6 +15,27 @@ return [
         'nl' => 'Nederlands',
     ],
 
+    'announcements' => [
+        'region' => 'Mededelingen',
+        'dismiss' => 'Mededeling sluiten',
+        'title' => 'Mededelingen',
+        'description' => 'Banners die leden in de app zien',
+        'new' => 'Nieuwe mededeling',
+        'edit' => 'Bewerken',
+        'save' => 'Opslaan',
+        'cancel' => 'Annuleren',
+        'delete' => 'Verwijderen',
+        'title_field' => 'Titel',
+        'body_field' => 'Bericht',
+        'level_field' => 'Niveau',
+        'starts_field' => 'Begint',
+        'ends_field' => 'Eindigt (optioneel)',
+        'audience_field' => 'Doelgroep',
+        'audience_all' => 'Alle organisaties',
+        'level_info' => 'Info',
+        'level_warning' => 'Waarschuwing',
+    ],
+
     'dashboard' => [
         'activity' => [
             'title' => 'Activiteit',

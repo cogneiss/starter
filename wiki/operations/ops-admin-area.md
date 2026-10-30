@@ -10,9 +10,18 @@ code_refs:
     - app/Http/Controllers/Admin/AdminHealthController.php
     - app/Data/AdminRowData.php
     - resources/js/pages/admin/index.tsx
+    - resources/js/pages/admin/announcement.tsx
+    - app/Http/Controllers/Admin/AdminAnnouncementController.php
+    - app/Http/Controllers/AnnouncementDismissalController.php
+    - app/Models/Announcement.php
+    - app/Actions/SaveAnnouncement.php
+    - app/Actions/VisibleAnnouncements.php
+    - app/Actions/DismissAnnouncement.php
+    - resources/js/components/announcement-banners.tsx
+    - tests/Feature/AnnouncementTest.php
     - tests/Feature/Controllers/AdminAccessTest.php
     - tests/Feature/Controllers/AdminPagesTest.php
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # The admin control plane
@@ -41,6 +50,21 @@ recent failed deliveries across all organizations
 
 Token rows show names and metadata only — plaintext values were never stored,
 so the admin area cannot leak them ([[operations/ops-api-tokens]]).
+
+## Announcements
+
+The `announcements` page is the one admin page with write screens:
+`AdminAnnouncementController` creates, edits and deletes through
+`SaveAnnouncement` and a Precognition form against `SaveAnnouncementRequest`.
+An announcement has a level, a `starts_at`/`ends_at` window and an optional
+organization (none means every organization). `VisibleAnnouncements` is
+the single visibility query: `HandleInertiaRequests` shares the result for the
+member's current organization, minus what `notDismissedBy()` filters out, and
+`AnnouncementDismissalController` resolves its id through the same query, so a
+foreign or expired id is a 404. Dismissals live in `announcement_dismissals`,
+per user. The model is audited through `audit.extra`; a global announcement has
+no organization, so the audit listener writes no entry for it (not
+documented as a gap elsewhere).
 
 ## Health
 

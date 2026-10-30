@@ -103,7 +103,7 @@ it('serves every authenticated page with no third-party credentials', function (
     // Everything but the page that exists to be shown before verification (a
     // verified user is redirected away from it) and the admin control plane,
     // which answers 404 to anyone without the platform gate and is swept below.
-    $uris = array_values(array_diff(ownPageUris(guest: false), ['/verify-email', '/admin']));
+    $uris = array_values(array_diff(ownPageUris(guest: false), ['/verify-email', '/admin', '/admin/announcements/create']));
 
     expect($uris)->not->toBeEmpty();
 
@@ -125,6 +125,7 @@ it('serves the admin control plane with no third-party credentials', function ()
     $admin = User::factory()->superAdmin()->create();
 
     $this->actingAs($admin)->get('/admin')->assertOk();
+    $this->actingAs($admin)->get('/admin/announcements/create')->assertOk();
 });
 
 it('serves the verification notice with no third-party credentials', function (): void {

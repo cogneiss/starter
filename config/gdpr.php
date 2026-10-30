@@ -18,6 +18,7 @@ return [
 
     'tables' => [
         'agent_conversations',
+        'announcement_dismissals',
         'ai_audit_logs',
         'ai_confirm_tokens',
         'ai_memories',

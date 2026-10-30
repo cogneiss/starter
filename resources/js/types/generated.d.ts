@@ -77,6 +77,13 @@ runs: number,
 tokens: number,
 cost_micros: number,
 };
+export type AnnouncementBanner = {
+id: string,
+title: string,
+body: string,
+level: AnnouncementLevel,
+};
+export type AnnouncementLevel = 'info' | 'warning';
 export type ApiToken = {
 id: string,
 name: string,

@@ -2,9 +2,12 @@ import { Head, Link } from '@inertiajs/react';
 import { useMemo } from 'react';
 import { DataTable, dataTableColumns } from '@/components/data-table';
 import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { index, pages as pageRoute } from '@/routes/admin';
+import { create, edit } from '@/routes/admin/announcements';
 import type { AdminRow, BreadcrumbItem, TypedResourceList } from '@/types';
 
 type ColumnHeader = {
@@ -32,6 +35,12 @@ type Props = {
 
 const helper = dataTableColumns<AdminRow>();
 
+const editLink = (id: string, title: string | undefined) => (
+    <Link href={edit(id)} className="underline">
+        {title}
+    </Link>
+);
+
 export default function Index({
     page,
     label,
@@ -40,6 +49,9 @@ export default function Index({
     list,
     recentFailures,
 }: Props) {
+    const t = useTranslate();
+    const announcements = page === 'announcements';
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Admin', href: index() },
         { title: label, href: pageRoute({ page }) },
@@ -52,13 +64,22 @@ export default function Index({
                     helper.accessor((row) => row.cells[column.key] ?? '', {
                         id: column.key,
                         header: column.label,
+                        ...(announcements && column.key === 'title'
+                            ? {
+                                  cell: ({ row }) =>
+                                      editLink(
+                                          row.original.id,
+                                          row.original.cells.title,
+                                      ),
+                              }
+                            : {}),
                         ...(column.sortable
                             ? { meta: { sort: column.key } }
                             : {}),
                     }),
                 ),
             ),
-        [columns],
+        [columns, announcements],
     );
 
     return (
@@ -90,6 +111,12 @@ export default function Index({
                         </Link>
                     ))}
                 </nav>
+
+                {announcements && (
+                    <Button render={<Link href={create()} />}>
+                        {t('announcements.new')}
+                    </Button>
+                )}
 
                 <DataTable<AdminRow>
                     list={list}

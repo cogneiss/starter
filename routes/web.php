@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Ai\Blocks\BlockCollection;
+use App\Http\Controllers\Admin\AdminAnnouncementController;
 use App\Http\Controllers\Admin\AdminHealthController;
 use App\Http\Controllers\Admin\AdminResourceController;
 use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiProposalController;
+use App\Http\Controllers\AnnouncementDismissalController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BrowserSessionController;
 use App\Http\Controllers\DashboardController;
@@ -87,6 +89,10 @@ Route::middleware(['auth', 'verified', 'organization', 'two-factor', 'onboarded'
         ->name('notification.update-all');
     Route::patch('notifications/{notification}', [NotificationController::class, 'update'])
         ->name('notification.update');
+
+    // Announcements... dismissal is per user and stored server-side.
+    Route::post('announcements/{announcement}/dismissal', [AnnouncementDismissalController::class, 'store'])
+        ->name('announcement.dismiss');
 
     Route::get('settings/notifications', [UserNotificationPreferenceController::class, 'edit'])
         ->name('user-notification-preference.edit');
@@ -322,6 +328,20 @@ Route::middleware(['auth', 'two-factor', EnsurePlatformAdmin::class])->group(fun
         ->name('admin.index');
     Route::get('admin/{page}', [AdminResourceController::class, 'index'])
         ->name('admin.pages');
+
+    // Announcements... the list is an admin page; these are its write screens.
+    Route::get('admin/announcements/create', [AdminAnnouncementController::class, 'create'])
+        ->name('admin.announcements.create');
+    Route::post('admin/announcements', [AdminAnnouncementController::class, 'store'])
+        ->middleware(HandlePrecognitiveRequests::class)
+        ->name('admin.announcements.store');
+    Route::get('admin/announcements/{announcement}/edit', [AdminAnnouncementController::class, 'edit'])
+        ->name('admin.announcements.edit');
+    Route::patch('admin/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])
+        ->middleware(HandlePrecognitiveRequests::class)
+        ->name('admin.announcements.update');
+    Route::delete('admin/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])
+        ->name('admin.announcements.destroy');
 });
 
 Route::middleware(['auth', HandlePrecognitiveRequests::class])->group(function (): void {

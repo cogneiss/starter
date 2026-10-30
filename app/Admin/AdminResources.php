@@ -6,6 +6,7 @@ namespace App\Admin;
 
 use App\Enums\FilterType;
 use App\Models\Activity;
+use App\Models\Announcement;
 use App\Models\ApiToken;
 use App\Models\FeatureOverride;
 use App\Models\ImpersonationLog;
@@ -131,6 +132,24 @@ final class AdminResources
                     new ResourceColumn(key: 'event', label: __('Event')),
                     new ResourceColumn(key: 'organization_id', label: __('Organization')),
                     new ResourceColumn(key: 'created_at', label: __('When')),
+                ],
+            ),
+            new AdminResource(
+                key: 'announcements',
+                label: __('Announcements'),
+                model: Announcement::class,
+                query: fn () => Announcement::query(),
+                searchable: ['title', 'body'],
+                sortable: ['starts_at', 'title'],
+                filters: fn (): array => [
+                    new ResourceFilter(key: 'organization', label: __('Organization'), type: FilterType::MultiSelect, column: 'organization_id', options: self::organizationIds()),
+                ],
+                columns: [
+                    new ResourceColumn(key: 'title', label: __('Title')),
+                    new ResourceColumn(key: 'level', label: __('Level')),
+                    new ResourceColumn(key: 'organization_id', label: __('Organization')),
+                    new ResourceColumn(key: 'starts_at', label: __('Starts')),
+                    new ResourceColumn(key: 'ends_at', label: __('Ends')),
                 ],
             ),
             new AdminResource(
