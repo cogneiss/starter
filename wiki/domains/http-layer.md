@@ -110,7 +110,9 @@ A sixth prop, `announcements`, carries the active banners for the bound
 organization that the user has not dismissed: an empty array without a user and
 an organization, otherwise one query through `VisibleAnnouncements` with the
 audience and the dismissal in its where clause (`announcementsFor()` in
-`HandleInertiaRequests`).
+`HandleInertiaRequests`). A seventh, `aiAssist`, is a boolean: true when there is a user and an
+organization and `ai-assist-enabled` is on for it, and it decides whether the
+draft-with-AI button renders ([[domains/ai-agents-and-tools]]).
 
 ## Form requests
 

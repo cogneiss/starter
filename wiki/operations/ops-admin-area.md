@@ -56,7 +56,7 @@ so the admin area cannot leak them ([[operations/ops-api-tokens]]).
 The `announcements` page is the one admin page with write screens:
 `AdminAnnouncementController` creates, edits and deletes through
 `SaveAnnouncement` and a Precognition form against `SaveAnnouncementRequest`.
-An announcement has a level, a `starts_at`/`ends_at` window and an optional
+The message field carries a draft-with-AI button (`announcement.body` in `DraftableFields`, gated by the `platform` ability) when the feature flag is on. An announcement has a level, a `starts_at`/`ends_at` window and an optional
 organization (none means every organization). `VisibleAnnouncements` is
 the single visibility query: `HandleInertiaRequests` shares the result for the
 member's current organization, minus what `notDismissedBy()` filters out, and

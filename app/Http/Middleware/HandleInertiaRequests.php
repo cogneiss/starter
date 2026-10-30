@@ -10,6 +10,7 @@ use App\Data\ImpersonatorData;
 use App\Data\NotificationData;
 use App\Data\OrganizationData;
 use App\Data\UserData;
+use App\Enums\KnownFeatures;
 use App\Enums\MembershipStatus;
 use App\Models\Announcement;
 use App\Models\Organization;
@@ -73,6 +74,8 @@ final class HandleInertiaRequests extends Middleware
             'announcements' => $user instanceof User && $organization instanceof Organization
                 ? $this->announcementsFor($user, $organization)
                 : [],
+            'aiAssist' => $user instanceof User && $organization instanceof Organization
+                && KnownFeatures::AiAssistEnabled->enabledFor($organization),
             'locale' => app()->getLocale(),
             'supportedLocales' => config()->array('app.supported_locales'),
             'translations' => $this->translations(),

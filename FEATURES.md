@@ -524,6 +524,14 @@ anything.
 list, metric, form, confirm — rendered by React components, so an answer is a UI
 rather than a wall of prose.
 
+**Draft with AI.** A form field can offer a "Draft with AI" button
+(`resources/js/components/ai/ai-draft-button.tsx`). It posts to `POST /ai/draft`,
+where `DraftFieldText` runs the `FieldDrafter` agent through the same quota,
+audit and credit pipeline as every other agent. The field must be registered in
+`DraftableFields`, the user must pass its ability, and the `ai-assist-enabled`
+flag must be on; otherwise the answer is a 404 and the button does not render.
+The admin announcement message is the first field wired.
+
 **MCP.** `app/Mcp` exposes the same three tools over the Model Context Protocol
 for a local client, delegating to the AI tools rather than reimplementing their
 checks. It ships disabled in `.mcp.json`.

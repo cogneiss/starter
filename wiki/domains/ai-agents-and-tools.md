@@ -5,20 +5,39 @@ supersedes: []
 code_refs:
     - app/Ai/Agents/InvitationDrafter.php
     - app/Ai/Agents/DashboardBriefing.php
+    - app/Ai/Agents/FieldDrafter.php
+    - app/Ai/DraftableFields.php
+    - app/Actions/DraftFieldText.php
+    - app/Http/Controllers/AiDraftController.php
+    - tests/Feature/Ai/AiAssistTest.php
     - app/Ai/Tools/ListResourceRecords.php
     - app/Ai/Tools/ShowResourceRecord.php
     - app/Ai/Tools/ProposeAction.php
     - app/Ai/Tools/Concerns/AuthorizesToolCall.php
     - tests/Feature/Ai/ToolAuthorizationTest.php
-updated: 2026-08-25
+updated: 2026-10-31
 ---
 
 # AI agents and tools
 
 An agent is a class implementing `Laravel\Ai\Contracts\Agent` with the
 `Promptable` trait, living in `app/Ai/Agents`. Two ship as product features —
-`InvitationDrafter` and `DashboardBriefing` — and both are documented from the
-user's side in [[features/organizations]].
+`InvitationDrafter` and `DashboardBriefing`, documented from the user's side in
+[[features/organizations]], plus `FieldDrafter`, below.
+
+## Draft with AI
+
+`FieldDrafter` rewrites or drafts the text of one form field. It runs the
+default middleware (quota, fence, topic filter, audit and credit debit), so a
+draft is metered like any other run, and it uses the `cheap` tier.
+`POST /ai/draft` (`AiDraftController`) validates a `field` key from
+`DraftableFields`, then `DraftFieldText` refuses with a 404 unless the
+`ai-assist-enabled` flag is on for the bound organization and the user passes
+the field's ability. The organization comes from the bound context, never from
+the request body, so a foreign organization cannot be targeted. Adding a
+draftable field is one entry in `DraftableFields` plus an
+`<AiDraftButton field=...>` in the form; the first is the announcement body on
+the admin announcement form. `tests/Feature/Ai/AiAssistTest.php` covers it.
 
 Agents that take tools implement `HasTools` and return them from `tools()`. The
 tools are built for one member in one organization and hold both: nothing in a

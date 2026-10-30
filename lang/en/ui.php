@@ -38,6 +38,13 @@ return [
         'level_warning' => 'Warning',
     ],
 
+    'ai_draft' => [
+        'button' => 'Draft with AI',
+        'working' => 'Drafting…',
+        'done' => 'Draft inserted. Review it before saving.',
+        'failed' => 'The draft failed. Try again in a moment.',
+    ],
+
     'dashboard' => [
         'activity' => [
             'title' => 'Activity',

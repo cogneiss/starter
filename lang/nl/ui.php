@@ -36,6 +36,13 @@ return [
         'level_warning' => 'Waarschuwing',
     ],
 
+    'ai_draft' => [
+        'button' => 'Opstellen met AI',
+        'working' => 'Bezig met opstellen…',
+        'done' => 'Concept ingevoegd. Controleer het voor je opslaat.',
+        'failed' => 'Het concept is mislukt. Probeer het zo opnieuw.',
+    ],
+
     'dashboard' => [
         'activity' => [
             'title' => 'Activiteit',

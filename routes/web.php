@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AdminHealthController;
 use App\Http\Controllers\Admin\AdminResourceController;
 use App\Http\Controllers\AiBlockController;
 use App\Http\Controllers\AiConfirmController;
+use App\Http\Controllers\AiDraftController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\AnnouncementDismissalController;
 use App\Http\Controllers\AuditLogController;
@@ -273,6 +274,9 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
     Route::post('ai/proposals', [AiProposalController::class, 'store'])
         ->middleware('organization')
         ->name('ai-proposal.store');
+    Route::post('ai/draft', [AiDraftController::class, 'store'])
+        ->middleware('organization')
+        ->name('ai-draft.store');
 });
 
 Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function (): void {

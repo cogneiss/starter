@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react-inertia';
 import type { FormEvent } from 'react';
+import { AiDraftButton } from '@/components/ai/ai-draft-button';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,8 @@ export default function Announcement({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('announcements.title')} />
 
+            <h1 className="sr-only">{t('announcements.title')}</h1>
+
             <form onSubmit={submit} className="max-w-xl space-y-6 p-4">
                 <Heading
                     title={t(
@@ -110,6 +113,11 @@ export default function Announcement({
                         onChange={(event) =>
                             form.setData('body', event.target.value)
                         }
+                    />
+                    <AiDraftButton
+                        field="announcement.body"
+                        value={form.data.body}
+                        onDraft={(text) => form.setData('body', text)}
                     />
                     <InputError message={form.errors.body} />
                 </div>

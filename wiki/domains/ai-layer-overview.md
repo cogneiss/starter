@@ -9,7 +9,7 @@ code_refs:
     - app/Ai/Agents/Concerns/HasDefaultMiddleware.php
     - app/Ai/Concerns/OrganizationScopedAgent.php
     - app/Console/Commands/AiInstallCommand.php
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # AI layer overview
@@ -27,7 +27,7 @@ its tests pass without an account anywhere.
 
 | Directory             | What lives there                                                      |
 | --------------------- | --------------------------------------------------------------------- |
-| `app/Ai/Agents/`      | the agents: `InvitationDrafter`, `DashboardBriefing`, `BlockComposer` |
+| `app/Ai/Agents/`      | the agents: `InvitationDrafter`, `DashboardBriefing`, `BlockComposer`, `FieldDrafter` |
 | `app/Ai/Tools/`       | what an agent may do, each one authorized against a policy            |
 | `app/Ai/Middleware/`  | quota, fencing, topic filtering and audit, in that order              |
 | `app/Ai/Blocks/`      | the typed answer shapes the frontend can render                       |

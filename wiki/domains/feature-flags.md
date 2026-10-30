@@ -10,7 +10,7 @@ code_refs:
     - config/pennant.php
     - tests/Feature/FeatureFlagTest.php
     - app/Ai/Agents/DashboardBriefing.php
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # Feature flags
@@ -36,15 +36,18 @@ string looks correct in review. With the enum, a typo does not compile, and
 
 | Flag                    | Env                             | Default |
 | ----------------------- | ------------------------------- | ------- |
+| `ai-assist-enabled`     | `FEATURE_AI_ASSIST_ENABLED`     | `false` |
 | `ai-briefing-enabled`   | `FEATURE_AI_BRIEFING_ENABLED`   | `false` |
 | `impersonation-enabled` | `FEATURE_IMPERSONATION_ENABLED` | `false` |
 | `social-login-enabled`  | `FEATURE_SOCIAL_LOGIN_ENABLED`  | `false` |
 
-All three ship off. Impersonation is a support tool that reads another user's
+All four ship off. Impersonation is a support tool that reads another user's
 data, and social login needs credentials that do not exist in a fresh clone —
 neither should be on because nobody chose.
 
-The AI briefing is off for a third reason: it spends money. `DashboardBriefing`
+The AI briefing and the draft-with-AI field assist are off for a third reason: they spend money. `DraftFieldText` checks `KnownFeatures::AiAssistEnabled->enabledFor($organization)` and answers 404 when it is off, and `HandleInertiaRequests` shares the same answer as `aiAssist` so the button never renders.
+
+The briefing, specifically: `DashboardBriefing`
 checks `KnownFeatures::AiBriefingEnabled->enabledFor($organization)` and returns
 nothing when it is off, so the dashboard renders without it rather than failing.
 A flag on the per-organization override is how one organization tries the

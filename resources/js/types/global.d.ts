@@ -27,6 +27,7 @@ declare module '@inertiajs/core' {
             organizations: Organization[];
             impersonating: Impersonator | null;
             announcements: AnnouncementBanner[];
+            aiAssist: boolean;
             locale: string;
             supportedLocales: string[];
             translations: Record<string, string>;
