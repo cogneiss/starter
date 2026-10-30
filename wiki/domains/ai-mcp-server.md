@@ -8,10 +8,11 @@ code_refs:
     - app/Mcp/Tools/ListRecords.php
     - app/Mcp/Tools/ShowRecord.php
     - app/Mcp/Tools/ProposeChange.php
+    - app/Mcp/Tools/AppInfo.php
     - routes/ai.php
     - .mcp.json
     - tests/Feature/Ai/McpServerTest.php
-updated: 2026-10-28
+updated: 2026-10-30
 ---
 
 # AI MCP server
@@ -21,7 +22,7 @@ Claude Code, an editor, anything that speaks the protocol. It is registered in
 `routes/ai.php` with `Mcp::local()`: stdio only, started by a client on a
 developer's own machine, as themselves, never exposed over HTTP.
 
-## Three tools, and none of them are new
+## Three record tools, and none of them are new
 
 | MCP tool        | Delegates to                       |
 | --------------- | ---------------------------------- |
@@ -39,6 +40,16 @@ organization through `OrganizationContext`, and hand the request to the AI tool.
 Everything deciding what may be read or written stays in `app/Ai/Tools` — a
 second copy of an authorization check is a second place for it to be wrong.
 Writes are proposals here too ([[domains/ai-confirm-tokens]]).
+
+## One tool with no delegate
+
+`app-info` (`app/Mcp/Tools/AppInfo.php`) reports the application name,
+environment, URL, PHP version and a short list of package versions, so a client
+knows what it is talking to before it reads anything. Nothing it returns belongs
+to an organization, so there is no AI tool behind it and it is left out of
+`DELEGATES`. Versions and the environment are platform detail: the tool calls
+`authorizeFor()` on the `platform` ability, the same gate as the admin area, and
+a member without it is refused and logged.
 
 ## It ships disabled
 

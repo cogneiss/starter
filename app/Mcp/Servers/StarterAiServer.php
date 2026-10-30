@@ -7,6 +7,7 @@ namespace App\Mcp\Servers;
 use App\Ai\Tools\ListResourceRecords;
 use App\Ai\Tools\ProposeAction;
 use App\Ai\Tools\ShowResourceRecord;
+use App\Mcp\Tools\AppInfo;
 use App\Mcp\Tools\ListRecords;
 use App\Mcp\Tools\ProposeChange;
 use App\Mcp\Tools\ShowRecord;
@@ -19,6 +20,8 @@ use Laravel\Mcp\Server;
  * the same policies, the same proposal-only write path. DELEGATES says which AI
  * tool each MCP tool stands in for, and a test holds the two sides together so
  * a fork of a tool cannot quietly appear here with its checks left out.
+ * AppInfo is the one tool with no delegate: it reads platform detail, not
+ * organization records, and is held to the `platform` ability itself.
  */
 final class StarterAiServer extends Server
 {
@@ -47,5 +50,6 @@ final class StarterAiServer extends Server
         ListRecords::class,
         ShowRecord::class,
         ProposeChange::class,
+        AppInfo::class,
     ];
 }

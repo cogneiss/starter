@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Mcp\Servers\StarterAiServer;
+use App\Mcp\Tools\AppInfo;
 use App\Mcp\Tools\ListRecords;
 use App\Mcp\Tools\ProposeChange;
 use App\Mcp\Tools\ShowRecord;
@@ -36,13 +37,13 @@ it('offers the phase 6 tool list and nothing that forks it', function (): void {
     $tools = new StarterAiServer(new FakeTransporter)->createContext()->tools();
 
     expect($tools->map(fn (Tool $tool): string => $tool::class)->all())
-        ->toBe([ListRecords::class, ShowRecord::class, ProposeChange::class])
+        ->toBe([ListRecords::class, ShowRecord::class, ProposeChange::class, AppInfo::class])
         ->and($tools->map(fn (Tool $tool): string => $tool->name())->all())
-        ->toBe(['list-records', 'show-record', 'propose-change']);
+        ->toBe(['list-records', 'show-record', 'propose-change', 'app-info']);
 
     [$member, $organization] = mcpMember();
 
-    foreach ($tools as $tool) {
+    foreach ($tools->reject(fn (Tool $tool): bool => $tool instanceof AppInfo) as $tool) {
         expect($tool)->toBeInstanceOf(Tool::class);
 
         /** @var ListRecords|ProposeChange|ShowRecord $tool */
@@ -157,4 +158,23 @@ it('writes nothing but the proposal when an mcp client proposes an invitation', 
         OrganizationInvitation::withoutOrganizationScope()->count(),
     ])->toBe($before)
         ->and(AiConfirmToken::withoutOrganizationScope()->count())->toBe(1);
+});
+
+it('reports the application and its versions to a platform admin', function (): void {
+    $admin = User::factory()->superAdmin()->create();
+
+    StarterAiServer::actingAs($admin)
+        ->tool(AppInfo::class)
+        ->assertOk()
+        ->assertSee(['PHP: '.PHP_VERSION, 'laravel/framework: ', 'laravel/mcp: ']);
+});
+
+it('refuses app info to a member without the platform ability', function (): void {
+    [$member] = mcpMember();
+
+    StarterAiServer::actingAs($member)
+        ->tool(AppInfo::class)
+        ->assertHasErrors();
+
+    StarterAiServer::tool(AppInfo::class)->assertHasErrors();
 });
