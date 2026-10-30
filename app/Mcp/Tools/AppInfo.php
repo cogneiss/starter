@@ -9,7 +9,6 @@ use App\Models\User;
 use Composer\InstalledVersions;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Foundation\Application;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -68,13 +67,5 @@ final class AppInfo extends Tool
         }
 
         return Response::text(implode("\n", $lines));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function schema(JsonSchema $schema): array
-    {
-        return [];
     }
 }
