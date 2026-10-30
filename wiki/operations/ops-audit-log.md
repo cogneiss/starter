@@ -10,7 +10,7 @@ code_refs:
     - config/audit.php
     - tests/Feature/AuditLogTest.php
     - tests/Feature/AuditRedactionTest.php
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # The audit log
@@ -35,6 +35,11 @@ through the audit page — built on the list kit, so search, filters and CSV
 export come for free and stay scoped. Super admins see across organizations
 in the admin area ([[operations/ops-admin-area]]), and those very views are
 themselves audited.
+
+`config/audit.php` has two lists: `models` for those using
+`BelongsToOrganization`, and `extra` for audited models that do not.
+`Announcement` is in `extra`: a null organization means a global banner, so the
+model is deliberately unscoped, yet writing one is still an auditable act.
 
 ## Retention
 

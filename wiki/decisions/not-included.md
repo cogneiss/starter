@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # Not included
@@ -27,6 +27,10 @@ side set of translation files, a supported-locale list and a key parity test
 manager: uploads exist to feed a bulk import, are quarantined until a scanner
 returns clean, and expire if nobody promotes them ([[domains/ux-import-and-uploads]]).
 A media library is still absent.
+
+Announcements are in, as banners rather than a messaging product: scheduled,
+per-organization or global, dismissed for good per member, and written from the
+admin area (`FEATURES.md`, [[operations/ops-admin-area]]).
 
 Filament is absent. The admin area already serves platform operations on the
 same Inertia stack ([[operations/ops-admin-area]]); a second UI framework would

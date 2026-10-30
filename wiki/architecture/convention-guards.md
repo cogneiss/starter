@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - tests/Unit/Conventions/ConventionTest.php
     - config/conventions.php
-updated: 2026-09-01
+updated: 2026-10-31
 ---
 
 # Convention guards G1, G4 and G5
@@ -61,6 +61,10 @@ through its batch, `TempUpload` is replaced by whatever it becomes,
 gate, and `SavedSearch` is one person's kept views offered by the list itself
 ([[domains/ux-filters-and-saved-searches]]). None of them is a record anybody
 navigates to.
+
+`Announcement` joined `non_resource_models` with the reason that it is a platform
+banner written on one admin form and shown in the app shell, never listed or
+linked as a record (`config/conventions.php`).
 
 The platform ops layer added four more, again named by where the table is
 actually read: `ApiToken` and `ApiRequestLog` surface only on their own

@@ -9,7 +9,7 @@ code_refs:
     - resources/js/components/activity-chart.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # Pages
@@ -22,7 +22,7 @@ What ships rendered, and nothing more:
   (`resources/js/pages/dashboard.tsx`, which declares its `AppLayout` and
   breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets,
   a deferred API-requests-per-day chart (`resources/js/components/activity-chart.tsx`,
-  skeleton until the data arrives) and, until it is finished or dismissed, the activation checklist
+  a skeleton until the data arrives; the page reads the `activity` prop through `Deferred`, drawn with recharts) and, until it is finished or dismissed, the activation checklist
   ([[domains/ux-onboarding]]).
 - `/csrf-token` and `/.well-known/passkey-endpoints` have no page: the first is an
   empty response, the second a JSON pointer to the passkey settings screen.
@@ -50,6 +50,10 @@ What ships rendered, and nothing more:
 - `resources/js/pages/error.tsx` is not routed. Inertia renders it for a thrown
   status, so a 403, 404 or 500 is a page in the application's own shell rather
   than a framework default ([[domains/ux-primitives]]).
+- Announcement banners render on every in-app page through the app shell, from
+  the shared `announcements` prop; `/admin/announcements/create` and
+  `/admin/announcements/{announcement}/edit` are the admin form
+  ([[operations/ops-admin-area]]).
 - `/admin` — a super-admin control plane on the same list kit as the tenant
   screens, gated so a refusal is a 404 rather than a 403
   ([[operations/ops-admin-area]]).

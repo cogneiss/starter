@@ -13,7 +13,7 @@ code_refs:
     - tests/Feature/Middleware/SetLocaleTest.php
     - tests/Browser/I18nFallbackTest.php
     - tests/Mutations/phase14-locale-key.patch
-updated: 2026-09-01
+updated: 2026-10-31
 ---
 
 # Localization
@@ -56,6 +56,10 @@ would say which string went missing.
 The fallback is deliberately not "show the English". Silently substituting
 another language makes a missing translation invisible in review and leaves a
 Dutch page with English sentences scattered through it.
+
+The announcement banners and their admin form added an `announcements`
+namespace to `ui`, and the dashboard chart a `dashboard.activity` one, in both
+`lang/en/ui.php` and `lang/nl/ui.php`.
 
 ## Every locale ships every key
 

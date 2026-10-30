@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # Commands
@@ -73,6 +73,9 @@ configured, and reports rather than blocks, for the reasons in
 | `php artisan app:make-onboarding-step`     | Scaffold an onboarding step and register it               |
 | `php artisan brand:preview <hex> <hex>`    | Print the palette a pair of brand colours generates       |
 | `php artisan uploads:prune`                | Delete expired temporary uploads and their files          |
+
+`package.json` gained `recharts`, the runtime dependency of the dashboard
+activity chart; it adds no script, so the command tables are unchanged.
 
 Details per command sit with the thing it operates on:
 [[operations/testing]], [[operations/tooling]], [[domains/console-commands]],

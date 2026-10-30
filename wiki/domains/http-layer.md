@@ -14,7 +14,7 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # The HTTP layer
@@ -74,6 +74,12 @@ string built from `Password::defaults()` — added friction for
 unauthenticated form posts, on top of rate limiting rather than instead of it
 ([[operations/ops-csp]]).
 
+The announcement routes are web routes too. `announcement.dismiss` is a POST
+in the signed-in group, and the admin write screens
+(`admin.announcements.create`, `store`, `edit`, `update`, `destroy`) sit in the
+`admin/*` group, with `HandlePrecognitiveRequests` on `store` and `update`
+([[operations/ops-admin-area]]).
+
 The UX layer's routes sit inside that same signed-in group, with two additions to
 it: the `onboarded` alias and `HandlePrecognitiveRequests`, so every form in the
 group can be validated live without opting in per route
@@ -99,6 +105,12 @@ worse than a visible missing string. And the unread count is a query narrowed to
 the bound organization, not a filter over the user's notifications — a count
 cannot be filtered after the fact ([[domains/multi-tenancy]]). Only the five most
 recent rows are shared; the rest are a request away.
+
+A sixth prop, `announcements`, carries the active banners for the bound
+organization that the user has not dismissed: an empty array without a user and
+an organization, otherwise one query through `VisibleAnnouncements` with the
+audience and the dismissal in its where clause (`announcementsFor()` in
+`HandleInertiaRequests`).
 
 ## Form requests
 

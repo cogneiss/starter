@@ -16,7 +16,7 @@ code_refs:
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # Console commands
@@ -85,8 +85,8 @@ the kit ships still answers 200. It skips `csrf-token`, which is reachable by GE
 but reissues the session cookie and answers 204 — the right answer for it, and
 the wrong shape for a page assertion. It only sweeps routes carrying the `web`
 middleware, so the token-authenticated `/api/v1` routes do not switch the
-default guard mid-sweep, and it checks `/admin` separately, with a super admin
-signed in, rather than folding it into the same 200 assertion
+default guard mid-sweep, and it checks `/admin` and `/admin/announcements/create` separately, with a
+super admin signed in, rather than folding them into the same 200 assertion
 ([[operations/ops-admin-area]]).
 
 The file scanner joins the optional block for the same reason: a machine with no

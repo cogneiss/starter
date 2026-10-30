@@ -12,7 +12,7 @@ code_refs:
     - tests/Unit/PrecognitionAllowlistTest.php
     - tests/Mutations/phase11-parity.patch
     - tests/Mutations/phase11-allowlist.patch
-updated: 2026-10-29
+updated: 2026-10-31
 ---
 
 # Forms and live validation
@@ -43,6 +43,9 @@ why the gate is the router rather than a list of forms somebody maintains.
 
 `routes/web.php` puts `HandlePrecognitiveRequests` on the two route groups that
 hold the application's forms, not on each route.
+
+The admin announcement form follows the same rule: `admin.announcements.store`
+and `update` carry the middleware on the route itself (`routes/web.php`).
 
 `tests/Feature/PrecognitionParityTest.php` walks every registered route, finds
 the ones whose action type-hints a `FormRequest`, and requires the middleware on
