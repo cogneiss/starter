@@ -61,4 +61,18 @@ return [
         'documentation' => 'Documentation',
         'repository' => 'Repository',
     ],
+
+    'site' => [
+        'nav' => 'Site',
+        'home' => 'Home',
+        'blog' => 'Blog',
+        'changelog' => 'Changelog',
+        'welcome_title' => 'Welcome',
+        'welcome_description' => 'A Laravel and React starter kit with organizations, an API, webhooks and an AI layer built in.',
+        'blog_description' => 'News and notes from the team.',
+        'blog_empty' => 'No posts yet.',
+        'blog_back' => 'All posts',
+        'blog_by' => 'By',
+        'changelog_description' => 'What changed in each release.',
+    ],
 ];

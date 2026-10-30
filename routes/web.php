@@ -12,7 +12,9 @@ use App\Http\Controllers\AiDraftController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\AnnouncementDismissalController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BrowserSessionController;
+use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GdprController;
 use App\Http\Controllers\ImportController;
@@ -35,6 +37,7 @@ use App\Http\Controllers\OrganizationWebhookEndpointController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
@@ -50,11 +53,26 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserTwoFactorAuthenticationController;
 use App\Http\Controllers\WebhookDeliveryReplayController;
 use App\Http\Middleware\EnsurePlatformAdmin;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+
+// Public site... pages a search engine may index, and the two files that tell
+// it where they are. The slug pattern keeps anything but a file name out.
+Route::get('blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('blog/{slug}', [BlogController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('blog.show');
+Route::get('changelog', ChangelogController::class)->name('changelog');
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('robots.txt', fn (): ResponseFactory|Response => response(
+    "User-agent: *\nDisallow:\n\nSitemap: ".route('sitemap')."\n",
+    headers: ['Content-Type' => 'text/plain'],
+))->name('robots');
 
 // A fresh session token. An expired token is the one failure the browser can
 // recover from on its own: it asks here, gets the cookie reissued, and offers

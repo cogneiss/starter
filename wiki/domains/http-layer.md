@@ -24,7 +24,10 @@ validation rules (`ValidEmail` and `PublicHttpsUrl`).
 
 ## Routes
 
-`routes/web.php`. `/` renders the `welcome` page as the `home` route. The
+`routes/web.php`. `/` renders the `welcome` page as the `home` route. Beside it
+sit the public routes `blog.index`, `blog.show`, `changelog`, `sitemap` and
+`robots` ([[features/pages]]); `HandleInertiaRequests` shares `appUrl` so a page
+can build its canonical URL. The
 dashboard sits behind `auth`, `verified`, `organization`, `two-factor`,
 `onboarded` and `HandlePrecognitiveRequests` — the standard stack for anything
 inside an organization.

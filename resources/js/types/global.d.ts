@@ -22,6 +22,7 @@ declare module '@inertiajs/core' {
         };
         sharedPageProps: {
             name: string;
+            appUrl: string;
             auth: Auth;
             organization: Organization | null;
             organizations: Organization[];

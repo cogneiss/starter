@@ -64,7 +64,10 @@ lives inside it.
 
 ### Pages
 
-A public welcome page at `/`, a dashboard behind auth and email verification
+A public welcome page at `/`, a Markdown blog (`content/blog/*.md`, drafts hidden
+in production), a changelog page rendered from `CHANGELOG.md`, `/sitemap.xml`,
+`/robots.txt` and a reusable SEO head component (description, canonical, Open
+Graph, Twitter) with no CMS and no pricing page, a dashboard behind auth and email verification
 (count widgets plus a deferred API-requests chart with a skeleton fallback),
 and the auth and settings screens listed above. Everything else is yours to
 build.

@@ -59,4 +59,18 @@ return [
         'documentation' => 'Documentatie',
         'repository' => 'Repository',
     ],
+
+    'site' => [
+        'nav' => 'Site',
+        'home' => 'Home',
+        'blog' => 'Blog',
+        'changelog' => 'Wijzigingslog',
+        'welcome_title' => 'Welkom',
+        'welcome_description' => 'Een Laravel- en React-starterkit met organisaties, een API, webhooks en een ingebouwde AI-laag.',
+        'blog_description' => 'Nieuws en notities van het team.',
+        'blog_empty' => 'Nog geen berichten.',
+        'blog_back' => 'Alle berichten',
+        'blog_by' => 'Door',
+        'changelog_description' => 'Wat er in elke release is veranderd.',
+    ],
 ];

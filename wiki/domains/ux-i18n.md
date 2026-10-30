@@ -22,6 +22,8 @@ One set of translation files, read by the server, handed to the page. The client
 holds no second copy of any string, so a translation can never be current in PHP
 and stale in TypeScript.
 
+The public pages' strings live under the `site.*` keys in the same files.
+
 `config/app.php` lists what is served — `supported_locales`, currently `en` and
 `nl`.
 
