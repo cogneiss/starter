@@ -107,8 +107,7 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
+            "@php -r \"echo PHP_EOL, 'Next: point DB_* in .env at a Postgres database, then run: composer setup', PHP_EOL;\""
         ],
         "update:requirements": [
             "composer bump",
@@ -129,6 +128,7 @@
         ],
         "test:unit": "XDEBUG_MODE=\"coverage\" pest --parallel --no-tia --coverage --exactly=100.0",
         "test:evals": "pest --testsuite=Evals --group=Evals --compact",
+        "screenshots": "pest tests/Browser/ReadmeScreenshotsTest.php --group=screenshots --compact",
         "test:audit": [
             "@composer audit --no-interaction",
             "bun audit --prod"

@@ -561,6 +561,7 @@ Scheduled — these report, they never block:
 | `composer test:mutate` | Mutation score over `app/`. Runs weekly.                                                           |
 | `composer test:evals`  | Grades prompts against a real provider. Weekly and on request; skips itself with no key set.       |
 | `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.                                           |
+| `composer screenshots` | Retake the README screenshots into `docs/images`. Weekly; opens a pull request when they change.   |
 
 Local loops:
 

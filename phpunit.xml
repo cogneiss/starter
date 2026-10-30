@@ -18,7 +18,7 @@
             <directory>tests/Evals</directory>
         </testsuite>
     </testsuites>
-    <groups><exclude><group>Evals</group></exclude></groups>
+    <groups><exclude><group>Evals</group><group>screenshots</group></exclude></groups>
     <source>
         <include>
             <directory>app</directory>

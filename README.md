@@ -14,6 +14,16 @@
 
 **Laravel Starter Kit (Inertia & React)** is an ultra-strict, type-safe [Laravel](https://laravel.com) skeleton engineered for developers who refuse to compromise on code quality. This opinionated starter kit enforces rigorous development standards through meticulous tooling configuration and architectural decisions that prioritize type safety, immutability, and fail-fast principles.
 
+<p>
+    <img src="docs/images/members.png" alt="Members list with search, filters and bulk actions" width="100%">
+</p>
+<p>
+    <img src="docs/images/dashboard.png" alt="Dashboard" width="49%">
+    <img src="docs/images/login.png" alt="Sign-in page" width="49%">
+</p>
+
+Screenshots are retaken weekly by `.github/workflows/screenshots.yml` (`composer screenshots` locally).
+
 ## Why This Starter Kit?
 
 Modern PHP has evolved into a mature, type-safe language, yet many Laravel projects still operate with loose conventions and optional typing. This starter kit changes that paradigm by enforcing:
@@ -45,7 +55,13 @@ This isn't just another Laravel boilerplate—it's a statement that PHP applicat
 
 > **Requires [PHP 8.5+](https://php.net/releases/), [bun](https://bun.sh), Postgres and a code coverage driver like [xdebug](https://xdebug.org/docs/install)**. On [Herd](https://herd.laravel.com), Xdebug ships but is not loaded; [SETUP.md](SETUP.md#first-time-on-a-new-machine) has the one `php.ini` line that loads it.
 
-This kit is not published to Packagist. Clone it:
+Create a project with the Laravel installer, or pick it as a community starter kit in Herd's new-site wizard:
+
+```bash
+laravel new example-app --using=cogneiss/starter
+```
+
+Or clone it:
 
 ```bash
 git clone https://github.com/cogneiss/starter.git example-app

@@ -1,0 +1,106 @@
+name: screenshots
+
+on:
+  schedule:
+    # Mondays 04:41 UTC, off the hour like nightly.
+    - cron: "41 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+# Retakes the README screenshots in docs/images and opens a pull request when
+# any of them changed. A pull request rather than a push: main requires status
+# checks and the workflow token is not a bypass actor. Pull requests opened by
+# the workflow token do not trigger other workflows, so close and reopen it to
+# run the checks. Reports, never blocks.
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U starter"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+          extensions: pdo_pgsql
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Build Assets
+        run: bun run build
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Install Playwright Browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Take Screenshots
+        run: composer screenshots
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
+
+      - name: Open Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add docs/images
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged."
+            exit 0
+          fi
+          branch=chore/refresh-screenshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -m "docs(readme): refresh screenshots"
+          git push --force origin "$branch"
+          gh pr view "$branch" >/dev/null 2>&1 || gh pr create --base main --head "$branch" \
+            --title "docs(readme): refresh screenshots" \
+            --body "Weekly retake of the README screenshots by .github/workflows/screenshots.yml."
