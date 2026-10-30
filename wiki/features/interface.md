@@ -10,7 +10,7 @@ code_refs:
     - resources/js/components/value/relative-time.tsx
     - components.json
     - vite.config.ts
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # Interface
@@ -68,6 +68,10 @@ component each page mounts, and `installHttpErrorHandlers()` gives every failed
 request a sentence a person can act on instead of a silent no-op
 ([[domains/ux-primitives]]). Both are installed once at the root precisely
 because the per-page version is the one a new page forgets.
+
+The root reads the CSP nonce from the layout's `csp-nonce` meta tag and hands it
+to Inertia, so the progress bar's injected style passes the policy
+([[operations/ops-csp]]).
 
 The root also hooks Inertia's `navigate` event to track pageviews and identify
 the signed-in user, through `resources/js/lib/analytics.ts`. No provider ships

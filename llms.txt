@@ -71,7 +71,7 @@
 - [CI topology](wiki/operations/ci.md): Six workflows
 - [Code knowledge graphs](wiki/operations/code-knowledge-graphs.md): One index of this codebase, Laravel Brain, rebuilt after every commit by `.githooks/post-commit` (wired up by `composer install`, nothing to run by hand)
 - [Commands](wiki/operations/commands.md): Every command lives in `composer.json` or `package.json`, and `FEATURES.md` lists all of them
-- [Contributing](wiki/operations/contributing.md): The same settings file enables the `php-lsp` and `typescript-lsp` plugins, so the agent gets go-to-definition, references and type errors from Intelephense and `typescript-language-server` instead of...
+- [Contributing](wiki/operations/contributing.md): A fresh `composer create-project` ends by running `php artisan starter:install` (the `post-create-project-cmd` script in `composer.json`)
 - [Documentation](wiki/operations/documentation.md): Three layers, each with a different job
 - [The admin control plane](wiki/operations/ops-admin-area.md): A super-admin area at `/admin`, built on the same server-driven list kit as every tenant screen (domains/ux-list-kit) rather than on a second admin framework
 - [The analytics seam](wiki/operations/ops-analytics.md): Product analytics without a hard dependency

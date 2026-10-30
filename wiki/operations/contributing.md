@@ -16,7 +16,7 @@ code_refs:
     - bin/worktree-setup
     - tests/bootstrap.php
     - composer.json
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # Contributing
@@ -43,6 +43,11 @@ coverage, the suite at 100% coverage), then dead code, unused Composer packages,
 knip, the wiki lint, the dependency audit and the duplicate-code check. A Sloppy
 report on the pushed range prints last and never blocks. It takes a few
 minutes. Mutation testing stays on demand (`composer test:mutate`).
+
+A fresh `composer create-project` ends by running `php artisan starter:install`
+(the `post-create-project-cmd` script in `composer.json`). It asks which
+organization resolver to use and whether to keep the AI layer, prunes what was
+declined, and then deletes itself.
 
 `.githooks/post-merge`, and `.githooks/post-checkout` on a branch switch, run
 `composer install` or `bun install` when `composer.lock` or `bun.lock` changed,

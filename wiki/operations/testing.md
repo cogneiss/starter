@@ -8,7 +8,9 @@ code_refs:
     - tests/Unit/ArchTest.php
     - tests/Browser/AccessibilityTest.php
     - tests/Feature/Console/MakeResourceEndToEndTest.php
-updated: 2026-10-29
+    - tests/Feature/Console/InstallWizardPruneTest.php
+    - phpunit.xml
+updated: 2026-10-31
 ---
 
 # Testing
@@ -77,10 +79,17 @@ share a file on disk take a named lock from `withRepositoryLock()`; for example,
 `withWikiWorklistLock()` covers `wiki/_meta/audit.json`. The resource
 generator's end-to-end test, `tests/Feature/Console/MakeResourceEndToEndTest.php`,
 works in a temporary copy of the repository and runs the generated tests there.
+The copy comes from `checkoutCopy()` in `tests/Pest.php`, which
+`tests/Feature/Console/InstallWizardPruneTest.php` shares to prune a copy and boot it.
 The copy has the source files, with vendor packages linked rather than copied.
 Composer's autoloader, the bin proxies and Pest are real copies, because each
 finds the autoloader from its own real path. A worker booting meanwhile never
 sees a half-generated application.
+
+The suite never depends on a running Vite dev server: `phpunit.xml` sets
+`INERTIA_SSR_ENABLED=false`, so an Inertia response never calls the dev server's
+SSR endpoint, and a test that asserts the production CSP points Vite at a hot
+file that does not exist.
 
 Scoped models need an organization bound: use `resolve(OrganizationContext::class)->runAs()`
 ([[domains/multi-tenancy]]). Use factory states before hand-building a model —

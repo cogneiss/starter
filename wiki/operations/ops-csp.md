@@ -8,7 +8,10 @@ code_refs:
     - tests/Feature/CspTest.php
     - tests/Browser/CspTest.php
     - tests/Feature/FormFrictionTest.php
-updated: 2026-10-28
+    - resources/views/app.blade.php
+    - resources/js/app.tsx
+    - resources/css/app.css
+updated: 2026-10-31
 ---
 
 # Content Security Policy and form friction
@@ -25,7 +28,11 @@ page rather than as a silently weakened policy.
 
 The nonce reaches the Vite tags and Inertia's boot script through the
 request; anything else inline is a build error to fix, not a directive to
-loosen.
+loosen. `resources/views/app.blade.php` also publishes the nonce in a
+`<meta property="csp-nonce">` tag. The Vite dev client reads it to stamp the
+styles it injects, and `resources/js/app.tsx` passes it to Inertia for the
+progress bar's stylesheet. Sonner's stylesheet is bundled through
+`resources/css/app.css` instead, because sonner takes no nonce.
 
 ## Public form friction
 

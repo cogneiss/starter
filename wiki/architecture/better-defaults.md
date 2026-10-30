@@ -6,7 +6,7 @@ code_refs:
     - config/essentials.php
     - tests/Pest.php
     - tests/Unit/Conventions/MassAssignmentBoundaryTest.php
-updated: 2026-10-29
+updated: 2026-10-31
 ---
 
 # Better defaults from Essentials
@@ -62,7 +62,9 @@ otherwise copy: `resourceSearchDefects()` judges every resource definition's
 `searchable()`, `sortable()` and `recordLabel()` against the real schema,
 `motionStyles()` runs the shipped TypeScript motion module through Bun and
 reports what it emits, and `ownerBeforeOnboarding()`, `uploadedImport()` and
-`runImport()` build the states the onboarding and import tests start from. Each
+`runImport()` build the states the onboarding and import tests start from, and
+`checkoutCopy()` builds the throwaway copy of the repository that the resource
+generator and install wizard tests change. Each
 one is central for the reason the bans are: the per-file copy is the one that
 drifts.
 

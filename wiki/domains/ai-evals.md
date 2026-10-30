@@ -9,7 +9,7 @@ code_refs:
     - tests/Evals/DashboardBriefingEvalTest.php
     - .github/workflows/evals.yml
     - composer.json
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # AI evals
@@ -63,7 +63,8 @@ protection everybody has to remember is one somebody forgets.
 `resourceSearchDefects()` judges every resource definition's `searchable()`,
 `sortable()` and `recordLabel()` against the real schema
 ([[architecture/six-method-spine]]); `motionStyles()` runs the shipped motion
-module under Bun with `matchMedia` answered both ways
+module under Bun with `matchMedia` answered both ways; `checkoutCopy()` builds
+the repository copy the generator and install wizard tests work in
 ([[domains/ux-motion-and-a11y]]); and `ownerBeforeOnboarding()`,
 `uploadedImport()` and `runImport()` set up the two flows whose fixtures are
 awkward enough that each test would otherwise invent its own
