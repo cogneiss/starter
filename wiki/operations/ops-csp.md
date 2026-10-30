@@ -11,6 +11,7 @@ code_refs:
     - resources/views/app.blade.php
     - resources/js/app.tsx
     - resources/css/app.css
+    - vite.config.ts
 updated: 2026-10-31
 ---
 
@@ -31,8 +32,11 @@ request; anything else inline is a build error to fix, not a directive to
 loosen. `resources/views/app.blade.php` also publishes the nonce in a
 `<meta property="csp-nonce">` tag. The Vite dev client reads it to stamp the
 styles it injects, and `resources/js/app.tsx` passes it to Inertia for the
-progress bar's stylesheet. Sonner's stylesheet is bundled through
-`resources/css/app.css` instead, because sonner takes no nonce.
+progress bar's stylesheet. Sonner takes no nonce, so its stylesheet is bundled
+through `resources/css/app.css`, and a small plugin in `vite.config.ts` strips
+the un-nonced `<style>` sonner would otherwise inject on import. The plugin fails
+the build if a sonner release stops making that call, and `optimizeDeps` leaves
+sonner out of pre-bundling so the strip also runs under the dev server.
 
 ## Public form friction
 

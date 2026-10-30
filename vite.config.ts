@@ -4,7 +4,29 @@ import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
-import { defineConfig } from 'vite-plus';
+import { defineConfig, type Plugin } from 'vite-plus';
+
+/**
+ * Sonner appends its stylesheet in an un-nonced <style> on import, which the
+ * nonce-only CSP blocks. resources/css/app.css bundles the same stylesheet, so
+ * the injection is dropped. Fails the build if sonner stops making the call.
+ */
+const sonnerWithoutInjectedStyles: Plugin = {
+    name: 'sonner-without-injected-styles',
+    transform(code, id) {
+        if (!/[\\/]sonner[\\/]dist[\\/]index\.m?js(\?.*)?$/.test(id)) {
+            return;
+        }
+
+        const stripped = code.replace(/^__insertCSS\(".*"\);?$/m, '');
+
+        if (stripped === code) {
+            this.error('sonner no longer calls __insertCSS; revisit the CSP workaround in vite.config.ts');
+        }
+
+        return stripped;
+    },
+};
 
 export default defineConfig({
     lint: {
@@ -91,6 +113,10 @@ export default defineConfig({
             'resources/js/types/generated.d.ts',
         ],
     },
+    optimizeDeps: {
+        // Pre-bundled dependencies skip plugin transforms, so sonner stays out
+        exclude: ['sonner'],
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],
@@ -107,6 +133,7 @@ export default defineConfig({
                 }),
             ],
         }),
+        sonnerWithoutInjectedStyles,
         react(),
         babel({
             presets: [reactCompilerPreset()],
