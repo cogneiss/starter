@@ -1,11 +1,12 @@
-import { Head } from '@inertiajs/react';
+import { Deferred, Head } from '@inertiajs/react';
 import ActivationChecklist, {
     type Checklist,
 } from '@/components/activation-checklist';
+import ActivityChart from '@/components/activity-chart';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import type { BreadcrumbItem } from '@/types';
+import type { ApiUsageRow, BreadcrumbItem } from '@/types';
 
 type Widget = { label: string; value: number };
 
@@ -19,9 +20,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Dashboard({
     widgets,
     checklist,
+    activity,
 }: {
     widgets: Record<string, Widget>;
     checklist: Checklist;
+    activity?: ApiUsageRow[];
 }) {
     return (
         <>
@@ -50,6 +53,9 @@ export default function Dashboard({
                         </div>
                     ))}
                 </div>
+                <Deferred data="activity" fallback={<ActivityChart />}>
+                    <ActivityChart rows={activity} />
+                </Deferred>
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
                     <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                 </div>

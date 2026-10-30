@@ -64,7 +64,8 @@ lives inside it.
 
 ### Pages
 
-A public welcome page at `/`, a dashboard behind auth and email verification,
+A public welcome page at `/`, a dashboard behind auth and email verification
+(count widgets plus a deferred API-requests chart with a skeleton fallback),
 and the auth and settings screens listed above. Everything else is yours to
 build.
 

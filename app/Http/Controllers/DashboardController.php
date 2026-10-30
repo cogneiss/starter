@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\SummarizeApiUsage;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
@@ -34,7 +35,7 @@ final readonly class DashboardController
         'invitations' => ['members.invite', 'Pending invitations'],
     ];
 
-    public function __invoke(#[CurrentUser] User $user, Checklist $checklist, OrganizationContext $context): Response
+    public function __invoke(#[CurrentUser] User $user, Checklist $checklist, OrganizationContext $context, SummarizeApiUsage $summarize): Response
     {
         $organization = $context->get();
 
@@ -51,6 +52,7 @@ final readonly class DashboardController
         return Inertia::render('dashboard', [
             'widgets' => $widgets,
             'checklist' => $checklist->for($user, $organization),
+            'activity' => Inertia::defer(fn (): array => $summarize->handle($organization, now()->subDays(30))->daily),
         ]);
     }
 

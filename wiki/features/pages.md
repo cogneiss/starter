@@ -6,6 +6,7 @@ code_refs:
     - routes/web.php
     - resources/js/pages/welcome.tsx
     - resources/js/pages/dashboard.tsx
+    - resources/js/components/activity-chart.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
 updated: 2026-10-28
@@ -19,8 +20,9 @@ What ships rendered, and nothing more:
   `home`.
 - `/dashboard` — behind `auth`, `verified`, `organization`, `two-factor` and `onboarded`
   (`resources/js/pages/dashboard.tsx`, which declares its `AppLayout` and
-  breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets
-  and, until it is finished or dismissed, the activation checklist
+  breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets,
+  a deferred API-requests-per-day chart (`resources/js/components/activity-chart.tsx`,
+  skeleton until the data arrives) and, until it is finished or dismissed, the activation checklist
   ([[domains/ux-onboarding]]).
 - `/csrf-token` and `/.well-known/passkey-endpoints` have no page: the first is an
   empty response, the second a JSON pointer to the passkey settings screen.

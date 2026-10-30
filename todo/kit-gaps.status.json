@@ -1,0 +1,43 @@
+{
+  "plan": "Gaps found comparing Laravel 13 Inertia and AI-first starter kits",
+  "created": "2026-10-30",
+  "order_note": "Install wizard last: it prunes what the others add.",
+  "phases": [
+    {
+      "id": 1,
+      "name": "dashboard charts and deferred props with skeletons",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=Dashboard"
+    },
+    {
+      "id": 2,
+      "name": "announcement banners",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=Announcement"
+    },
+    {
+      "id": 3,
+      "name": "llms.txt generated from the wiki",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=LlmsTxt"
+    },
+    {
+      "id": 4,
+      "name": "draft-with-AI form field assist",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=AiAssist"
+    },
+    {
+      "id": 5,
+      "name": "public site: blog, changelog page, sitemap, SEO meta",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=\"Blog|Changelog|Sitemap|SeoMeta\""
+    },
+    {
+      "id": 6,
+      "name": "install wizard that prunes unused layers",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=InstallWizard"
+    }
+  ]
+}

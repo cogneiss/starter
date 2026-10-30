@@ -17,6 +17,16 @@ return [
         'nl' => 'Nederlands',
     ],
 
+    'dashboard' => [
+        'activity' => [
+            'title' => 'Activity',
+            'description' => 'API requests per day over the last 30 days',
+            'summary' => 'requests in the last 30 days',
+            'empty' => 'No API requests in the last 30 days',
+            'requests' => 'Requests',
+        ],
+    ],
+
     'nav' => [
         'admin' => 'Admin',
         'dashboard' => 'Dashboard',
