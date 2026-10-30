@@ -44,3 +44,7 @@ nginx.pid
 Thumbs.db
 _ide_helper.php
 /public/fonts-manifest.dev.json
+
+# Leftovers from dropped graph tools (graphify, gitnexus)
+/graphify-out/
+/.claude/skills/gitnexus/
