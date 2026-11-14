@@ -28,6 +28,7 @@ use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Laravel\Ai\Ai;
 use Laravel\Ai\Contracts\Agent;
+use Pest\Evals\Drivers\LaravelAiJudge;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process as SymfonyProcess;
 use Tests\TestCase;
@@ -71,30 +72,38 @@ pest()->beforeEach(function (): void {
 })->in('Feature/Ai');
 
 /**
- * Evals grade prompts against real providers, so they are the one suite allowed
- * out to the network — and the one suite nothing blocking depends on. With no
- * key configured there is nothing to grade.
+ * Evals grade the shipped agents against real providers, so they are the one
+ * suite allowed out to the network, and they only run under `--evals`. The
+ * agents and the judge both answer on the cheap tier's primary provider, so a
+ * checkout without that provider's key has nothing to grade, even when another
+ * provider's key is set. A model rename in `config/ai.php` moves the judge too.
  */
 pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->group('Evals')
     ->beforeEach(function (): void {
-        if (AiAvailability::faked()) {
-            $this->markTestSkipped('No AI provider key is configured, so there is nothing to grade.');
+        $tier = config('ai.tiers.cheap');
+
+        if (! in_array($tier['provider']->value, AiAvailability::providers(), true)) {
+            $this->markTestSkipped("No {$tier['provider']->value} key is configured, so there is nothing to grade.");
         }
+
+        pest()->evals()->judgeUsing(new LaravelAiJudge($tier['provider']->value, $tier['model']));
     })
     ->in('Evals');
 
 expect()->extend('toBeOne', fn () => $this->toBe(1));
 
 /**
- * A committed eval fixture: the cases to grade, and the model and date they
- * were written against.
+ * A committed eval fixture: the cases to grade. The agent under test supplies
+ * its own prompt and tier, so the fixture carries only the inputs and what a
+ * good answer must contain.
  *
- * @return array{prompt: string, provider: string, model: string, captured_at: string, cases: list<array<string, mixed>>}
+ * @return array{cases: list<array<string, mixed>>}
  */
 function evalFixture(string $name): array
 {
-    /** @var array{prompt: string, provider: string, model: string, captured_at: string, cases: list<array<string, mixed>>} $fixture */
+    /** @var array{cases: list<array<string, mixed>>} $fixture */
     $fixture = json_decode(
         (string) file_get_contents(__DIR__.'/Fixtures/Ai/'.$name.'.json'),
         true,

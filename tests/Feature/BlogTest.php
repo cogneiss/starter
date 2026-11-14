@@ -28,8 +28,14 @@ function blogPost(string $title, string $date, string $extra = '', string $body 
     return "---\ntitle: {$title}\ndescription: About {$title}\ndate: {$date}\n{$extra}---\n\n{$body}\n";
 }
 
+/**
+ * Only this file's folders: the testing directory is shared by every parallel
+ * worker, and wiping it deletes another test's fixtures mid-run.
+ */
 afterEach(function (): void {
-    File::deleteDirectories(storage_path('framework/testing'));
+    foreach (File::glob(storage_path('framework/testing/blog-*')) as $folder) {
+        File::deleteDirectory($folder);
+    }
 });
 
 it('Blog lists posts newest first', function (): void {

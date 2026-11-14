@@ -65,8 +65,8 @@ build rather than leaking across organizations.
 
 ## `laravel/mcp` is transitive, not required
 
-It arrives at 1.x through `laravel/ai` and `laravel/boost`. Do not add it to
-`composer.json`; it moves with `laravel/ai`. The server in `app/Mcp` ships
+It arrives through `laravel/ai` and `laravel/boost`. Do not add it to
+`composer.json`; it moves with `laravel/ai`. `composer.lock` has the version. The server in `app/Mcp` ships
 disabled.
 
 ## Map a block enum to its class with a const array

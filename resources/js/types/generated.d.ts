@@ -11,7 +11,7 @@ export type AdminRow = {
 id: string,
 cells: Record<string, string>,
 };
-export type AiAuditStatus = 'ok' | 'blocked';
+export type AiAuditStatus = 'ok' | 'blocked' | 'error';
 export type AiBlockType = 'text' | 'markdown' | 'table' | 'list' | 'metric' | 'form' | 'confirm';
 export type AiConfirmBlock = {
 type: AiBlockType,

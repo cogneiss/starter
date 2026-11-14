@@ -10,7 +10,8 @@ code_refs:
     - resources/js/components/ai/blocks/AiBlocks.tsx
     - resources/js/pages/organization/ai-usage.tsx
     - tests/Feature/Ai/AiBlockTest.php
-updated: 2026-08-31
+    - resources/js/lib/ai-blocks.ts
+updated: 2026-11-15
 ---
 
 # AI blocks
@@ -39,7 +40,10 @@ the trust boundary: the model chooses from a menu the application wrote.
 
 `app/Actions/StreamBlocks.php` decodes a streamed answer line by line and yields
 blocks as they complete, so a long answer draws progressively instead of after.
-A line that does not decode into a block is skipped rather than shown.
+A line that does not decode into a block is skipped rather than shown, and each
+skip logs a warning with a reason (`invalid_json` or `not_a_block`) and the line
+length, never its text. The browser client in `resources/js/lib/ai-blocks.ts`
+warns on a dropped line and keeps reading instead of ending the stream.
 
 An answer that produced no blocks at all — every payload dropped, or a model
 that said nothing usable — renders the kit's `EmptyState` rather than an empty

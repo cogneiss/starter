@@ -4,20 +4,25 @@ status: current
 supersedes: []
 code_refs:
     - resources/js/app.tsx
-    - resources/js/ssr.tsx
     - resources/js/components/value/money.tsx
     - resources/js/components/value/empty-value.tsx
     - resources/js/components/value/relative-time.tsx
     - components.json
     - vite.config.ts
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Interface
 
 Inertia v3 and React 19, server-side routing, Tailwind v4. `resources/js/app.tsx`
-is the entry point; `resources/js/ssr.tsx` is the SSR one, built with
-`bun run build:ssr`.
+is the only entry point. It renders in the browser and, through the
+`@inertiajs/vite` plugin in `vite.config.ts`, on the server too: the plugin finds
+the pages under `resources/js/pages` and wraps the same `createInertiaApp()` call
+in the SSR bootstrap, so the provider tree cannot drift between the two. Browser
+only setup (theme, error toasts, analytics) sits behind a `typeof window` check.
+`bun run build:ssr` writes the server bundle to `bootstrap/ssr/app.js`, and in
+development the plugin serves SSR from the Vite dev server with no separate
+process.
 
 ## Layouts and components
 

@@ -22,6 +22,7 @@ use LogicException;
  * @property-read string $id
  * @property-read string $organization_id
  * @property-read string|null $user_id
+ * @property-read string|null $run_id
  * @property-read string $agent
  * @property-read string|null $provider
  * @property-read string|null $model
@@ -33,7 +34,9 @@ use LogicException;
  * @property-read int $duration_ms
  * @property-read AiAuditStatus $status
  * @property-read string|null $blocked_reason
+ * @property-read string|null $error
  * @property-read array<int, mixed>|null $tool_calls
+ * @property-read array<int, array{name: string, arguments: array<array-key, mixed>}>|null $tool_arguments
  * @property-read CarbonInterface $created_at
  * @property-read Organization $organization
  * @property-read User|null $user
@@ -90,6 +93,7 @@ final class AiAuditLog extends Model
             'duration_ms' => 'integer',
             'status' => AiAuditStatus::class,
             'tool_calls' => 'array',
+            'tool_arguments' => 'array',
             'created_at' => 'datetime',
         ];
     }

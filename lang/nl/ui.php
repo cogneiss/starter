@@ -53,7 +53,25 @@ return [
         ],
     ],
 
+    'assistant' => [
+        'title' => 'Assistent',
+        'new' => 'Nieuw gesprek',
+        'recent' => 'Recente gesprekken',
+        'empty_title' => 'Nog geen gesprekken',
+        'empty_body' => 'Stel de assistent een vraag over je organisatie. Hij leest je gegevens en stelt wijzigingen voor die jij bevestigt.',
+        'placeholder' => 'Stel een vraag over je organisatie',
+        'send' => 'Versturen',
+        'sending' => 'Aan het nadenken…',
+        'you' => 'Jij',
+        'assistant' => 'Assistent',
+        'intro' => 'Stel een vraag om te beginnen. De assistent wijzigt nooit iets zonder jouw bevestiging.',
+        'failed' => 'De assistent kon niet antwoorden. Je bericht is niet kwijt, probeer het opnieuw.',
+        'quota' => 'Je organisatie heeft de AI-ruimte voor nu opgebruikt. Die wordt zo weer aangevuld.',
+        'back' => 'Alle gesprekken',
+    ],
+
     'nav' => [
+        'assistant' => 'Assistent',
         'admin' => 'Beheer',
         'dashboard' => 'Overzicht',
         'documentation' => 'Documentatie',

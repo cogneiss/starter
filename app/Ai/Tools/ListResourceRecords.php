@@ -20,19 +20,14 @@ use Spatie\LaravelData\Data;
  * Reads a page of one registered resource, as the member the agent runs for.
  *
  * Two gates, not one: the member has to be allowed to use the tool at all, and
- * every row has to survive the same policy the UI asks. The second gate is what
- * keeps another organization's rows out even for models the global scope does
- * not cover.
+ * every row has to survive the same policy the UI asks. The model's
+ * organization scope decides which rows exist, so a foreign row is unreachable.
+ * The policy runs per row as the second gate, and the query is walked lazily
+ * until a page is full, so rows it hides never shorten the page.
  */
 final readonly class ListResourceRecords implements Tool
 {
     use AuthorizesToolCall;
-
-    /**
-     * The most rows read before the policy filter runs. A tool answers a model,
-     * not a report: nothing downstream wants more than a page of context.
-     */
-    private const int CEILING = 200;
 
     public function __construct(
         private User $user,
@@ -55,11 +50,11 @@ final readonly class ListResourceRecords implements Tool
 
         $records = $resource->model()::query()
             ->latest()
-            ->limit(self::CEILING)
-            ->get()
+            ->lazy()
             ->filter(fn (Model $record): bool => Gate::forUser($this->user)->allows('view', $record))
             ->take($limit)
-            ->map(fn (Model $record): Data => $resource->dataClass()::from($record));
+            ->map(fn (Model $record): Data => $resource->dataClass()::from($record))
+            ->collect();
 
         return json_encode([
             'resource' => $resource->key(),

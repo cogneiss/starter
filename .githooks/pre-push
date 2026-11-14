@@ -1,20 +1,15 @@
 #!/usr/bin/env sh
 #
-# The whole local gate, run before the push leaves the machine, so nothing has to
-# be remembered and CI is a second opinion rather than the first. composer test
-# covers lint, Larastan + tsc, strict PHPStan, 100% type coverage and the suite at
-# 100% coverage (Xdebug must be loadable; see wiki/operations/setup.md). The
-# static checks follow, then a sloppy report that never blocks. Mutation testing
-# stays on demand: composer test:mutate. Takes a few minutes.
+# The whole local gate, composer verify, run before the push leaves the machine
+# so nothing has to be remembered and CI is a second opinion rather than the
+# first. It covers lint, Larastan + tsc, strict PHPStan, 100% type coverage, the
+# suite at 100% coverage (Xdebug must be loadable; see wiki/operations/setup.md),
+# dead code, unused packages, the wiki, llms.txt, the audit and duplication. A
+# sloppy report follows that never blocks. Mutation testing stays on demand:
+# composer test:mutate. Takes a few minutes.
 
 set -e
 
-composer test
-composer test:dead-code
-composer test:deps
-composer test:knip
-composer test:wiki
-composer test:audit
-bun run test:dupes
+composer verify
 
 vendor/bin/sloppy diff '@{upstream}' --merge-base --fail-on=never || true

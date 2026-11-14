@@ -15,7 +15,10 @@ code_refs:
     - app/Ai/Tools/ProposeAction.php
     - app/Ai/Tools/Concerns/AuthorizesToolCall.php
     - tests/Feature/Ai/ToolAuthorizationTest.php
-updated: 2026-10-31
+    - app/Ai/Actions/RememberAssistantFact.php
+    - app/Ai/ConfirmableActions.php
+    - tests/Unit/ArchTest.php
+updated: 2026-11-15
 ---
 
 # AI agents and tools
@@ -50,7 +53,7 @@ tool reads an ambient "current user".
 | `app/Ai/Tools/ListResourceRecords.php` | list records of a registered resource      |
 | `app/Ai/Tools/ShowResourceRecord.php`  | read one record                            |
 | `app/Ai/Tools/SearchKnowledge.php`     | vector search over organization documents  |
-| `app/Ai/Tools/RememberFact.php`        | write one fact to assistant memory         |
+| `app/Ai/Tools/RememberFact.php`        | propose one fact for confirmation (no write) |
 | `app/Ai/Tools/ProposeAction.php`       | propose a write, returning a confirm token |
 
 The read tools go through the resource registry rather than touching models, so
@@ -76,7 +79,13 @@ a hole in it.
 
 ## Writes are proposed, never performed
 
-No tool writes application state. `ProposeAction` validates the request against
+No tool writes application state, including memory: `RememberFact` returns a
+proposal for `app/Ai/Actions/RememberAssistantFact.php`, registered as
+`remember-fact` in `app/Ai/ConfirmableActions.php`. `tests/Unit/ArchTest.php`
+enforces this for `App\Ai\Tools` and `App\Mcp\Tools` by banning writer
+namespaces and Eloquent write calls, with `ProposeAction` and `ProposeChange`
+exempt. `ListResourceRecords` walks its query lazily and applies the policy per
+row, so hidden rows never shorten a page. `ProposeAction` validates the request against
 a `ConfirmableAction`, mints a confirm token, and returns it for the person to
 approve in the application. See [[domains/ai-confirm-tokens]].
 

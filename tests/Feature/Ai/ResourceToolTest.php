@@ -71,6 +71,21 @@ it('lists only the records of the acting member, never those of two organization
         ->and(json_encode($result))->not->toContain($hidden->id);
 });
 
+it('fills a page even when the policy hides rows the member could otherwise see', function (): void {
+    [$owner, $organization] = toolOwner();
+    $colleague = User::factory()->forOrganization($organization)->create();
+
+    AiConfirmToken::factory()->count(3)->create(['organization_id' => $organization->id, 'user_id' => $owner->id, 'created_at' => now()->subHour()]);
+    AiConfirmToken::factory()->count(210)->create(['organization_id' => $organization->id, 'user_id' => $colleague->id, 'created_at' => now()]);
+
+    $result = resolve(OrganizationContext::class)->runAs($organization, fn (): array => toolResult(
+        new ListResourceRecords($owner, $organization, resolve(ResourceRegistry::class)),
+        ['resource' => 'ai-confirm-tokens', 'limit' => 3],
+    ));
+
+    expect($result['records'])->toHaveCount(3);
+});
+
 it('refuses an unregistered resource key rather than reaching a model', function (): void {
     [$owner, $organization] = toolOwner();
 

@@ -10,7 +10,7 @@ code_refs:
     - app/Ai/Contracts/ConfirmableAction.php
     - tests/Feature/Ai/ConfirmTokenTest.php
     - tests/Feature/Ai/ConfirmTokenLockTest.php
-updated: 2026-08-25
+updated: 2026-11-15
 ---
 
 # AI confirm tokens
@@ -65,4 +65,4 @@ The signature covers the id, the action and the payload
 rather than a cheaper way to ask for something else.
 
 The tokens are rendered by a confirm block — see [[domains/ai-blocks]] — and the
-tool that mints them is in [[domains/ai-agents-and-tools]].
+tool that mints them is in [[domains/ai-agents-and-tools]]. `remember-fact` is a built-in action merged in by `app/Ai/ConfirmableActions.php`.

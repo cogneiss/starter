@@ -41,8 +41,8 @@ What ships rendered, and nothing more:
   canonical URL, Open Graph and Twitter tags through Inertia's `Head` on the
   welcome, blog and changelog pages. The canonical URL is the shared `appUrl`
   plus the path without its query string. The tags reach the first HTML response
-  only while the SSR server (`resources/js/ssr.tsx`, built by `bun run
-  build:ssr`) is running; otherwise the client adds them on render.
+  only while SSR is running (the Vite dev server in development, or the
+  `bootstrap/ssr/app.js` bundle built by `bun run build:ssr`); otherwise the client adds them on render.
 - `/dashboard` — behind `auth`, `verified`, `organization`, `two-factor` and `onboarded`
   (`resources/js/pages/dashboard.tsx`, which declares its `AppLayout` and
   breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets,

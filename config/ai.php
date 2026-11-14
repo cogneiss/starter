@@ -9,26 +9,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default AI Provider Names
+    | Default AI Provider
     |--------------------------------------------------------------------------
     |
-    | Here you may specify which of the AI providers below should be the
-    | default for AI operations when no explicit provider is provided
-    | for the operation. This should be any provider defined below.
+    | This file holds only the values that differ from laravel/ai's defaults,
+    | plus the keys this application adds. The package merges its own config
+    | underneath one level deep, so the provider list, their keys and the
+    | per-modality defaults (images, audio, embeddings and so on) come from
+    | vendor/laravel/ai/config/ai.php. Each top-level key here replaces the
+    | package's array of the same name.
     |
     | An operation may also be given a list of providers instead of one name,
     | in which case the SDK fails over left to right:
-    | `prompt('...', provider: [Lab::Anthropic, Lab::OpenAI])`. The tier map
-    | below does this automatically once a second key is present.
+    | `prompt('...', provider: [Lab::Anthropic, Lab::OpenAI])`. App\Support\AiTier
+    | does this for the tier map below once both providers carry a key.
     |
     */
 
     'default' => env('AI_DEFAULT_PROVIDER', 'anthropic'),
-    'default_for_images' => 'gemini',
-    'default_for_audio' => 'openai',
-    'default_for_transcription' => 'openai',
-    'default_for_embeddings' => 'openai',
-    'default_for_reranking' => 'cohere',
 
     /*
     |--------------------------------------------------------------------------
@@ -65,16 +63,30 @@ return [
     | edit here instead of a sweep through app/Ai/Agents. Resolve a tier with
     | App\Support\AiTier::for('cheap').
     |
+    | `failover` is the second provider the SDK tries when the first one fails.
+    | It only takes effect when both providers carry a key, so a checkout with
+    | one key or none behaves exactly as before. Every model named here must
+    | have an entry under `pricing`; tests/Feature/Ai/AiPricingTest.php fails
+    | when one does not.
+    |
     */
 
     'tiers' => [
         'cheap' => [
             'provider' => Lab::Anthropic,
-            'model' => env('AI_MODEL_CHEAP', 'claude-haiku-4-5-20251001'),
+            'model' => env('AI_MODEL_CHEAP', 'claude-haiku-5-5'),
+            'failover' => [
+                'provider' => Lab::OpenAI,
+                'model' => env('AI_MODEL_CHEAP_FAILOVER', 'gpt-6-luna'),
+            ],
         ],
         'smart' => [
             'provider' => Lab::Anthropic,
-            'model' => env('AI_MODEL_SMART'),
+            'model' => env('AI_MODEL_SMART', 'claude-sonnet-5-5'),
+            'failover' => [
+                'provider' => Lab::OpenAI,
+                'model' => env('AI_MODEL_SMART_FAILOVER', 'gpt-6-astra'),
+            ],
         ],
     ],
 
@@ -182,17 +194,31 @@ return [
     | Model Pricing
     |--------------------------------------------------------------------------
     |
-    | Micros per million tokens, per provider and model — 1_000_000 is one
-    | dollar per million. A model that is not listed costs zero and is recorded
-    | as such: App\Support\AiPricing never guesses a price into the ledger.
+    | Micros per million tokens, per provider and model, where 1_000_000 is one
+    | dollar per million. The Anthropic rows are the published Claude 5.5
+    | prices. The OpenAI rows are set at the fallback ceiling because no
+    | published price has been checked for them, so failover over-charges
+    | rather than under-charges until someone confirms the real rate.
+    |
+    | A model that is not listed is billed at `pricing_fallback`, a deliberate
+    | ceiling, so spend is never metered as zero. Overriding a tier model with
+    | an env var is safe for the same reason.
     |
     */
 
     'pricing' => [
         'anthropic' => [
-            'claude-haiku-4-5-20251001' => ['input' => 1_000_000, 'output' => 5_000_000],
+            'claude-haiku-5-5' => ['input' => 100_000, 'output' => 500_000],
+            'claude-sonnet-5-5' => ['input' => 2_000_000, 'output' => 10_000_000],
+            'claude-opus-5-5' => ['input' => 4_000_000, 'output' => 20_000_000],
+        ],
+        'openai' => [
+            'gpt-6-luna' => ['input' => 4_000_000, 'output' => 20_000_000],
+            'gpt-6-astra' => ['input' => 4_000_000, 'output' => 20_000_000],
         ],
     ],
+
+    'pricing_fallback' => ['input' => 4_000_000, 'output' => 20_000_000],
 
     /*
     |--------------------------------------------------------------------------
@@ -209,122 +235,6 @@ return [
         'embeddings' => [
             'cache' => true,
             'store' => env('CACHE_STORE', 'database'),
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | AI Providers
-    |--------------------------------------------------------------------------
-    |
-    | Below are each of your AI providers defined for this application. Each
-    | represents an AI provider and API key combination which can be used
-    | to perform tasks like text, image, and audio creation via agents.
-    |
-    */
-
-    'providers' => [
-        'anthropic' => [
-            'driver' => 'anthropic',
-            'key' => env('ANTHROPIC_API_KEY'),
-            'url' => env('ANTHROPIC_URL', 'https://api.anthropic.com/v1'),
-        ],
-
-        'azure' => [
-            'driver' => 'azure',
-            'key' => env('AZURE_OPENAI_API_KEY'),
-            'url' => env('AZURE_OPENAI_URL'),
-            'api_version' => env('AZURE_OPENAI_API_VERSION', '2025-04-01-preview'),
-            'deployment' => env('AZURE_OPENAI_DEPLOYMENT', 'gpt-4o'),
-            'embedding_deployment' => env('AZURE_OPENAI_EMBEDDING_DEPLOYMENT', 'text-embedding-3-small'),
-            'image_deployment' => env('AZURE_OPENAI_IMAGE_DEPLOYMENT', 'gpt-image-1'),
-            'store' => env('AZURE_OPENAI_STORE', true),
-        ],
-
-        'bedrock' => [
-            'driver' => 'bedrock',
-            'region' => env('AWS_BEDROCK_REGION', 'us-east-1'),
-            'key' => env('AWS_BEARER_TOKEN_BEDROCK'),
-            'access_key_id' => env('AWS_ACCESS_KEY_ID'),
-            'secret_access_key' => env('AWS_SECRET_ACCESS_KEY'),
-            'session_token' => env('AWS_SESSION_TOKEN'),
-            'use_default_credential_provider' => env('AWS_USE_DEFAULT_CREDENTIALS', true),
-            'assume_role' => [
-                'arn' => env('AWS_BEDROCK_ASSUME_ROLE_ARN'),
-                'session_name' => env('AWS_BEDROCK_ASSUME_ROLE_SESSION_NAME'),
-                'duration_seconds' => env('AWS_BEDROCK_ASSUME_ROLE_DURATION_SECONDS'),
-                'external_id' => env('AWS_BEDROCK_ASSUME_ROLE_EXTERNAL_ID'),
-            ],
-        ],
-
-        'cohere' => [
-            'driver' => 'cohere',
-            'key' => env('COHERE_API_KEY'),
-        ],
-
-        'deepseek' => [
-            'driver' => 'deepseek',
-            'key' => env('DEEPSEEK_API_KEY'),
-        ],
-
-        'eleven' => [
-            'driver' => 'eleven',
-            'key' => env('ELEVENLABS_API_KEY'),
-        ],
-
-        'gemini' => [
-            'driver' => 'gemini',
-            'key' => env('GEMINI_API_KEY'),
-            'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1beta/'),
-        ],
-
-        'groq' => [
-            'driver' => 'groq',
-            'key' => env('GROQ_API_KEY'),
-        ],
-
-        'jina' => [
-            'driver' => 'jina',
-            'key' => env('JINA_API_KEY'),
-        ],
-
-        'mistral' => [
-            'driver' => 'mistral',
-            'key' => env('MISTRAL_API_KEY'),
-        ],
-
-        'ollama' => [
-            'driver' => 'ollama',
-            'key' => env('OLLAMA_API_KEY', ''),
-            'url' => env('OLLAMA_URL', 'http://localhost:11434'),
-        ],
-
-        'openai' => [
-            'driver' => 'openai',
-            'key' => env('OPENAI_API_KEY'),
-            'url' => env('OPENAI_URL', 'https://api.openai.com/v1'),
-            'store' => env('OPENAI_STORE', true),
-        ],
-
-        'openai-compatible' => [
-            'driver' => 'openai-compatible',
-            'url' => env('OPENAI_COMPATIBLE_URL'),
-            'key' => env('OPENAI_COMPATIBLE_API_KEY'),
-        ],
-
-        'openrouter' => [
-            'driver' => 'openrouter',
-            'key' => env('OPENROUTER_API_KEY'),
-        ],
-
-        'voyageai' => [
-            'driver' => 'voyageai',
-            'key' => env('VOYAGEAI_API_KEY'),
-        ],
-
-        'xai' => [
-            'driver' => 'xai',
-            'key' => env('XAI_API_KEY'),
         ],
     ],
 

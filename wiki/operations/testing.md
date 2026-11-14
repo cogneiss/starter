@@ -10,7 +10,8 @@ code_refs:
     - tests/Feature/Console/MakeResourceEndToEndTest.php
     - tests/Feature/Console/InstallWizardPruneTest.php
     - phpunit.xml
-updated: 2026-10-31
+    - tests/bootstrap.php
+updated: 2026-11-15
 ---
 
 # Testing
@@ -85,6 +86,15 @@ The copy has the source files, with vendor packages linked rather than copied.
 Composer's autoloader, the bin proxies and Pest are real copies, because each
 finds the autoloader from its own real path. A worker booting meanwhile never
 sees a half-generated application.
+
+Two pest runs can share the checkout safely, browser tests included.
+pest-plugin-browser records its Playwright server in a state file, and every
+top-level pest process deletes that file when it exits. With the plugin's
+default path, one file per checkout, a targeted run beside `composer test`
+(or a test that runs pest in a copy) took the file away from the gate's
+workers mid-run. `tests/bootstrap.php` points `PEST_BROWSER_STATE_FILE` at a
+file named after the run's process id in the system temp directory, and the
+parallel workers inherit it.
 
 The suite never depends on a running Vite dev server: `phpunit.xml` sets
 `INERTIA_SSR_ENABLED=false`, so an Inertia response never calls the dev server's

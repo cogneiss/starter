@@ -350,6 +350,20 @@ it('says nothing about pricing when every configured model has a price', functio
     expect($pricing)->toBe(['name' => 'AI pricing', 'set' => true, 'disables' => $pricing['disables']]);
 });
 
+it('leaves a tier with no model out of the pricing check', function (): void {
+    config()->set('ai.tiers.smart.model');
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    /** @var array{optional: list<array{name: string, set: bool}>} $report */
+    $report = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+    $pricing = collect($report['optional'])->firstOrFail(fn (array $entry): bool => str_starts_with($entry['name'], 'AI pricing'));
+
+    expect($pricing['name'])->toBe('AI pricing')
+        ->and($pricing['set'])->toBeTrue();
+});
+
 it('reports the AI providers by name and the gateway, never a key value', function (): void {
     // Built rather than written out, so the repository never carries a string
     // shaped like a provider key, and asserted whole rather than by prefix.

@@ -55,7 +55,25 @@ return [
         ],
     ],
 
+    'assistant' => [
+        'title' => 'Assistant',
+        'new' => 'New conversation',
+        'recent' => 'Recent conversations',
+        'empty_title' => 'No conversations yet',
+        'empty_body' => 'Ask the assistant about your organization. It reads your records and proposes changes for you to confirm.',
+        'placeholder' => 'Ask about your organization',
+        'send' => 'Send',
+        'sending' => 'Thinking…',
+        'you' => 'You',
+        'assistant' => 'Assistant',
+        'intro' => 'Ask a question to start. The assistant never changes anything without your confirmation.',
+        'failed' => 'The assistant could not answer. Your message was not lost, try sending it again.',
+        'quota' => 'Your organization has used its AI allowance for now. It resets shortly.',
+        'back' => 'All conversations',
+    ],
+
     'nav' => [
+        'assistant' => 'Assistant',
         'admin' => 'Admin',
         'dashboard' => 'Dashboard',
         'documentation' => 'Documentation',

@@ -5,7 +5,6 @@ supersedes: []
 code_refs:
     - app/Data/UserData.php
     - app/Providers/TypeScriptTransformerServiceProvider.php
-    - config/data.php
     - phpstan.neon
     - tests/Unit/TypeScriptGenerationTest.php
 updated: 2026-10-28
@@ -42,9 +41,10 @@ Two separate mechanisms, and it is worth keeping them straight:
   `resources/js/types`. Pages import the generated type, so a renamed or removed field
   breaks `tsc` instead of rendering `undefined`.
 
-`config/data.php` sets how the Data classes behave at runtime: ISO 8601 dates
-(`DATE_ATOM`), structure caching over `app/Data`, and validation only for
-requests (`ValidationStrategy::OnlyRequests`).
+The Data classes run on spatie/laravel-data's own defaults, so the app ships no
+`config/data.php`: ISO 8601 dates (`DATE_ATOM`), structure caching over
+`app/Data`, and validation only for requests (`ValidationStrategy::OnlyRequests`).
+Publish the config only to change one of those.
 
 Routes typed without payloads typed still lets a field rename through silently,
 which is why both exist.

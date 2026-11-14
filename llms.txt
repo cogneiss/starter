@@ -26,18 +26,19 @@
 ## Domains
 
 - [AI agents and tools](wiki/domains/ai-agents-and-tools.md): An agent is a class implementing `Laravel\Ai\Contracts\Agent` with the `Promptable` trait, living in `app/Ai/Agents`
+- [AI assistant](wiki/domains/ai-assistant.md): The assistant is a chat inside the application
 - [AI blocks](wiki/domains/ai-blocks.md): An agent returns blocks, never HTML
 - [AI confirm tokens](wiki/domains/ai-confirm-tokens.md): An agent may propose a write
-- [AI evals](wiki/domains/ai-evals.md): The SDK is `laravel/ai` `^1.3` (`composer.json`); `laravel/mcp` arrives through it and is not required directly
+- [AI evals](wiki/domains/ai-evals.md): The SDK is `laravel/ai` `^1.4` (`composer.json`); `laravel/mcp` arrives through it and is not required directly
 - [AI injection defense](wiki/domains/ai-injection-defense.md): Organization data is a customer's words
 - [AI layer overview](wiki/domains/ai-layer-overview.md): The starter ships a product AI layer built on `laravel/ai`: agents that answer inside one organization, tools that never outrank the member who triggered them, writes that are proposed rather than per...
-- [AI MCP server](wiki/domains/ai-mcp-server.md): The `.mcp.json` entry carries `"disabled": true`
+- [AI MCP server](wiki/domains/ai-mcp-server.md): A stdio process has no session, so nobody is signed in when it starts
 - [AI memory](wiki/domains/ai-memory.md): The assistant remembers facts about one person in one organization
 - [AI metering and quotas](wiki/domains/ai-metering-and-quotas.md): Every agent run is recorded, priced and counted
 - [AI retrieval](wiki/domains/ai-retrieval.md): Agents can search the organization's own content
 - [The auth driver seam](wiki/domains/auth-drivers.md): Two drivers ship
 - [Roles, permissions and policies](wiki/domains/authorization.md): RBAC on `spatie/laravel-permission` with organization-scoped teams, configured in `config/permission.php`, which turns teams on (`'teams' => true`) with `organization_id` as the team foreign key and u...
-- [Console commands](wiki/domains/console-commands.md): Eighteen first-party commands
+- [Console commands](wiki/domains/console-commands.md): Twenty-one first-party commands
 - [Data objects](wiki/domains/data-objects.md): Eight `spatie/laravel-data` classes in `app/Data`
 - [Events, listeners and notifications](wiki/domains/events-and-notifications.md): Small surface on purpose
 - [Feature flags](wiki/domains/feature-flags.md): Pennant, configured in `config/pennant.php`, with one addition: every flag is declared in `app/Enums/KnownFeatures.php` before it is used
@@ -84,6 +85,7 @@
 - [The registry-driven read API](wiki/operations/ops-read-api.md): Three routes, all behind `auth:sanctum`, `EnsureTokenMatchesOrganization`, request logging and the rate tier
 - [API usage logging and rate tiers](wiki/operations/ops-usage-and-limits.md): Every request to the read API (operations/ops-read-api) writes one row: which token, which organization, which route, the status and the duration
 - [Signed outgoing webhooks](wiki/operations/ops-webhooks.md): An organization registers an endpoint; model events for registered resources (the catalogue in `WebhookEvents` — every resource × created/updated/deleted) become queued deliveries to it
+- [Packages](wiki/operations/packages.md): Every package in `composer.json` and `package.json` has one row here
 - [Releases](wiki/operations/releases.md): Every push to `main` runs `release-please.yml`, which keeps a release pull request open carrying the next version and the generated `CHANGELOG.md` entry
 - [Runtime](wiki/operations/runtime.md): Postgres, database sessions, database queue, database cache and the log mailer out of the box
 - [Setting up a clone](wiki/operations/setup.md): That runs `composer install`, copies `.env.example` to `.env` if there is none, generates the key, migrates, seeds the role templates, runs `bun install`, installs the Chromium the browser tests drive...

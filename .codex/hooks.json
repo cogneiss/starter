@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/hardik/Code/Cogneiss/starter/.codex/hooks/guard-gates.sh'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/hardik/Code/Cogneiss/starter/.codex/hooks/format-file.sh'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/hardik/Code/Cogneiss/starter/.codex/hooks/verify-on-stop.sh'",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}

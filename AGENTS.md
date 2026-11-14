@@ -1,9 +1,7 @@
 <laravel-boost-guidelines>
 === .ai/ai rules ===
 
-- The AI layer lives in `app/Ai` (agents, tools, blocks, confirmable actions, middleware) and `app/Mcp`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing any of it.
-- No real provider call in the blocking suite. `tests/Pest.php` fakes every agent under `app/Ai/Agents` with `preventStrayPrompts()`; `tests/Evals/` is the only exception and it is excluded from `composer test`.
-- `laravel/mcp` arrives transitively through `laravel/ai` 1.x and `laravel/boost` (1.x). Do not require it directly; it moves with `laravel/ai`.
+- The AI layer is `app/Ai`, `app/Mcp`, `config/ai.php` and `tests/Evals`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing any of it. Tools read, writes are proposed and a human confirms them.
 - Never print, log or commit a provider key. `.env.example` keeps them blank.
 
 === .ai/app.actions rules ===
@@ -19,17 +17,12 @@
 === .ai/platform-ops rules ===
 
 - The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing any of it.
-- Scope at the query level. A foreign id returns 404, not 403 — in the API and in the admin area, where `/admin` itself is a 404 without the `platform` ability.
-- Tokens are shown once at creation and stored hashed. Never log a token, a webhook secret, a signature or a provider key; `tests/Feature/WebhookSecretLogCanaryTest.php` sweeps for a canary.
-- Sentry and PostHog are seams: blank keys bind null implementations and the whole suite boots with an empty `.env`. `ZeroKeyBootTest` fails a change that makes anything require a key.
+- Never log a token, a webhook secret, a signature or a provider key. Scope at the query level: a foreign id is a 404.
 
 === .ai/ux rules ===
 
-- The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it.
-- Lists are server-driven. Search, filters, sorting, pagination, column visibility, saved views, bulk actions and CSV export all happen in the query, through `ListsResources`. Never filter a collection in React.
-- Forms validate live through Precognition against the same form request. Never restate a validation rule in TypeScript; `tests/Feature/PrecognitionParityTest.php` fails on drift.
-- User-facing strings live in `lang/<locale>/` and reach the browser through `resources/js/lib/i18n.ts`. A key present in one locale and missing from another fails the suite.
-- Colours come from the brand tokens and durations from `resources/js/lib/motion.ts`, which returns zero under reduced motion. No hex literals and no hard-coded durations in components.
+- The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it. Lists are server-driven; never filter a collection in React.
+- User-facing strings live in `lang/<locale>/` and reach the browser through `resources/js/lib/i18n.ts`. Colours come from the brand tokens and durations from `resources/js/lib/motion.ts`; no hex literals, no hard-coded durations.
 
 === foundation rules ===
 
@@ -168,12 +161,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - When generating links to other pages, prefer named routes and the `route()` function.
 
-=== wayfinder/core rules ===
-
-# Laravel Wayfinder
-
-Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `@/actions/` (controllers) or `@/routes/` (named routes).
-
 === pint/core rules ===
 
 # Laravel Pint Code Formatter
@@ -186,13 +173,5 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 # Inertia + React
 
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
-
-=== spatie/laravel-activitylog/core rules ===
-
-## Activitylog
-
-- `spatie/laravel-activitylog` logs model events and manual activities to a database table, with subjects, causers, tracked attribute changes, and custom properties.
-- Always activate the `activitylog-development` skill when working with activity logging or any code that uses the `LogsActivity`, `CausesActivity`, or `HasActivity` traits, `LogOptions`, the `Activity` model, or the `activity()` helper.
-- If the skill is unavailable, read `vendor/spatie/laravel-activitylog/resources/boost/skills/activitylog-development/SKILL.md` before making changes.
 
 </laravel-boost-guidelines>

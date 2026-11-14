@@ -7,7 +7,6 @@ code_refs:
     - config/database.php
     - config/queue.php
     - config/mail.php
-    - config/inertia.php
 updated: 2026-10-28
 ---
 
@@ -35,7 +34,7 @@ proves nightly: the whole suite minus the `pgvector` group, on SQLite in memory
 | `ORGANIZATIONS_RESOLVER`  | `session` | How the active organization is picked ([[domains/organization-resolvers]])       |
 | `ORGANIZATIONS_STRICT`    | `true`    | Fail closed when no organization is bound ([[architecture/fail-closed-scoping]]) |
 | `INERTIA_ENCRYPT_HISTORY` | off       | Encrypt Inertia history state                                                    |
-| `INERTIA_SSR_ENABLED`     | `true`    | Inertia server-side rendering; needs a separate render service to take effect (`config/inertia.php`) |
+| `INERTIA_SSR_ENABLED`     | `true`    | Inertia server-side rendering; needs a separate render service to take effect (Inertia's own default config) |
 | `AI_FAKE`                 | `false`   | Answer every agent from a canned response, no provider call                      |
 | `BROADCAST_CONNECTION`    | `null`    | Where broadcasts go; `reverb` turns live notifications on                        |
 

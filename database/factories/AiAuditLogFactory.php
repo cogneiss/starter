@@ -9,6 +9,7 @@ use App\Models\AiAuditLog;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<AiAuditLog>
@@ -23,9 +24,10 @@ final class AiAuditLogFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
+            'run_id' => fn (): string => (string) Str::uuid(),
             'agent' => 'App\Ai\Agents\ExampleAgent',
             'provider' => 'anthropic',
-            'model' => 'claude-haiku-4-5-20251001',
+            'model' => 'claude-haiku-5-5',
             'tier' => 'cheap',
             'prompt_tokens' => 100,
             'completion_tokens' => 20,

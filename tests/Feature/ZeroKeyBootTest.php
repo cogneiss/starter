@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\KnownFeatures;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Routing\Route as RoutingRoute;
@@ -99,6 +100,10 @@ it('serves every guest page with no third-party credentials', function (): void 
 
 it('serves every authenticated page with no third-party credentials', function (): void {
     $user = User::factory()->forOrganization(Organization::factory()->create())->create();
+
+    // The assistant ships behind a flag that is off by default, and a flagged-off
+    // page is a 404. Switched on, the sweep proves it also renders with no key.
+    config()->set('features.defaults.'.KnownFeatures::AiAssistEnabled->value, true);
 
     // Everything but the page that exists to be shown before verification (a
     // verified user is redirected away from it) and the admin control plane,

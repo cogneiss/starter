@@ -55,7 +55,7 @@ scope of [[domains/multi-tenancy]] does the filtering.
 
 Agents ask for a tier, not a model name. `App\Support\AiTier::for()` resolves
 `cheap` or `smart` from `config/ai.php` into a provider and a model, with
-failover when a second provider is configured. A model-name literal in an agent
+failover once both providers carry a key. A model-name literal in an agent
 class is the thing this exists to prevent — see [[domains/ai-metering-and-quotas]]
 for how a tier's price is read back out of the same config.
 

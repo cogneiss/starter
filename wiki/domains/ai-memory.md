@@ -7,7 +7,9 @@ code_refs:
     - app/Models/AiMemory.php
     - app/Ai/Tools/RememberFact.php
     - tests/Feature/Ai/AssistantMemoryTest.php
-updated: 2026-08-25
+    - app/Ai/Actions/RememberAssistantFact.php
+    - app/Ai/Agents/Assistant.php
+updated: 2026-11-15
 ---
 
 # AI memory
@@ -34,16 +36,20 @@ scope knows about.
 
 ## Reading and writing
 
-`instructions()` returns the memory block for the system prompt, fenced as
-untrusted content because remembered text is a customer's words
-([[domains/ai-injection-defense]]). With no facts it returns an empty string
-rather than an empty fence: a fence promising facts that are not there is just a
-worse prompt.
+`recall()` returns this person's facts, one per line. `app/Ai/Agents/Assistant.php`
+fences them as untrusted content before they reach the system prompt, because
+remembered text is a customer's words ([[domains/ai-injection-defense]]). The
+fence sits in the agent's `instructions()` so `tests/Unit/Conventions/InjectionConventionTest.php`
+can see it. With no facts the agent adds nothing rather than an empty fence: a
+fence promising facts that are not there is just a worse prompt.
 
 `remember()` writes one fact under a key, replacing whatever was there, inside a
-transaction that also evicts. `app/Ai/Tools/RememberFact.php` is how an agent
-reaches it, authorized like every other tool
-([[domains/ai-agents-and-tools]]).
+transaction that also evicts. An agent does not call it. `app/Ai/Tools/RememberFact.php`
+only proposes the fact, and the person confirms it at `ai/confirm/{token}`, which
+runs `app/Ai/Actions/RememberAssistantFact.php` and stores the row with source
+`confirmed`. A fact planted by injected text is memory poisoning, so nothing a
+model says is stored until a human agrees. Key and value limits (100 and 500
+characters) are enforced when the proposal is made.
 
 ## The cap
 

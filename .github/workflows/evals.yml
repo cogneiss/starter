@@ -1,9 +1,9 @@
 name: evals
 
-# Evals grade prompts against real providers, so they cost money and they are
-# allowed to be flaky in a way a test never is. They run on a schedule and on
-# request, never on a pull request, and they never fail a branch: a regression
-# opens an issue for someone to read.
+# Evals grade the shipped agents against a real provider, so they cost money.
+# They run on a schedule and on request, never on a pull request. A regression
+# fails the run and opens an issue for someone to read. The suite runs on an
+# in-memory SQLite database, so the job needs no Postgres service.
 on:
   schedule:
     - cron: '0 6 * * 1'
@@ -16,7 +16,6 @@ permissions:
 jobs:
   evals:
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +36,8 @@ jobs:
         id: evals
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
         run: composer test:evals
 
       - name: Open an issue when an eval regresses
@@ -50,6 +51,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `Eval regression on ${new Date().toISOString().slice(0, 10)}`,
-              body: `An eval graded a prompt as regressed. Nothing is broken for users yet — a model changed, or a prompt did.\n\n${run}`,
+              body: `An eval graded a prompt as regressed. Nothing is broken for users yet. A model changed, or a prompt did.\n\n${run}`,
               labels: ['evals'],
             })

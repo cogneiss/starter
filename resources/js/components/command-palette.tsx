@@ -106,17 +106,28 @@ export function CommandPalette() {
     const { groups, status, retry } = useDebouncedSearch(term, open);
 
     // The groups are headings; the keyboard walks one flat list across them.
-    const positioned = useMemo(() => {
-        let index = 0;
+    const positioned = useMemo(
+        () =>
+            groups.map((group, groupIndex) => {
+                const start = groups
+                    .slice(0, groupIndex)
+                    .reduce(
+                        (count, previous) => count + previous.results.length,
+                        0,
+                    );
 
-        return groups.map((group) => ({
-            group,
-            results: group.results.map((result): Positioned => ({
-                result,
-                index: index++,
-            })),
-        }));
-    }, [groups]);
+                return {
+                    group,
+                    results: group.results.map(
+                        (result, offset): Positioned => ({
+                            result,
+                            index: start + offset,
+                        }),
+                    ),
+                };
+            }),
+        [groups],
+    );
 
     const flat = useMemo(
         () => positioned.flatMap((entry) => entry.results),

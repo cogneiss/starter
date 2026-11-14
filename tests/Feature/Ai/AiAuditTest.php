@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Ai\Middleware\EnforceQuota;
 use App\Ai\Middleware\RecordAudit;
+use App\Enums\AiAuditStatus;
 use App\Models\AiAuditLog;
 use App\Models\AiCreditLedgerEntry;
 use App\Models\Organization;
@@ -20,6 +21,7 @@ use Laravel\Ai\PendingStep;
 use Laravel\Ai\Responses\Data\FinishReason;
 use Laravel\Ai\Responses\Data\Meta;
 use Laravel\Ai\Responses\Data\TextUsage;
+use Laravel\Ai\Responses\Data\ToolCall;
 use Laravel\Ai\Responses\Data\Usage;
 use Tests\Fixtures\Ai\KernelFixtureAgent;
 use Tests\Fixtures\Ai\UnscopedFixtureAgent;
@@ -34,18 +36,19 @@ function auditMember(): array
     return [$membership->user, $membership->organization];
 }
 
-function auditStep(Agent $agent): PendingStep
+function auditStep(Agent $agent, ?string $invocationId = null): PendingStep
 {
     return new PendingStep(
         number: 0,
         isFinalStep: false,
         provider: 'anthropic',
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-5-5',
         instructions: null,
         messages: [new UserMessage('Say hello.')],
         tools: [],
         schema: null,
         options: new TextGenerationOptions(agent: $agent),
+        invocationId: $invocationId,
     );
 }
 
@@ -68,7 +71,7 @@ it('writes one audit row for a prompt that reached a provider', function (): voi
         ->and($log->total_tokens)->toBe($log->prompt_tokens + $log->completion_tokens);
 });
 
-it('records an unpriced model as costing nothing rather than guessing a price', function (): void {
+it('bills an unpriced model at the fallback ceiling rather than at zero', function (): void {
     [$user, $organization] = auditMember();
 
     config()->set('ai.pricing', []);
@@ -79,37 +82,41 @@ it('records an unpriced model as costing nothing rather than guessing a price', 
 
     resolve(OrganizationContext::class)->set($organization);
 
-    expect(AiAuditLog::query()->sole()->cost_micros)->toBe(0);
+    $log = AiAuditLog::query()->sole();
 
-    $this->assertDatabaseCount('ai_credit_ledger', 0);
+    expect($log->cost_micros)->toBe(
+        intdiv($log->prompt_tokens * 4_000_000, 1_000_000) + intdiv($log->completion_tokens * 20_000_000, 1_000_000),
+    );
 });
 
 it('prices usage from the configured rate in whole micros', function (): void {
-    config()->set('ai.pricing.anthropic.claude-haiku-4-5-20251001', [
+    config()->set('ai.pricing.anthropic.claude-haiku-5-5', [
         'input' => 1_000_000,
         'output' => 5_000_000,
     ]);
 
     $cost = AiPricing::costMicros(
         'anthropic',
-        'claude-haiku-4-5-20251001',
+        'claude-haiku-5-5',
         new Usage(inputTokens: 2_000_000, outputTokens: 1_000_000),
     );
 
     expect($cost)->toBe(7_000_000);
 });
 
-it('charges nothing for a model, or a provider, that has no configured price', function (): void {
-    config()->set('ai.pricing.anthropic.claude-haiku-4-5-20251001', [
+it('charges the fallback ceiling for a model, or a provider, that has no configured price', function (): void {
+    config()->set('ai.pricing.anthropic.claude-haiku-5-5', [
         'input' => 1_000_000,
         'output' => 5_000_000,
     ]);
 
     $usage = new Usage(inputTokens: 2_000_000, outputTokens: 1_000_000);
 
-    expect(AiPricing::costMicros('anthropic', 'some-unknown-model', $usage))->toBe(0)
-        ->and(AiPricing::costMicros('unknown-provider', 'claude-haiku-4-5-20251001', $usage))->toBe(0)
-        ->and(AiPricing::costMicros(null, null, $usage))->toBe(0);
+    $ceiling = 2 * 4_000_000 + 20_000_000;
+
+    expect(AiPricing::costMicros('anthropic', 'some-unknown-model', $usage))->toBe($ceiling)
+        ->and(AiPricing::costMicros('unknown-provider', 'claude-haiku-5-5', $usage))->toBe($ceiling)
+        ->and(AiPricing::costMicros(null, null, $usage))->toBe($ceiling);
 });
 
 it('keeps one organization audit rows out of another', function (): void {
@@ -166,7 +173,7 @@ it('passes a response it cannot read through unmetered rather than charging a gu
 it('rolls the audit row back when the charge for it fails', function (): void {
     [$user, $organization] = auditMember();
 
-    config()->set('ai.pricing.anthropic.claude-haiku-4-5-20251001', [
+    config()->set('ai.pricing.anthropic.claude-haiku-5-5', [
         'input' => 1_000_000,
         'output' => 1_000_000,
     ]);
@@ -184,7 +191,7 @@ it('rolls the audit row back when the charge for it fails', function (): void {
         [],
         FinishReason::Stop,
         new TextUsage(inputTokens: 1_000_000, outputTokens: 1_000_000),
-        new Meta('anthropic', 'claude-haiku-4-5-20251001'),
+        new Meta('anthropic', 'claude-haiku-5-5'),
     );
 
     expect(fn (): ?StepResponse => resolve(RecordAudit::class)->handle($step, fn (): StepResult => new StepResult($response))->response())
@@ -225,4 +232,91 @@ it('refuses to rewrite or delete an audit row', function (): void {
 
     expect(fn (): bool => $log->update(['status' => 'failed']))->toThrow(LogicException::class)
         ->and(fn (): bool => $log->delete())->toThrow(LogicException::class);
+});
+
+it('groups every step of one invocation under the SDK invocation id', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+    $response = new StepResponse('Done.', [], FinishReason::Stop, new TextUsage(1, 1), new Meta('anthropic', 'claude-haiku-5-5'));
+
+    foreach ([0, 1] as $number) {
+        resolve(RecordAudit::class)->handle(auditStep($agent, 'run-1'), fn (): StepResult => new StepResult($response))->response();
+    }
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    expect(AiAuditLog::query()->pluck('run_id')->all())->toBe(['run-1', 'run-1']);
+});
+
+it('records tool arguments redacted by key name and capped in size', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+    $call = new ToolCall('t1', 'lookup', [
+        'query' => str_repeat('a', 500),
+        'api_key' => 'sk-live-should-never-be-stored',
+        'nested' => ['token' => 'abc', 'id' => 7],
+    ]);
+    $response = new StepResponse('', [$call], FinishReason::ToolCalls, new TextUsage(1, 1), new Meta('anthropic', 'claude-haiku-5-5'));
+
+    resolve(RecordAudit::class)->handle(auditStep($agent, 'run-2'), fn (): StepResult => new StepResult($response))->response();
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    $arguments = AiAuditLog::query()->sole()->tool_arguments[0]['arguments'];
+
+    expect($arguments['api_key'])->toBe('[redacted]')
+        ->and($arguments['nested'])->toBe(['token' => '[redacted]', 'id' => 7])
+        ->and(mb_strlen($arguments['query']))->toBeLessThanOrEqual(200)
+        ->and(json_encode($arguments))->not->toContain('sk-live');
+});
+
+it('keeps only the tool names when the arguments are too large to store', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+    $calls = array_map(fn (int $number): ToolCall => new ToolCall('t'.$number, 'lookup', ['query' => str_repeat('a', 500)]), range(1, 30));
+    $response = new StepResponse('', $calls, FinishReason::ToolCalls, new TextUsage(1, 1), new Meta('anthropic', 'claude-haiku-5-5'));
+
+    resolve(RecordAudit::class)->handle(auditStep($agent, 'run-4'), fn (): StepResult => new StepResult($response))->response();
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    expect(AiAuditLog::query()->sole()->tool_arguments)
+        ->toHaveCount(30)
+        ->each->toBe(['name' => 'lookup', 'arguments' => ['truncated' => true]]);
+});
+
+it('records an error row and rethrows when the provider call throws', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+
+    expect(fn (): mixed => resolve(RecordAudit::class)->handle(auditStep($agent, 'run-3'), fn (): never => throw new RuntimeException('Provider down.')))
+        ->toThrow(RuntimeException::class, 'Provider down.');
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    $log = AiAuditLog::query()->sole();
+
+    expect($log->status)->toBe(AiAuditStatus::Error)
+        ->and($log->run_id)->toBe('run-3')
+        ->and($log->error)->toContain('Provider down.')
+        ->and($log->cost_micros)->toBe(0);
+});
+
+it('rethrows the provider failure when the error row cannot be written either', function (): void {
+    [$user, $organization] = auditMember();
+
+    AiAuditLog::creating(function (): void {
+        throw new RuntimeException('The audit table is unavailable.');
+    });
+
+    $agent = new KernelFixtureAgent($user, $organization);
+
+    expect(fn (): mixed => resolve(RecordAudit::class)->handle(auditStep($agent, 'run-5'), fn (): never => throw new RuntimeException('Provider down.')))
+        ->toThrow(RuntimeException::class, 'Provider down.');
+
+    $this->assertDatabaseCount('ai_audit_logs', 0);
 });

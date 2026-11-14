@@ -9,10 +9,15 @@ code_refs:
     - app/Mcp/Tools/ShowRecord.php
     - app/Mcp/Tools/ProposeChange.php
     - app/Mcp/Tools/AppInfo.php
+    - app/Mcp/Concerns/ResolvesMember.php
+    - app/Mcp/Resources/ResourceCatalog.php
+    - app/Mcp/Prompts/SummarizeResource.php
+    - app/Mcp/Prompts/InspectRecord.php
     - routes/ai.php
     - .mcp.json
     - tests/Feature/Ai/McpServerTest.php
-updated: 2026-10-30
+    - tests/Feature/Mcp/McpProtocolTest.php
+updated: 2026-11-15
 ---
 
 # AI MCP server
@@ -50,6 +55,48 @@ to an organization, so there is no AI tool behind it and it is left out of
 `DELEGATES`. Versions and the environment are platform detail: the tool calls
 `authorizeFor()` on the `platform` ability, the same gate as the admin area, and
 a member without it is refused and logged.
+
+## Who the caller is over stdio
+
+A stdio process has no session, so nobody is signed in when it starts.
+`StarterAiServer::boot()` signs in the user whose email is in the
+`STARTER_MCP_USER` environment variable, and `.mcp.json` passes that variable
+through from the shell. Unset, blank or unknown leaves nobody signed in, and
+every tool, resource and prompt refuses with a message that names the variable.
+There is no fallback to a first or default user. A caller that is already signed
+in, as in the test harness, is left alone.
+
+`app/Mcp/Concerns/ResolvesMember.php` is the one place that turns the request
+into a member and their current organization, and `authorizedMember()` adds the
+`view` check inside the organization context so a refusal is audited.
+
+## A resource and two prompts
+
+- `starter://resources/catalog` lists the resource keys the record tools accept,
+  with each one's searchable, sortable and filterable fields. It describes the
+  registry, so it carries no stored text.
+- `summarize-resource` and `inspect-record` return an instruction that tells the
+  model which record tool to call. They read nothing themselves. The record id a
+  client supplies is fenced with `UntrustedContent::fence()`.
+
+All three are read-only and refuse a caller with no identity or no organization.
+
+## Propose, then confirm: the worked example
+
+`ProposeChange` is the pattern for a write reached over MCP. The tool never
+writes: it returns a confirm block carrying a single-use token. A person then
+approves it in the application with `POST ai/confirm/{token}`, as themselves,
+and a replay of the same token is refused. `tests/Feature/Mcp/McpProtocolTest.php`
+walks the whole path with an `invite-member` proposal. A new write action
+registers a confirmable action ([[domains/ai-confirm-tokens]]); it does not add
+a second write tool to this server.
+
+## Discovery
+
+The same test drives the protocol directly: `server/discover`, `tools/list`,
+`resources/list` and `prompts/list`, and asserts the exact catalog. Adding or
+removing a tool, resource or prompt fails it until the list is updated on
+purpose.
 
 ## It ships disabled
 

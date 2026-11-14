@@ -11,6 +11,7 @@ use App\Http\Controllers\AiConfirmController;
 use App\Http\Controllers\AiDraftController;
 use App\Http\Controllers\AiProposalController;
 use App\Http\Controllers\AnnouncementDismissalController;
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BrowserSessionController;
@@ -88,6 +89,13 @@ Route::get('.well-known/passkey-endpoints', fn () => response()->json([
 
 Route::middleware(['auth', 'verified', 'organization', 'two-factor', 'onboarded', HandlePrecognitiveRequests::class])->group(function (): void {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    // Assistant... a member's saved conversations. Sending lives with the other AI writes below.
+    Route::get('assistant', [AssistantController::class, 'index'])->name('assistant.index');
+    Route::get('assistant/new', [AssistantController::class, 'create'])->name('assistant.create');
+    Route::get('assistant/{conversation}', [AssistantController::class, 'show'])
+        ->whereUuid('conversation')
+        ->name('assistant.show');
 
     // Onboarding... the gate lives on this group too, and excludes these two
     // routes, so the screen it sends people to is reachable from inside it.
@@ -281,20 +289,22 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
     Route::delete('impersonation', [UserImpersonationController::class, 'destroy'])
         ->name('user-impersonation.destroy');
 
-    // AI Confirmations...
-    Route::post('ai/confirm/{token}', [AiConfirmController::class, 'store'])
-        ->name('ai-confirm.store');
+    // AI, throttled per user so a loop in the browser cannot burn the quota in seconds...
+    Route::middleware('throttle:30,1')->group(function (): void {
+        Route::post('ai/confirm/{token}', [AiConfirmController::class, 'store'])
+            ->name('ai-confirm.store');
 
-    // AI Blocks...
-    Route::post('ai/blocks', [AiBlockController::class, 'store'])
-        ->middleware('organization')
-        ->name('ai-block.store');
-    Route::post('ai/proposals', [AiProposalController::class, 'store'])
-        ->middleware('organization')
-        ->name('ai-proposal.store');
-    Route::post('ai/draft', [AiDraftController::class, 'store'])
-        ->middleware('organization')
-        ->name('ai-draft.store');
+        Route::middleware('organization')->group(function (): void {
+            Route::post('ai/blocks', [AiBlockController::class, 'store'])
+                ->name('ai-block.store');
+            Route::post('ai/proposals', [AiProposalController::class, 'store'])
+                ->name('ai-proposal.store');
+            Route::post('ai/draft', [AiDraftController::class, 'store'])
+                ->name('ai-draft.store');
+            Route::post('ai/assistant', [AssistantController::class, 'store'])
+                ->name('assistant.store');
+        });
+    });
 });
 
 Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function (): void {

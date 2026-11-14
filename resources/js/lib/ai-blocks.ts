@@ -42,7 +42,8 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
  * Reads the newline-delimited block stream, calling back once per complete
  * line. A line that is not a block this build knows is dropped here as well as
  * on the server, so an older client meeting a newer server renders nothing
- * rather than a blank slot.
+ * rather than a blank slot. A dropped line is warned about, and one that is not
+ * valid JSON no longer ends the stream.
  */
 export async function streamBlocks(
     url: string,
@@ -92,10 +93,20 @@ function emit(line: string, onBlock: (block: AiBlock) => void): void {
         return;
     }
 
-    const parsed: unknown = JSON.parse(line);
+    let parsed: unknown;
+
+    try {
+        parsed = JSON.parse(line);
+    } catch {
+        console.warn('Dropped a malformed block line from the stream.');
+
+        return;
+    }
 
     if (isKnownBlock(parsed)) {
         onBlock(parsed);
+    } else {
+        console.warn('Dropped a block of an unknown type from the stream.');
     }
 }
 

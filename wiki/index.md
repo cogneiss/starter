@@ -123,6 +123,7 @@ See [[operations/documentation]] for the loop that keeps pages current.
 - [[operations/ci]]
 - [[operations/testing]]
 - [[operations/tooling]]
+- [[operations/packages]]
 - [[operations/commands]]
 - [[operations/releases]]
 - [[operations/code-knowledge-graphs]]

@@ -97,8 +97,8 @@ build.
   field errors.
 - Small hooks for the fiddly parts: clipboard copy for recovery codes, initials
   for avatars, mobile breakpoint and navigation, current URL, appearance.
-- SSR entry point (`resources/js/ssr.tsx`) wired, built with
-  `bun run build:ssr`.
+- One entry (`resources/js/app.tsx`) for the browser and SSR through
+  `@inertiajs/vite`, built with `bun run build:ssr`.
 - Preload `Link` headers on responses, and `appearance` and `sidebar_state`
   cookies left unencrypted so the server can read them before hydration.
 
@@ -578,6 +578,8 @@ green:
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies.                |
 | `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity. |
 | `composer test:wiki`      | `php artisan wiki:lint` — the wiki rules, all five blocking.           |
+| `composer verify`         | `test`, `test:dead-code`, `test:deps`, `test:knip`, `test:wiki`, `test:audit`, `wiki:llms --check` and the copy-paste report, in one run. |
+| `composer test:ai`        | Only the AI layer's tests and the architecture rules. The loop while editing `app/Ai`. |
 
 Scheduled — these report, they never block:
 
@@ -585,7 +587,7 @@ Scheduled — these report, they never block:
 | ---------------------- | -------------------------------------------------------------------------------------------------- |
 | `composer test:sqlite` | The whole suite against SQLite instead of PostgreSQL, minus the vector-search tests. Runs nightly. |
 | `composer test:mutate` | Mutation score over `app/`. Runs weekly.                                                           |
-| `composer test:evals`  | Grades prompts against a real provider. Weekly and on request; skips itself with no key set.       |
+| `composer test:evals`  | Grades the shipped agents against a real provider. Weekly and on request; skips itself with no key set. |
 | `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.                                           |
 | `composer screenshots` | Retake the README screenshots into `docs/images`. Weekly; opens a pull request when they change.   |
 
@@ -619,6 +621,7 @@ Local loops:
 | `php artisan wiki:lint`                        | The five wiki rules. What `composer test:wiki` runs.                          |
 | `php artisan wiki:audit`                       | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
 | `php artisan wiki:llms`                        | Rewrite `llms.txt` from the wiki; `--check` fails when the committed file drifts. |
+| `php artisan agents:context`                   | Write the nested `AGENTS.md` files from `.ai/rules/index.md`; `--check` fails on drift. |
 | `bun run knip:fix`                             | Apply knip's removals instead of only reporting them.                         |
 | `bun run types`                                | Type-check the front end with `tsc --noEmit`, no build.                       |
 | `bun run test:dupes`                           | Report copy-pasted front-end code with jscpd. Advisory, not a gate.           |

@@ -49,6 +49,6 @@ it('leaves a foreign record out of the facet counts as well as the rows', functi
 
         // A count is a query too: reporting "blocked: 1" would disclose that
         // another organization has a blocked record.
-        expect($status)->toBe(['ok' => 1, 'blocked' => 0]);
+        expect($status)->toBe(['ok' => 1, 'blocked' => 0, 'error' => 0]);
     });
 });

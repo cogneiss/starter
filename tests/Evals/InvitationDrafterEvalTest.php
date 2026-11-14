@@ -2,34 +2,31 @@
 
 declare(strict_types=1);
 
-use function Laravel\Ai\agent;
+use App\Ai\Agents\InvitationDrafter;
+use App\Models\Organization;
+use App\Models\User;
+use App\Support\OrganizationContext;
 
 /**
- * Grades the invitation drafter's prompt against a real model.
+ * Grades the shipped invitation drafter against a real model.
  *
- * Nothing here pins the model's wording: a draft is right if it names the
- * address that was asked for, names a role, and does not claim to have sent
- * anything. Those are properties of a correct answer; the sentence around them
- * is the model's business and changes with every release.
+ * The agent answers through a structured schema of `email` and `role`, so a
+ * draft is right when both fields match the request. Claiming the invitation
+ * was already sent is not something the schema can express, which is why no
+ * case checks the wording for it.
  */
-$fixture = evalFixture('invitation-drafter');
+it('drafts the address and role the request asked for', function (array $case): void {
+    $organization = Organization::factory()->create();
+    $owner = User::factory()->forOrganization($organization, 'Owner')->create();
 
-it('names the address and a role the request asked for', function (array $case) use ($fixture): void {
-    $answer = agent(instructions: (string) file_get_contents(resource_path($fixture['prompt'])))
-        ->prompt($case['request'], provider: $fixture['provider'], model: $fixture['model'])
-        ->text;
+    $answer = resolve(OrganizationContext::class)->runAs(
+        $organization,
+        fn (): string => expect(new InvitationDrafter($owner, $organization))
+            ->prompt($case['request'])
+            ->toBeJson()
+            ->value,
+    );
 
-    expect($answer)->not->toBeEmpty()
-        ->and($answer)->toContain($case['email'])
-        ->and(mb_strtolower($answer))->toContain($case['role']);
-})->with(evalCases('invitation-drafter'));
-
-it('never claims the invitation already happened', function (array $case) use ($fixture): void {
-    $answer = mb_strtolower(agent(instructions: (string) file_get_contents(resource_path($fixture['prompt'])))
-        ->prompt($case['request'], provider: $fixture['provider'], model: $fixture['model'])
-        ->text);
-
-    expect($answer)->not->toContain('has been sent')
-        ->and($answer)->not->toContain('i have sent')
-        ->and($answer)->not->toContain('invitation sent');
+    expect(json_decode($answer, true, 512, JSON_THROW_ON_ERROR))
+        ->toMatchArray(['email' => $case['email'], 'role' => $case['role']]);
 })->with(evalCases('invitation-drafter'));

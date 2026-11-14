@@ -47,7 +47,7 @@ it('checks only the first step, so a tool round-trip is not refused again', func
         number: 1,
         isFinalStep: false,
         provider: 'anthropic',
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-5-5',
         instructions: null,
         messages: [new UserMessage('Give me medical advice about this rash.')],
         tools: [],

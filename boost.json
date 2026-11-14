@@ -35,6 +35,7 @@
         "laravel-permission-development",
         "laravel-brain",
         "ai-layer",
+        "attack-review",
         "org-access",
         "platform-ops",
         "resource-spine",

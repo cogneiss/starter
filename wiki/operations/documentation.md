@@ -11,7 +11,10 @@ code_refs:
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-10-28
+    - app/Console/Commands/AgentsContextCommand.php
+    - tests/Feature/Docs/NestedAgentContextTest.php
+    - .claude/hooks/guard-generated.sh
+updated: 2026-11-15
 ---
 
 # Documentation
@@ -71,6 +74,35 @@ drift _inside_ the `<laravel-boost-guidelines>` block; a check over the whole fi
 would pass on a stale block and be a false negative. It runs Boost in a real
 subprocess with `APP_ENV=local`, because Boost disables itself under
 `runningUnitTests()`.
+
+## Trimmed root, nested files
+
+The root file loads on every turn, so it keeps only what every task needs: each
+layer's head in `.ai/guidelines` is a pointer to its rule file and skill plus one
+or two never-break lines. Procedure lives in the skills and rules and is cited,
+not repeated. `config/boost.php` also drops the `deployments`, `wayfinder/core`
+and `spatie/laravel-activitylog/core` sections, because their skills carry the
+same procedure. The Inertia and Boost sections stay: the Inertia v3 notes are
+not in any skill. Versions are never written in a guideline; `composer.lock` is
+the source.
+
+`php artisan agents:context` reads the table in `.ai/rules/index.md` and writes
+an `AGENTS.md` into every directory a `dir/**` glob names. Each lists the rule
+files whose globs match that directory and the skill to load. `--check` fails
+without writing, and `tests/Feature/Docs/NestedAgentContextTest.php` runs it so
+the files cannot drift from the index.
+
+Only `AGENTS.md` is nested. Claude Code already scopes `.claude/rules`, which is
+a symlink to `.ai/rules`, by each rule's `paths:` frontmatter, so a nested
+`CLAUDE.md` would load the same text twice. Codex, Copilot, Cursor, Gemini and
+Amp read nested `AGENTS.md` and have no such scoping. `app` and `wiki` get no
+file: `app.md` would repeat over every child, and the wiki lint reads every
+markdown file under `wiki`. A nested file without the generated marker is
+hand-written and left alone.
+
+`.claude/hooks/guard-generated.sh` denies Edit, Write and MultiEdit on the
+generated files and names the regenerate command. Nested files are recognised by
+the marker line.
 
 `resources/js/types/generated.d.ts` is generated too
 ([[architecture/type-safety]]), and so is `CHANGELOG.md`

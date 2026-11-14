@@ -7,7 +7,6 @@ namespace App\Ai\Memory;
 use App\Models\AiMemory;
 use App\Models\Organization;
 use App\Models\User;
-use App\Support\UntrustedContent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -20,8 +19,9 @@ use Illuminate\Support\Facades\DB;
  * rest of the layer spends its time preventing. The predicate lives in one
  * place so there is one thing to remove and one test to go red when it is.
  *
- * Remembered text is a customer's words, so it reaches the prompt fenced: the
- * model is told it is data, never instructions.
+ * Remembered text is a customer's words, so `App\Ai\Agents\Assistant` fences
+ * it before it reaches the prompt: the model is told it is data, never
+ * instructions.
  */
 final readonly class AssistantMemory
 {
@@ -31,19 +31,13 @@ final readonly class AssistantMemory
     ) {}
 
     /**
-     * The memory block for the system prompt, or nothing at all when this
-     * person has none — an empty fence is a prompt telling the model to expect
-     * facts that are not there.
+     * Every fact this person has here, one per line, or nothing at all when
+     * they have none. The caller fences it before it reaches a prompt, where
+     * the injection guard can see the fence.
      */
-    public function instructions(): string
+    public function recall(): string
     {
-        $facts = $this->facts();
-
-        if ($facts === []) {
-            return '';
-        }
-
-        return UntrustedContent::fence(implode(PHP_EOL, $facts), 'assistant memory');
+        return implode(PHP_EOL, $this->facts());
     }
 
     /**

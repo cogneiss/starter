@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Commands
@@ -30,6 +30,8 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies           |
 | `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity |
 | `composer test:wiki`      | `wiki:lint` — dead code refs, dangling links, stale pages        |
+| `composer verify`         | `test`, dead code, deps, knip, wiki, audit, `llms.txt` and jscpd |
+| `composer test:ai`        | The AI layer's tests and `ArchTest`, the loop for `app/Ai`       |
 
 ## Reporting — scheduled, never blocking
 
@@ -47,8 +49,8 @@ kit still boots and passes without it — everything except vector search does.
 
 `test:evals` is the only command here that spends money and the only one allowed
 out to a provider. It is excluded from `composer test`, skips itself with no key
-configured, and reports rather than blocks, for the reasons in
-[[domains/ai-evals]].
+configured, and runs on a schedule rather than on a pull request. A regression
+fails that run and opens an issue, for the reasons in [[domains/ai-evals]].
 
 ## Local loops
 
@@ -73,6 +75,7 @@ configured, and reports rather than blocks, for the reasons in
 | `php artisan app:make-onboarding-step`     | Scaffold an onboarding step and register it               |
 | `php artisan brand:preview <hex> <hex>`    | Print the palette a pair of brand colours generates       |
 | `php artisan uploads:prune`                | Delete expired temporary uploads and their files          |
+| `php artisan agents:context`               | Write nested `AGENTS.md` files from the rules index       |
 
 `package.json` gained `recharts`, the runtime dependency of the dashboard
 activity chart; it adds no script, so the command tables are unchanged.

@@ -29,6 +29,7 @@ Do not run `brain:generate-rules`. It writes a project snapshot into `CLAUDE.md`
 ```bash
 php artisan boost:install --guidelines --skills --no-interaction
 cp AGENTS.md GEMINI.md
+php artisan agents:context
 ```
 
 Both flags are required. `--guidelines` alone drops the "Skills Activation" section, which is what routes an agent to the skill packs in `.ai/skills`.

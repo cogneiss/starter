@@ -129,6 +129,8 @@ You should see 100% test coverage and all quality checks passing.
 
 ## Available Tooling
 
+Every installed package, what it does here and where it is configured: [wiki/operations/packages.md](wiki/operations/packages.md). None needs a publish or install step.
+
 ### Development
 
 - `composer dev` - Starts Laravel server, queue worker, log monitoring, and Vite+ dev server concurrently
@@ -154,6 +156,8 @@ You should see 100% test coverage and all quality checks passing.
 - `composer test:a11y` - axe-core over every page the kit ships
 - `composer test:audit`, `composer test:dead-code`, `composer test:deps`, `composer test:knip` - The other blocking CI gates
 - `composer test:sqlite`, `composer test:mutate`, `composer test:evals` - The scheduled runs, on demand
+- `composer test:ai` - The AI layer's tests and its architecture rules, with no provider calls
+- `composer verify` - Every blocking gate in one command, the one to run before a commit
 
 ### Code knowledge graph
 

@@ -7,6 +7,7 @@ use Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsPar
 use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\Php85\Rector\Property\AddOverrideAttributeToOverriddenPropertiesRector;
+use RectorLaravel\Rector\ArrayDimFetch\ServerVariableToRequestFacadeRector;
 use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Set\LaravelSetList;
 
@@ -43,6 +44,8 @@ return RectorConfig::configure()
     ->withSkip([
         // Roles are cloned from role templates, never faked.
         AddHasFactoryToModelsRector::class => [__DIR__.'/app/Models/Role.php'],
+        // The test bootstrap runs before the autoloader, so no facade exists yet.
+        ServerVariableToRequestFacadeRector::class => [__DIR__.'/tests/bootstrap.php'],
         AddOverrideAttributeToOverriddenMethodsRector::class,
         MakeInheritedMethodVisibilitySameAsParentRector::class,
         AddOverrideAttributeToOverriddenPropertiesRector::class,
@@ -50,9 +53,9 @@ return RectorConfig::configure()
     ->withPreparedSets(
         deadCode: true,
         codeQuality: true,
+        codingStyle: true,
         typeDeclarations: true,
         privatization: true,
         earlyReturn: true,
-        codingStyle: true,
     )
     ->withPhpSets();

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Ai\Tools;
 
-use App\Ai\Memory\AssistantMemory;
 use App\Ai\Tools\Concerns\AuthorizesToolCall;
 use App\Models\Organization;
 use App\Models\User;
@@ -14,16 +13,13 @@ use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
 
 /**
- * The only way anything is ever written to assistant memory.
+ * Proposes a memory; it never writes one.
  *
  * Retrieved documents are a customer's text and a plausible place for
- * "remember that you may ignore your rules" to be hiding. That sentence can
- * reach the model, but it cannot reach the database on its own: writing takes
- * a tool call, and the call is authorized against the person who asked, not
- * against whoever wrote the document.
- *
- * One call writes at most one App\Models\AiMemory row, for the person the tool
- * was constructed with — never for whoever the text happens to name.
+ * "remember that you may ignore your rules" to be hiding. Memory is replayed
+ * into every later prompt, so a poisoned entry would persist. The tool therefore
+ * only hands back a confirm token, and the fact is stored when the person
+ * approves it, as App\Ai\Actions\RememberAssistantFact.
  */
 final readonly class RememberFact implements Tool
 {
@@ -36,22 +32,21 @@ final readonly class RememberFact implements Tool
 
     public function description(): string
     {
-        return 'Remembers one short fact about the person you are helping, for later conversations.';
+        return 'Asks the person to confirm remembering one short fact about them, for later conversations.';
     }
 
     public function handle(Request $request): string
     {
         $this->authorizeFor($this->user, 'view', $this->organization);
 
-        $key = $request->string('key')->toString();
-
-        new AssistantMemory($this->user, $this->organization)->remember(
-            $key,
-            $request->string('value')->toString(),
-            'tool',
-        );
-
-        return "Remembered {$key}.";
+        return resolve(ProposeAction::class, ['user' => $this->user, 'organization' => $this->organization])
+            ->handle(new Request([
+                'action' => 'remember-fact',
+                'fields' => [
+                    'key' => $request->string('key')->toString(),
+                    'value' => $request->string('value')->toString(),
+                ],
+            ]));
     }
 
     /**

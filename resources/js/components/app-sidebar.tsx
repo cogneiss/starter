@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, FolderGit2, LayoutGrid, ShieldCheck } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -17,11 +18,12 @@ import {
 import { useTranslate } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import { index as adminIndex } from '@/routes/admin';
+import { index as assistantIndex } from '@/routes/assistant';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const t = useTranslate();
-    const { auth } = usePage().props;
+    const { auth, aiAssist } = usePage().props;
 
     const mainNavItems: NavItem[] = [
         {
@@ -29,6 +31,15 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
+        ...(aiAssist
+            ? [
+                  {
+                      title: t('nav.assistant'),
+                      href: assistantIndex(),
+                      icon: Sparkles,
+                  },
+              ]
+            : []),
         ...(auth.user?.is_super_admin
             ? [
                   {

@@ -82,7 +82,7 @@ it('refuses to build an organization scoped agent for a non-member', function ()
 it('resolves a tier to a provider and model from configuration', function (): void {
     expect(AiTier::for('cheap'))->toBe([
         'provider' => Lab::Anthropic,
-        'model' => 'claude-haiku-4-5-20251001',
+        'model' => 'claude-haiku-5-5',
     ]);
 });
 
@@ -90,6 +90,19 @@ it('leaves the model null when a tier defers to the provider default', function 
     config()->set('ai.tiers.smart.model');
 
     expect(AiTier::for('smart')['model'])->toBeNull();
+});
+
+it('fails over to the second provider only when both carry a key', function (): void {
+    config()->set('ai.providers.anthropic.key', 'test-only');
+
+    expect(AiTier::for('smart')['provider'])->toBe(Lab::Anthropic);
+
+    config()->set('ai.providers.openai.key', 'test-only');
+
+    expect(AiTier::for('smart'))->toBe([
+        'provider' => ['anthropic' => 'claude-sonnet-5-5', 'openai' => 'gpt-6-astra'],
+        'model' => null,
+    ]);
 });
 
 it('refuses an unconfigured tier', function (): void {

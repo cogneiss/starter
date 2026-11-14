@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ai;
 
+use App\Ai\Actions\RememberAssistantFact;
 use App\Ai\Contracts\ConfirmableAction;
 
 /**
@@ -17,13 +18,20 @@ use App\Ai\Contracts\ConfirmableAction;
 final readonly class ConfirmableActions
 {
     /**
+     * Actions the layer itself needs, so they exist whatever `ai.actions` holds.
+     */
+    private const array BUILT_IN = [
+        'remember-fact' => RememberAssistantFact::class,
+    ];
+
+    /**
      * @return array<string, class-string<ConfirmableAction>>
      */
     public static function all(): array
     {
         $actions = [];
 
-        foreach (config()->array('ai.actions') as $key => $class) {
+        foreach ([...config()->array('ai.actions'), ...self::BUILT_IN] as $key => $class) {
             if (is_string($key) && is_string($class) && is_subclass_of($class, ConfirmableAction::class)) {
                 $actions[$key] = $class;
             }

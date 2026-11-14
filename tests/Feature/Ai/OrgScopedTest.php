@@ -64,6 +64,6 @@ it('keeps OrgScoped assistant memory to one person in one organization', functio
         'value' => 'writes in bullet points',
     ]);
 
-    expect(new AssistantMemory($mine, $organization)->instructions())
+    expect(new AssistantMemory($mine, $organization)->recall())
         ->not->toContain('writes in bullet points');
 });

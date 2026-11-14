@@ -23,7 +23,7 @@ it('Changelog escapes raw html', function (): void {
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->where('html', fn (string $html): bool => str_contains($html, '&lt;script&gt;') && ! str_contains($html, '<script>')));
 
-    File::deleteDirectories(storage_path('framework/testing'));
+    File::delete($path);
 });
 
 it('Changelog is empty when the file is missing', function (): void {

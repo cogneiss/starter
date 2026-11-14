@@ -49,17 +49,21 @@ final class AiQuota
     }
 
     /**
-     * Requests that reached a provider inside the window. Blocked requests are
-     * not counted: refusing one costs nothing, so it must not push the member
+     * Requests that reached a provider inside the window. A request is a run,
+     * so the several rows a tool loop writes count once; rows written before
+     * run ids existed have none and count one each. Blocked requests are not
+     * counted: refusing one costs nothing, so it must not push the member
      * further over the limit.
      */
     private function requestsSince(?User $user, CarbonInterface $since): int
     {
-        return AiAuditLog::query()
+        $query = fn (): Builder => AiAuditLog::query()
             ->when($user, fn (Builder $query): Builder => $query->where('user_id', $user?->id))
             ->where('status', '!=', AiAuditStatus::Blocked)
-            ->where('created_at', '>=', $since)
-            ->count();
+            ->where('created_at', '>=', $since);
+
+        return $query()->whereNotNull('run_id')->distinct()->count('run_id')
+            + $query()->whereNull('run_id')->count();
     }
 
     /**

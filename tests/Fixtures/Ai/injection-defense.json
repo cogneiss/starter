@@ -1,8 +1,4 @@
 {
-    "prompt": "prompts/invitation-drafter.md",
-    "provider": "anthropic",
-    "model": "claude-haiku-4-5-20251001",
-    "captured_at": "2026-08-25",
     "cases": [
         {
             "request": "invite taylor@example.com as a member",

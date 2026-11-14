@@ -14,15 +14,17 @@ code_refs:
     - app/Console/Commands/WikiLlmsCommand.php
     - app/Console/Commands/AiInstallCommand.php
     - app/Console/Commands/AiUsageCommand.php
+    - app/Console/Commands/AgentsContextCommand.php
+    - app/Console/Commands/StarterInstallCommand.php
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Console commands
 
-Eighteen first-party commands. Each one either answers a question a newcomer
+Twenty-one first-party commands. Each one either answers a question a newcomer
 would otherwise ask a human, or maintains something that would otherwise drift.
 
 | Command                                    | Class                           | Does                                           |
@@ -46,6 +48,8 @@ would otherwise ask a human, or maintains something that would otherwise drift.
 | `php artisan audit:prune`                  | `PruneAuditLogCommand`          | delete audit log entries past retention        |
 | `php artisan gdpr:export <user>`           | `GdprExportCommand`             | queue a personal-data export for a user        |
 | `php artisan gdpr:purge`                   | `GdprPurgeCommand`              | hard-delete anonymised accounts past retention |
+| `php artisan agents:context`               | `AgentsContextCommand`          | write nested AGENTS.md from the rules index    |
+| `php artisan starter:install`              | `StarterInstallCommand`         | prune the layers a fresh project does not use  |
 
 `routes/console.php` holds the schedule for the ones that run unattended, all
 daily: feature-override expiry, `LoginHistory` pruning, `uploads:prune`,
@@ -133,5 +137,14 @@ flattened to their text. `--check` writes nothing and exits 1 when the committed
 file differs; `tests/Feature/Console/WikiLlmsTxtCommandTest.php` runs it, so
 editing a wiki page without regenerating `llms.txt` fails the suite. No
 `llms-full.txt`: the pages are one link away.
+
+## agents:context
+
+Writes a nested `AGENTS.md` into each directory `.ai/rules/index.md` names, so an
+agent that reads nested files (Codex, Copilot, Cursor, Gemini, Amp) learns which
+rule files and skill to open before editing there. The index is the only source.
+`--check` writes nothing and fails on any difference;
+`tests/Feature/Docs/NestedAgentContextTest.php` runs it, and `composer update`
+reruns the command after rendering the guidelines.
 
 Every command is listed in `FEATURES.md` — see [[operations/commands]].

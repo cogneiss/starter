@@ -37,7 +37,7 @@ it('counts a facet without its own constraint, and every other facet with it', f
 
         // Its own constraint is left off: ticking 'blocked' has to say what it
         // would leave, not what the current selection already excluded.
-        expect(facetCounts($list->filters, 'status'))->toBe(['ok' => 1, 'blocked' => 1]);
+        expect(facetCounts($list->filters, 'status'))->toBe(['ok' => 1, 'blocked' => 1, 'error' => 0]);
 
         // Every other facet is counted with the status filter applied, so the
         // tier of the excluded record counts zero rather than one.

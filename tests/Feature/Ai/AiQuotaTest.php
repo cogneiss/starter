@@ -188,3 +188,19 @@ it('answers a refused request with 429 and a machine readable error', function (
             'message' => 'You have used all 60 AI requests allowed in an hour.',
         ]);
 });
+
+it('counts a multi-step run as one request toward the hourly limit', function (): void {
+    [$user, $organization] = quotaMember();
+
+    config()->set('ai.quotas.user_requests_per_hour', 2);
+
+    AiAuditLog::factory()->count(5)->create([
+        'organization_id' => $organization->id,
+        'user_id' => $user->id,
+        'run_id' => 'one-run',
+    ]);
+
+    KernelFixtureAgent::fake(['Still allowed.'])->preventStrayPrompts();
+
+    expect(new KernelFixtureAgent($user, $organization)->prompt('Say hello.')->text)->toBe('Still allowed.');
+});

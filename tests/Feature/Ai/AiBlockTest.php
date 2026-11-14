@@ -20,6 +20,7 @@ use App\Models\AiConfirmToken;
 use App\Models\Organization;
 use App\Models\User;
 use App\Support\OrganizationContext;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @return array{0: User, 1: Organization}
@@ -182,6 +183,25 @@ it('turns an agent stream into one block per line', function (): void {
     expect($blocks)->toHaveCount(2)
         ->and($blocks[0])->toBeInstanceOf(TextBlock::class)
         ->and($blocks[1])->toBeInstanceOf(MetricBlock::class);
+});
+
+it('logs every malformed line it drops, without the line itself', function (): void {
+    [$user, $organization] = blockMember();
+
+    Log::spy();
+
+    BlockComposer::fake([implode("\n", [
+        '{"type":"text","text":"First."}',
+        'not json at all',
+        '{"type":"quantum-hologram"}',
+    ])])->preventStrayPrompts();
+
+    iterator_to_array(resolve(StreamBlocks::class)->handle(new BlockComposer($user, $organization), 'Summarise.'));
+
+    Log::shouldHaveReceived('warning')->twice();
+    Log::shouldHaveReceived('warning')
+        ->withArgs(fn (string $message, array $context): bool => $context === ['reason' => 'invalid_json', 'length' => 15])
+        ->once();
 });
 
 it('streams the blocks over http as newline delimited json', function (): void {

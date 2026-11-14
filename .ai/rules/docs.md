@@ -9,7 +9,7 @@ paths:
 
 ## `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` are generated
 
-They are rendered from `.ai/guidelines/*.blade.php` by `php artisan boost:install --guidelines --skills`, and `GEMINI.md` is a copy of `AGENTS.md`. Edit the Blade source and regenerate; a hand-edit is overwritten by the next `composer update` and fails `tests/Feature/Docs/GuidelinesAreCurrentTest.php` until then.
+They are rendered from `.ai/guidelines/*.blade.php` by `php artisan boost:install --guidelines --skills`, and `GEMINI.md` is a copy of `AGENTS.md`. Edit the Blade source and regenerate; a hand-edit is overwritten by the next `composer update` and fails `tests/Feature/Docs/GuidelinesAreCurrentTest.php` until then. Nested `AGENTS.md` files are generated too, from `.ai/rules/index.md`, by `php artisan agents:context`; run it after changing the index.
 
 ## Wiki pages are superseded, never deleted
 

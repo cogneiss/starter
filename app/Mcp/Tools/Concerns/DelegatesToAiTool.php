@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Concerns;
 
+use App\Mcp\Concerns\ResolvesMember;
 use App\Models\Organization;
 use App\Models\User;
 use App\Support\OrganizationContext;
@@ -27,6 +28,8 @@ use Stringable;
  */
 trait DelegatesToAiTool
 {
+    use ResolvesMember;
+
     /**
      * @param  Closure(User, Organization): AiTool  $delegate
      *
@@ -34,13 +37,7 @@ trait DelegatesToAiTool
      */
     protected function answer(Request $request, Closure $delegate): Response
     {
-        $user = $request->user();
-
-        throw_unless($user instanceof User, AuthenticationException::class, 'This server answers a signed-in member only.');
-
-        $organization = $user->currentOrganization;
-
-        throw_unless($organization instanceof Organization, AuthorizationException::class, 'This member has no current organization to work in.');
+        [$user, $organization] = $this->member($request);
 
         $answer = resolve(OrganizationContext::class)->runAs(
             $organization,
