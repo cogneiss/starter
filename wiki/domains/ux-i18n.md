@@ -13,7 +13,7 @@ code_refs:
     - tests/Feature/Middleware/SetLocaleTest.php
     - tests/Browser/I18nFallbackTest.php
     - tests/Mutations/phase14-locale-key.patch
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Localization
@@ -61,7 +61,9 @@ Dutch page with English sentences scattered through it.
 
 The announcement banners and their admin form added an `announcements`
 namespace to `ui`, and the dashboard chart a `dashboard.activity` one, in both
-`lang/en/ui.php` and `lang/nl/ui.php`.
+`lang/en/ui.php` and `lang/nl/ui.php`. The assistant added an `assistant`
+namespace (title, conversation list, empty state, composer labels, and the
+`failed` and `quota` messages) and a `nav.assistant` label, in both files.
 
 ## Every locale ships every key
 

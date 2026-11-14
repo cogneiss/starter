@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-10-30
+updated: 2026-11-15
 ---
 
 # Tooling
@@ -27,12 +27,19 @@ updated: 2026-10-30
   ([[architecture/fast-blocking-gates]]).
 - **Pail** tails logs readably in development.
 
-Two skips in those configs are decisions rather than noise. Rector leaves
-`ImportController` dispatching through the job class instead of rewriting it to
-the `dispatch()` helper, so the queue seam is greppable from the controller.
-`composer-unused.php` names `laravel/reverb` alongside `nunomaduro/essentials`:
-both are configured and run rather than imported, so nothing in `app/`
-references them and the tool is right to think they are unused.
+Some skips in those configs are decisions rather than noise. `rector.php` skips
+`AddHasFactoryToModelsRector` for `app/Models/Role.php`, because roles are cloned
+from templates and never faked, and skips `ServerVariableToRequestFacadeRector`
+for `tests/bootstrap.php`, which runs before the autoloader so no facade exists
+yet. `composer-unused.php` names `laravel/wayfinder`, `nunomaduro/essentials`,
+`laravel/reverb` and `sentry/sentry-laravel`: each is configured, bound by a
+service provider or run rather than imported, so nothing in `app/` names it and
+the tool is right to think it is unused. For Sentry the app imports the hub's
+interface from `sentry/sentry`, which `sentry/sentry-laravel` pulls in.
+
+`knip.json` ignores two dev dependencies, `concurrently` and
+`npm-check-updates`, plus a short list of layout and component files kept on
+purpose.
 
 ## Frontend
 
@@ -43,11 +50,11 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
 ## Agent tooling
 
 - **Laravel Boost** — an MCP server (browser log capture at `_boost/browser-logs`)
-  plus ten skill packs and the guideline files, so an agent gets version-correct
+  plus the skill packs and the guideline files, so an agent gets version-correct
   package docs instead of guessing at an API.
 - `boost.json` records which agents and skills are installed, first-party packs
-  included — `ai-layer` sits in that list next to `org-access`, `resource-spine`
-  and `testing-gates`. The list tracks the installed packages: `pest-testing`
+  included. `ai-layer` and `attack-review` sit in that list next to `org-access`,
+  `platform-ops`, `resource-spine`, `testing-gates` and `ux-kit`. The list tracks the installed packages: `pest-testing`
   is gone, `testing-best-practices` replaced the Pest pack, and
   `echo-development` is published because `laravel-echo` is a dependency. `php artisan boost:install --guidelines --skills`
   regenerates all of them ([[operations/documentation]]).

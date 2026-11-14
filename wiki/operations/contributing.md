@@ -12,11 +12,12 @@ code_refs:
     - .githooks/post-checkout
     - .claude/settings.json
     - .claude/hooks/guard-gates.sh
+    - .claude/hooks/guard-generated.sh
     - .claude/hooks/verify-on-stop.sh
     - bin/worktree-setup
     - tests/bootstrap.php
     - composer.json
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Contributing
@@ -37,11 +38,12 @@ Pint for PHP, `vp fmt` and `vp lint --fix` for TypeScript and CSS. A file that
 also has unstaged edits is only checked, never rewritten, so it can't pick up
 hunks you held back. Whatever the fixers can't repair fails the commit.
 
-`.githooks/pre-push` runs the whole gate, so CI is a second opinion rather than
-the first: `composer test` (lint, Larastan and `tsc`, strict PHPStan, 100% type
-coverage, the suite at 100% coverage), then dead code, unused Composer packages,
-knip, the wiki lint, the dependency audit and the duplicate-code check. A Sloppy
-report on the pushed range prints last and never blocks. It takes a few
+`.githooks/pre-push` runs `composer verify`, so CI is a second opinion rather
+than the first. The `verify` script in `composer.json` is `composer test` (lint,
+Larastan and `tsc`, strict PHPStan, 100% type coverage, the suite at 100%
+coverage), then dead code, unused Composer packages, knip, the wiki lint,
+`php artisan wiki:llms --check`, the dependency audit and the duplicate-code
+check. A Sloppy report on the pushed range prints last and never blocks. It takes a few
 minutes. Mutation testing stays on demand (`composer test:mutate`).
 
 A fresh `composer create-project` ends by running `php artisan starter:install`
@@ -55,7 +57,7 @@ and `php artisan migrate --graceful` when the change brought new migrations.
 
 ## Claude Code sessions check themselves
 
-`.claude/settings.json` gives every Claude Code session three project hooks.
+`.claude/settings.json` gives every Claude Code session four project hooks.
 They read their input with PHP, so they need nothing beyond what the project
 already requires.
 
@@ -69,6 +71,11 @@ already requires.
   rewrite the contract to fit the code it wrote. It only sees the Edit and Write
   tools. A shell redirect into the same file gets past it, which is one reason
   the git hooks still run the full gate.
+- `.claude/hooks/guard-generated.sh` denies an edit to `AGENTS.md`, `CLAUDE.md`,
+  `GEMINI.md`, `.cursor/rules/laravel-boost.mdc` and `.junie/guidelines.md`, and
+  to a nested `AGENTS.md` that carries the `agents:context` generated marker. The
+  denial names the regenerate command. Like the gate guard, it only sees the Edit
+  and Write tools.
 - `.claude/hooks/verify-on-stop.sh` runs PHPStan, the tests touching
   uncommitted files and `tsc` before the agent may report done, and hands any
   failure back to it. It runs once per stop, so an error the agent cannot fix
@@ -93,6 +100,13 @@ sends the suite to `testing_<worktree>` whenever `.git` is a file, and leaves an
 explicit `DB_DATABASE` alone (the `:memory:` of `composer test:sqlite`, say).
 Parallel runs append `_test_N` to that name as usual.
 
+`tests/bootstrap.php` also gives every pest process that is not a parallel worker
+its own browser state file, through `PEST_BROWSER_STATE_FILE` in the system temp
+directory, because pest-plugin-browser otherwise keeps one file per checkout and
+a second run (a targeted run beside the gate, say) would delete it from under the
+gate's workers. Workers inherit the path. The same file clears the provider keys
+before the framework boots, except when `--evals` is on the command line.
+
 Vite needed nothing: each worktree has its own `public/hot`, and the dev server
 takes the next free port when 5173 is busy. Removing a worktree does not drop its
 databases; drop `starter_<worktree>` and `testing_<worktree>` by hand.
@@ -105,7 +119,8 @@ fails and so does dead code ([[operations/testing]]).
 
 While working, `composer test:fast` (parallel, compact, stops at the first
 failure) or `composer test:dirty` (only tests covering edited files) are the local
-loops. `composer test` is the gate.
+loops, and `composer test:ai` runs the AI layer's tests with `tests/Unit/ArchTest.php`.
+`composer test` is the gate for the suite; `composer verify` is the whole push gate.
 
 ## Three AI-layer rules are in `CONTRIBUTING.md` rather than only in the wiki
 

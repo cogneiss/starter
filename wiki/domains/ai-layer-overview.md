@@ -9,7 +9,7 @@ code_refs:
     - app/Ai/Agents/Concerns/HasDefaultMiddleware.php
     - app/Ai/Concerns/OrganizationScopedAgent.php
     - app/Console/Commands/AiInstallCommand.php
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # AI layer overview
@@ -19,7 +19,7 @@ inside one organization, tools that never outrank the member who triggered them,
 writes that are proposed rather than performed, and a record of every run.
 
 It boots with no provider key. `App\Support\AiAvailability` reads
-`config/ai.php`; when no provider carries a key — or `AI_FAKE=true` is set —
+the `ai.providers` config. When no provider carries a key, or `AI_FAKE=true` is set,
 every agent is answered by the SDK's fake gateway, so a fresh checkout demos and
 its tests pass without an account anywhere.
 
@@ -27,7 +27,7 @@ its tests pass without an account anywhere.
 
 | Directory             | What lives there                                                      |
 | --------------------- | --------------------------------------------------------------------- |
-| `app/Ai/Agents/`      | the agents: `InvitationDrafter`, `DashboardBriefing`, `BlockComposer`, `FieldDrafter` |
+| `app/Ai/Agents/`      | the agents: `Assistant`, `InvitationDrafter`, `DashboardBriefing`, `BlockComposer`, `FieldDrafter` |
 | `app/Ai/Tools/`       | what an agent may do, each one authorized against a policy            |
 | `app/Ai/Middleware/`  | quota, fencing, topic filtering and audit, in that order              |
 | `app/Ai/Blocks/`      | the typed answer shapes the frontend can render                       |
@@ -54,10 +54,22 @@ scope of [[domains/multi-tenancy]] does the filtering.
 ## Choosing a model
 
 Agents ask for a tier, not a model name. `App\Support\AiTier::for()` resolves
-`cheap` or `smart` from `config/ai.php` into a provider and a model, with
-failover once both providers carry a key. A model-name literal in an agent
+`cheap` or `smart` from `config/ai.php` into a provider and a model. Each tier
+names a primary provider and a `failover` provider. When both carry a key,
+`AiTier::for()` returns a `[provider => model]` map that the SDK walks left to
+right and leaves the model itself null. Otherwise it returns the single primary
+provider, which is the only shape a boot with blank keys sees. The tiers default
+to `claude-haiku-5-5` and `claude-sonnet-5-5` with OpenAI failover models, each
+overridable by an env var. A model-name literal in an agent
 class is the thing this exists to prevent — see [[domains/ai-metering-and-quotas]]
 for how a tier's price is read back out of the same config.
+
+`config/ai.php` lists only the values that differ from `laravel/ai`'s own
+config, which the package merges underneath one level deep. The provider list,
+their keys and the per-modality defaults (images, audio, embeddings) are not in
+the file. They come from `vendor/laravel/ai/config/ai.php`, which is also where
+`AiAvailability` finds the keys. The package default provider is `openai`, and the
+app file overrides it to `anthropic` through `AI_DEFAULT_PROVIDER`.
 
 The integer settings in `config/ai.php` (quotas, confirm TTL, briefing TTL,
 memory fact cap) are cast with `(int) env(...)`, so a value set in `.env` as a

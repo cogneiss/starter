@@ -10,7 +10,7 @@ code_refs:
     - config/pennant.php
     - tests/Feature/FeatureFlagTest.php
     - app/Ai/Agents/DashboardBriefing.php
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Feature flags
@@ -20,8 +20,10 @@ declared in `app/Enums/KnownFeatures.php` before it is used.
 
 `config/pennant.php` makes the `array` store the default (`PENNANT_STORE`
 overrides it), because every flag is resolved from the `feature_overrides` table
-on each request and nothing should go stale. A `database` store on the `features`
-table is configured but not the default.
+on each request and nothing should go stale. `config/pennant.php` holds only that
+one key. The `stores` list comes from Pennant's own config, which defines the
+`array` store and a `database` store on the `features` table and defaults to
+`database` when `PENNANT_STORE` is unset (`vendor/laravel/pennant/config/pennant.php`).
 
 ## Why a registry in front of Pennant
 

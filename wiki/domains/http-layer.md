@@ -14,12 +14,13 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # The HTTP layer
 
-Forty-six controllers, twenty-three form requests, seventeen middleware, two
+Fifty-one controllers (three of them under `app/Http/Controllers/Admin`, the API
+controllers not counted), twenty-five form requests, seventeen middleware, two
 validation rules (`ValidEmail` and `PublicHttpsUrl`).
 
 ## Routes
@@ -52,17 +53,29 @@ organization from `OrganizationContext`, authorizes `view` on it, and summarizes
 only that organization's spend. There is no organization id in the URL, so there
 is nothing to tamper with ([[domains/ai-metering-and-quotas]]).
 
-Three more AI routes sit behind `auth`, and each is a POST that does one thing:
-`ai/blocks` runs the block composer, `ai/proposals` asks a vertical for a
-proposal, and `ai/confirm/{token}` spends a confirm token. The first two carry
-the `organization` middleware, because an agent with no organization bound is an
-agent with nothing to scope its reads to
+The AI routes sit in the `auth` and `two-factor` group and share one
+`throttle:30,1` group in `routes/web.php`, so a loop in the browser cannot spend the quota in seconds.
+Each is a POST that does one thing: `ai/blocks` runs the block composer,
+`ai/proposals` asks a vertical for a proposal, `ai/draft` drafts field text,
+`ai/assistant` sends a message to the assistant, and `ai/confirm/{token}` spends
+a confirm token. All but the last carry the `organization` middleware (added on the route group,
+since this group does not have it), because an
+agent with no organization bound is an agent with nothing to scope its reads to
 ([[architecture/fail-closed-scoping]]).
 
 `ai/confirm/{token}` deliberately does not. The token already names the
 organization it was minted in, and the write is authorized from the token's own
 record rather than from whatever organization the browser happens to have
-switched to since ([[domains/ai-confirm-tokens]]).
+switched to since ([[domains/ai-confirm-tokens]]). It is still inside the
+throttle group.
+
+The assistant's pages are GET routes in the standard stack for anything inside an
+organization:
+`assistant.index`, `assistant.create` and `assistant.show`, the last restricted
+to a UUID. `AssistantController` answers 404 for the whole area when the
+`AiAssistEnabled` feature is off for the organization, and it scopes
+conversations in the query, so another member's or organization's conversation
+id is a 404 too ([[domains/ai-assistant]], [[domains/feature-flags]]).
 
 A separate `admin/*` group sits behind `auth`, `two-factor` and
 `EnsurePlatformAdmin`, deliberately outside the `organization` middleware: the

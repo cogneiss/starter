@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-10-28
+updated: 2026-11-15
 ---
 
 # Wiki index
@@ -35,12 +35,14 @@ Answer in this order, and put it in exactly one place:
    anything long enough to skim is too long to be a rule. `.ai/rules/boost/` is
    generated, not hand-written: Boost renders each `@scoped([...])` block in
    `.ai/guidelines/*.blade.php` into it (`rules.scoped_guidelines` in
-   `config/boost.php`). Claude Code reads the whole tree through the
+   `config/boost.php`, which turns it on; Boost's own default in
+   `vendor/laravel/boost/config/boost.php` is off). Claude Code reads the whole tree through the
    `.claude/rules` symlink.
 2. **Is it a procedure for a task — "when you are doing X, do Y, in this order"?**
    A skill. `.ai/skills/<name>/SKILL.md`, authored here and published into the
-   agent directories by `php artisan boost:install --skills`. Five ship:
-   `resource-spine`, `org-access`, `testing-gates`, `ai-layer`, `ux-kit`. A skill is read while
+   agent directories by `php artisan boost:install --skills`. Seven ship:
+   `resource-spine`, `org-access`, `testing-gates`, `ai-layer`, `ux-kit`,
+   `platform-ops`, `attack-review`. A skill is read while
    working, so it names exact commands and file paths and states the failure it
    prevents. About 150 lines is the ceiling.
 3. **Is it the reasoning — why the thing is shaped this way, what was rejected?**

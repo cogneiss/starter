@@ -10,7 +10,7 @@ code_refs:
     - app/Services/.gitkeep
     - app/Actions/SummarizeAiUsage.php
     - tests/Unit/ArchTest.php
-updated: 2026-08-31
+updated: 2026-11-15
 ---
 
 # Actions and cruddy controllers
@@ -67,6 +67,18 @@ performed itself would be a write nobody confirmed
 ([[domains/ai-confirm-tokens]]). The same file requires every vertical to
 implement `OrganizationScoped` and `HasMiddleware`, which is how a new agent
 inherits the tenancy and metering pipeline instead of quietly opting out of it.
+
+Tools get a stricter version of the same rule, for `App\Ai\Tools` and
+`App\Mcp\Tools` alike. They may not use `DB`, `ConsumeConfirmToken` or anything
+in `App\Actions`, `App\Ai\Actions` or `App\Ai\Memory`. The file's comment
+says banning the facade and the consumer was not enough, because `RememberFact`
+once wrote memory through a class of its own. `ProposeAction` and its MCP twin
+`ProposeChange` are the named exemptions, since the only thing they write is the
+proposal. A class-level rule cannot see an Eloquent call, so a second test in the
+same file scans the source of every tool for write verbs such as `save`,
+`update`, `create`, `delete` and `sync`. It skips `ProposeAction`,
+`ProposeChange` and `AuthorizesToolCall`, which writes only the audit record of a
+refusal.
 
 ## Writing one
 

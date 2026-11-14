@@ -13,14 +13,24 @@ code_refs:
     - config/fortify.php
     - app/Actions/CreateSessionFromMagicLink.php
     - app/Actions/LinkSocialAccount.php
-updated: 2026-10-28
+updated: 2026-11-15
 ---
 
 # Authentication
 
-Fortify does the protocol work, configured in `config/fortify.php` and
-`app/Providers/FortifyServiceProvider.php`. The controllers here are the kit's own
-screens on top of it.
+Fortify does the protocol work for two-factor authentication and passkeys only.
+`config/fortify.php` lists just the values that differ from Fortify's own
+defaults: lowercased usernames, `/dashboard` as the home path, the named
+limiters, and a features list holding two-factor (with `confirm` and
+`confirmPassword`) and passkeys (with `confirmPassword`). Guard, password broker,
+`email` as the username field, views and route prefix come from the package
+defaults in `vendor/laravel/fortify/config/fortify.php`, as do the passkey
+relying-party, origin, handle-secret and timeout settings. The `login`,
+`two-factor` and `passkeys` limiters are defined in
+`app/Providers/FortifyServiceProvider.php`. Registration, password reset, email
+verification, profile and password updates are the kit's own routes and
+controllers in `routes/web.php`, not Fortify features. The controllers here are
+the kit's own screens on top of it.
 
 | Path                  | Where it lives                                                                      |
 | --------------------- | ----------------------------------------------------------------------------------- |
@@ -30,7 +40,7 @@ screens on top of it.
 | Magic link            | `UserMagicLinkController` + `app/Actions/CreateSessionFromMagicLink.php`            |
 | Passkeys              | `UserPasskeyController` — WebAuthn through Fortify, passwordless, 10 tries a minute |
 | Two-factor            | `UserTwoFactorAuthenticationController` — TOTP, QR code, single-use recovery codes  |
-| Password reset        | Fortify's flow, with the usual token expiry and throttling                          |
+| Password reset        | `UserEmailResetNotificationController` and `UserPasswordController`, not Fortify    |
 | Email verification    | `UserEmailVerificationController`, plus a `verified` guard on the dashboard         |
 | Password confirmation | re-prompts before sensitive settings changes                                        |
 

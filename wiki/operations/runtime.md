@@ -7,7 +7,8 @@ code_refs:
     - config/database.php
     - config/queue.php
     - config/mail.php
-updated: 2026-10-28
+    - config/ai.php
+updated: 2026-11-15
 ---
 
 # Runtime
@@ -36,11 +37,15 @@ proves nightly: the whole suite minus the `pgvector` group, on SQLite in memory
 | `INERTIA_ENCRYPT_HISTORY` | off       | Encrypt Inertia history state                                                    |
 | `INERTIA_SSR_ENABLED`     | `true`    | Inertia server-side rendering; needs a separate render service to take effect (Inertia's own default config) |
 | `AI_FAKE`                 | `false`   | Answer every agent from a canned response, no provider call                      |
+| `AI_MODEL_CHEAP`, `AI_MODEL_SMART` | `claude-haiku-5-5`, `claude-sonnet-5-5` | Model behind each tier (`config/ai.php`)                  |
+| `AI_MODEL_CHEAP_FAILOVER`, `AI_MODEL_SMART_FAILOVER` | `gpt-6-luna`, `gpt-6-astra` | Model of the failover provider for each tier (`config/ai.php`) |
 | `BROADCAST_CONNECTION`    | `null`    | Where broadcasts go; `reverb` turns live notifications on                        |
 
 Broadcasting is off by default. `.env.example` sets `APP_URL` to `http://localhost:8000`. It carries the Reverb block —
 `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, host, port, scheme, and
-the four `VITE_REVERB_*` mirrors the browser client reads — all blank. With
+the four `VITE_REVERB_*` mirrors the browser client reads. The app id, key and
+secret and the `VITE_REVERB_*` mirrors are blank; host, port and scheme are
+preset to `localhost`, `8080` and `http`. With
 `BROADCAST_CONNECTION=null` the notification bell still works: notifications are
 written to the database and the panel fetches them, so the websocket is the
 upgrade rather than the requirement ([[domains/ux-realtime-notifications]]).

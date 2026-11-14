@@ -12,7 +12,7 @@ code_refs:
     - tests/Unit/PrecognitionAllowlistTest.php
     - tests/Mutations/phase11-parity.patch
     - tests/Mutations/phase11-allowlist.patch
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Forms and live validation
@@ -41,8 +41,12 @@ A form validating live against a route that lacks
 through to the controller and does the thing. That failure is silent, which is
 why the gate is the router rather than a list of forms somebody maintains.
 
-`routes/web.php` puts `HandlePrecognitiveRequests` on the two route groups that
-hold the application's forms, not on each route.
+`routes/web.php` puts `HandlePrecognitiveRequests` on the route groups that
+hold the application's forms, not on each route: the signed-in organization
+group (which also holds the assistant's pages), the two other `auth` and
+`two-factor` groups, the `guest` group, and the `auth` group for email
+verification and sessions. The AI POST routes sit inside one of those groups
+under `throttle:30,1`, so they inherit the middleware.
 
 The admin announcement form follows the same rule: `admin.announcements.store`
 and `update` carry the middleware on the route itself (`routes/web.php`).

@@ -12,11 +12,14 @@ code_refs:
     - resources/js/components/seo.tsx
     - config/site.php
     - resources/js/pages/welcome.tsx
+    - resources/js/app.tsx
+    - vite.config.ts
+    - resources/js/pages/assistant/index.tsx
     - resources/js/pages/dashboard.tsx
     - resources/js/components/activity-chart.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Pages
@@ -41,8 +44,11 @@ What ships rendered, and nothing more:
   canonical URL, Open Graph and Twitter tags through Inertia's `Head` on the
   welcome, blog and changelog pages. The canonical URL is the shared `appUrl`
   plus the path without its query string. The tags reach the first HTML response
-  only while SSR is running (the Vite dev server in development, or the
-  `bootstrap/ssr/app.js` bundle built by `bun run build:ssr`); otherwise the client adds them on render.
+  only while SSR is running (the Vite dev server in development, or a bundle
+  built by `bun run build:ssr`, which `vendor/inertiajs/inertia-laravel` looks
+  for under `bootstrap/ssr/`); otherwise the client adds them on render.
+  There is no separate server entry: `resources/js/app.tsx` is the only one, and
+  `@inertiajs/vite` in `vite.config.ts` supplies the SSR bootstrap.
 - `/dashboard` — behind `auth`, `verified`, `organization`, `two-factor` and `onboarded`
   (`resources/js/pages/dashboard.tsx`, which declares its `AppLayout` and
   breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets,
@@ -58,6 +64,11 @@ What ships rendered, and nothing more:
   (`resources/js/pages/organization/ai-usage.tsx`), which renders AI spend
   through the same block components an agent answers with
   ([[domains/ai-blocks]]) rather than a hand-built table.
+- `/assistant`, `/assistant/new` and `/assistant/{conversation}`: a member's
+  saved conversations with the assistant (`resources/js/pages/assistant/index.tsx`
+  and `show.tsx`). They sit in the same signed-in stack as the dashboard, and
+  `AssistantController` answers 404 for the whole area when the `AiAssistEnabled`
+  feature is off for the organization ([[domains/ai-assistant]]).
 - `/onboarding` — the activation checklist a new owner meets before the rest of
   the application (`resources/js/pages/onboarding/show.tsx`,
   [[domains/ux-onboarding]]).

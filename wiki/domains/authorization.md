@@ -14,7 +14,7 @@ code_refs:
     - app/Actions/SyncPermissions.php
     - app/Console/Commands/SyncPermissionsCommand.php
     - config/permission.php
-updated: 2026-10-28
+updated: 2026-11-15
 ---
 
 # Roles, permissions and policies
@@ -22,7 +22,9 @@ updated: 2026-10-28
 RBAC on `spatie/laravel-permission` with organization-scoped teams, configured in
 `config/permission.php`, which turns teams on (`'teams' => true`) with
 `organization_id` as the team foreign key and uses `App\Models\Role` as the role
-model; permission lookups are cached for 24 hours. The same user can be an owner in one organization and a
+model. The file holds only those overrides. Everything else, including the
+24 hour permission cache (`cache.expiration_time`), comes from the package's own
+config in `vendor/spatie/laravel-permission/config/permission.php`. The same user can be an owner in one organization and a
 member in another.
 
 ## Policies

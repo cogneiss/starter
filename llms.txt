@@ -42,7 +42,7 @@
 - [Data objects](wiki/domains/data-objects.md): Eight `spatie/laravel-data` classes in `app/Data`
 - [Events, listeners and notifications](wiki/domains/events-and-notifications.md): Small surface on purpose
 - [Feature flags](wiki/domains/feature-flags.md): Pennant, configured in `config/pennant.php`, with one addition: every flag is declared in `app/Enums/KnownFeatures.php` before it is used
-- [The HTTP layer](wiki/domains/http-layer.md): Forty-six controllers, twenty-three form requests, seventeen middleware, two validation rules (`ValidEmail` and `PublicHttpsUrl`)
+- [The HTTP layer](wiki/domains/http-layer.md): Fifty-one controllers (three of them under `app/Http/Controllers/Admin`, the API controllers not counted), twenty-five form requests, seventeen middleware, two validation rules (`ValidEmail` and `Publ...
 - [Models](wiki/domains/models.md): Twenty models ship in `app/Models`
 - [Multi-tenancy](wiki/domains/multi-tenancy.md): Every user belongs to at least one organization, and everything they create lives inside one
 - [Organization resolvers](wiki/domains/organization-resolvers.md): Three implement `app/Auth/Contracts/OrganizationResolver.php`
@@ -62,7 +62,7 @@
 ## Features
 
 - [Account settings](wiki/features/account-settings.md): The passkeys, two-factor and password screens, and account deletion, require a verified email (`verified` in `routes/web.php`) as well as not impersonating
-- [Authentication](wiki/features/authentication.md): Fortify does the protocol work, configured in `config/fortify.php` and `app/Providers/FortifyServiceProvider.php`
+- [Authentication](wiki/features/authentication.md): Fortify does the protocol work for two-factor authentication and passkeys only
 - [Interface](wiki/features/interface.md): Inertia v3 and React 19, server-side routing, Tailwind v4
 - [Organizations](wiki/features/organizations.md): The user-facing half of domains/multi-tenancy
 - [Pages](wiki/features/pages.md): What ships rendered, and nothing more
@@ -90,7 +90,7 @@
 - [Runtime](wiki/operations/runtime.md): Postgres, database sessions, database queue, database cache and the log mailer out of the box
 - [Setting up a clone](wiki/operations/setup.md): That runs `composer install`, copies `.env.example` to `.env` if there is none, generates the key, migrates, seeds the role templates, runs `bun install`, installs the Chromium the browser tests drive...
 - [Testing](wiki/operations/testing.md): Pest 5, covering every controller, action, rule and middleware
-- [Tooling](wiki/operations/tooling.md): Two skips in those configs are decisions rather than noise
+- [Tooling](wiki/operations/tooling.md): Some skips in those configs are decisions rather than noise
 
 ## Overview
 

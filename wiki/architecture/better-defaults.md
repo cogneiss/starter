@@ -6,7 +6,7 @@ code_refs:
     - config/essentials.php
     - tests/Pest.php
     - tests/Unit/Conventions/MassAssignmentBoundaryTest.php
-updated: 2026-10-31
+updated: 2026-11-15
 ---
 
 # Better defaults from Essentials
@@ -71,8 +71,11 @@ drifts.
 `motionStyles()` constructs the Symfony process directly, because the facade is
 faked for the whole suite and this helper genuinely has to run a program.
 
-`tests/Evals/` is the deliberate exception, and the only one: that suite is
-grouped `evals`, excluded from `composer test`, and skips itself when no key is
-configured ([[domains/ai-evals]]).
+`tests/Evals/` is the deliberate exception, and the only one. `tests/Pest.php`
+groups it `Evals` and says it only runs under `--evals`. Its `beforeEach` skips
+the test unless the provider of the `cheap` tier in `config/ai.php` carries a
+key, so a key for some other provider is not enough, and it points the eval judge
+at that same provider and model. The suite also uses `RefreshDatabase`
+([[domains/ai-evals]]).
 
 Runtime driver choices are separate; see [[operations/runtime]].

@@ -6,7 +6,7 @@ code_refs:
     - .githooks/post-commit
     - .ai/rules/general.md
     - .claude/settings.json
-updated: 2026-10-29
+updated: 2026-11-15
 ---
 
 # Why agents query a graph before grepping
