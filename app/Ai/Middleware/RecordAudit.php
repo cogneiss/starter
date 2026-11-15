@@ -152,8 +152,7 @@ final readonly class RecordAudit
 
     /**
      * A step that threw wrote nothing through the success path, so the failure
-     * is recorded here and rethrown. The audit write must never replace the
-     * provider's exception, so a failing insert is swallowed.
+     * is recorded here and rethrown.
      */
     private function recordError(OrganizationScoped $agent, PendingStep $step, string $runId, Throwable $exception, int $startedAt): void
     {
@@ -169,6 +168,7 @@ final readonly class RecordAudit
                 'error' => Str::limit($exception::class.': '.$exception->getMessage(), self::ERROR_LIMIT, ''),
             ]));
         } catch (Throwable) {
+            // The caller must see the provider's exception, so a failed audit insert is dropped rather than thrown over it.
         }
     }
 }

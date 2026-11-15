@@ -127,6 +127,13 @@ Route::middleware(['auth', 'verified', 'organization', 'two-factor', 'onboarded'
         ->name('user-notification-preference.update');
 });
 
+// Organization Invitation Acceptance...
+Route::get('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'show'])
+    ->name('organization-invitation-acceptance.show');
+Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'update'])
+    ->middleware(['throttle:6,1', 'friction'])
+    ->name('organization-invitation-acceptance.update');
+
 Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     // Organization...
     Route::get('organizations/create', [OrganizationController::class, 'create'])
@@ -217,16 +224,7 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
         Route::put('organization-switch', [OrganizationSwitchController::class, 'update'])
             ->name('organization-switch.update');
     });
-});
 
-// Organization Invitation Acceptance...
-Route::get('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'show'])
-    ->name('organization-invitation-acceptance.show');
-Route::post('invitations/{token}', [OrganizationInvitationAcceptanceController::class, 'update'])
-    ->middleware(['throttle:6,1', 'friction'])
-    ->name('organization-invitation-acceptance.update');
-
-Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->group(function (): void {
     // User...
     Route::delete('user', [UserController::class, 'destroy'])
         ->middleware(['verified', 'not-impersonating'])
