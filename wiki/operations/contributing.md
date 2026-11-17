@@ -17,7 +17,7 @@ code_refs:
     - bin/worktree-setup
     - tests/bootstrap.php
     - composer.json
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Contributing
