@@ -1,0 +1,496 @@
+name: ci
+
+# The one required workflow. Fast, deterministic, about the diff: the full
+# `composer verify` gate, secret scan, Semgrep, plus the fork-guarded autofix
+# bot. Scheduled and reporting jobs live in their own files and are never
+# required checks. CI runs everything, never a subset of the suite.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Every job runs on ubuntu-latest on purpose. The `build` artifact carries
+# node_modules/, whose contents are platform-specific.
+jobs:
+  # Only a11y consumes the build artifact.
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: pcov
+          extensions: pdo_pgsql
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version: 24
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Cache Bun Dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock', 'package.json') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress --no-scripts
+          composer run-script post-autoload-dump
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Build Assets
+        run: bun run build
+
+      # Tarred rather than uploaded as a file tree: upload-artifact drops the
+      # executable bit and flattens symlinks, which breaks every binary in
+      # vendor/bin and node_modules/.bin. The generated Wayfinder output is in
+      # here too, so no consumer has to rebuild it.
+      - name: Pack Build
+        run: tar -cf build.tar vendor node_modules public/build resources/js/actions resources/js/routes resources/js/wayfinder
+
+      - name: Upload Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build
+          path: build.tar
+          retention-days: 1
+
+  # The whole local gate as one command. The browser suite (tests/Browser,
+  # including AccessibilityTest) runs inside test:unit. `composer verify` also
+  # runs test:audit (composer audit + bun audit --prod), the dependency audit.
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U starter"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # Full history: wiki:lint compares a page's updated: date against the last
+      # commit touching each code_ref, and a depth-1 clone makes that rule pass
+      # silently instead of failing.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: pcov
+          extensions: pdo_pgsql
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version: 24
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Cache Bun Dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock', 'package.json') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress --no-scripts
+          composer run-script post-autoload-dump
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Build Assets
+        run: bun run build
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(bun pm ls 2>/dev/null | grep playwright | head -1 | sed 's/.*@//')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps
+
+      - name: Install Playwright System Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps
+
+      - name: Cache Rector
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: tmp/rector
+          key: ${{ runner.os }}-rector-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - name: Cache PHPStan
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: tmp/phpstan
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-
+
+      - name: Cache PHPStan Dead Code
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: /tmp/phpstan-deadcode
+          key: ${{ runner.os }}-phpstan-deadcode-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-deadcode-
+
+      - name: Create Cache Directories
+        run: mkdir -p tmp/rector tmp/phpstan /tmp/phpstan-deadcode
+
+      - name: Verify
+        run: composer verify
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
+
+      - name: Store Artifacts
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: browser-screenshots
+          path: tests/Browser/Screenshots
+
+  # Secret scan. The dependency audit runs inside verify.
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # Full history: the `git` scan walks every commit, so a secret that was
+      # committed and later deleted is still caught.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+        env:
+          GITLEAKS_VERSION: 8.30.1
+
+      # --redact is not optional: without it a hit is echoed verbatim into a
+      # public CI log, which is worse than not scanning at all.
+      - name: Scan Working Tree For Secrets
+        run: gitleaks dir . --config .gitleaks.toml --redact --no-banner
+
+      - name: Scan History For Secrets
+        run: gitleaks git . --config .gitleaks.toml --redact --no-banner
+
+  # PHP static security scan. Zero findings today, so any finding is a regression.
+  semgrep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: semgrep/semgrep
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Scan
+        run: semgrep scan --config p/php --config p/security-audit --error --metrics=off app routes config database bootstrap
+
+  autofix:
+    # SECURITY CONTROL — do not touch. Without this guard a pull request from a
+    # fork runs this workflow with write permission and can push arbitrary code
+    # into the repository. Do not "simplify" it, and do not swap the trigger for
+    # `pull_request_target`.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1
+        with:
+          node-version: 24
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Cache Bun Dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Cache Rector
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: /tmp/rector
+          key: ${{ runner.os }}-rector-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - name: Create Cache Directories
+        run: mkdir -p /tmp/rector
+
+      - name: Fix PHP Formatting
+        run: vendor/bin/pint --parallel
+
+      - name: Apply Rector
+        run: vendor/bin/rector process --no-progress-bar
+
+      - name: Fix Frontend Formatting
+        run: NODE_OPTIONS='--experimental-strip-types' bunx vp fmt resources/
+
+      # The blocking `test:lint` inside `verify` stays as it is. This bot
+      # fixes; that gate still verifies.
+      - name: Push Fixes
+        uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1
+
+  a11y:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U starter"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+          extensions: pdo_pgsql
+          ini-values: zend.assertions=1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1
+        with:
+          node-version: 24
+
+      - name: Download Build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: build
+
+      - name: Unpack Build
+        run: tar -xf build.tar && rm build.tar
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(bun pm ls 2>/dev/null | grep playwright | head -1 | sed 's/.*@//')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps
+
+      - name: Install Playwright System Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps
+
+      - name: Accessibility
+        run: composer test:a11y
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
+
+      - name: Store Artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: a11y-screenshots
+          path: tests/Browser/Screenshots
+
+  # Reports, never blocks (continue-on-error). Leave it out of the required
+  # checks. Posts the wiki worklist and the sloppy diff as a summary.
+  advisory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+
+    steps:
+      # Full history: the worklist and `sloppy diff` both read `git log`.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.5
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Install Bun Dependencies
+        run: bun install
+
+      - name: Build Assets
+        run: bun run build
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Documentation Worklist
+        run: |
+          php artisan wiki:audit
+          php -r '
+            $audit = json_decode(file_get_contents("wiki/_meta/audit.json"), true);
+            printf(
+              "## Documentation worklist%s%s| | count |%s| --- | --- |%s| Stale pages | %d |%s| Undocumented files | %d |%s| Orphaned pages | %d |%s%sRun `/document` to work it.%s",
+              PHP_EOL, PHP_EOL, PHP_EOL, PHP_EOL,
+              count($audit["stale"]), PHP_EOL,
+              count($audit["undocumented"]), PHP_EOL,
+              count($audit["orphaned"]), PHP_EOL,
+              PHP_EOL, PHP_EOL,
+            );
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Sloppy
+        if: github.event_name == 'pull_request'
+        run: vendor/bin/sloppy diff origin/${{ github.base_ref }} --merge-base --fail-on=never
