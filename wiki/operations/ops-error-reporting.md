@@ -13,7 +13,7 @@ code_refs:
     - vendor/sentry/sentry-laravel/src/Sentry/Laravel/Features/Feature.php
     - app/Ai/Middleware/RecordAudit.php
     - tests/Feature/ErrorReporterTest.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # The error reporting seam
@@ -50,6 +50,7 @@ Prompts, instructions and responses are attached only when `send_default_pii`
 is on (`Features/Feature.php`, `Features/AiIntegration.php`), and it defaults
 to off, so tenant content stays out. Per-organization metering in
 `ai_audit_logs` (`app/Ai/Middleware/RecordAudit.php`) stays the source of truth
-for cost; the spans are for latency and debugging.
+for cost, one row per model step: a replayed step collides on the unique
+`(run_id, step_number)` and is not metered twice; the spans are for latency and debugging.
 
 The analytics seam is the same shape — [[operations/ops-analytics]].

@@ -4,7 +4,7 @@ status: current
 supersedes: []
 code_refs:
     - todo/org-access.status.json
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Decision log — organizations and access
@@ -17,7 +17,12 @@ active-user enforcement, documentation, and a full-gate phase.
 
 `todo/org-access.status.json` is the record. Phase 13, "full gate green", is
 `failing` there — the plan's own binary rule is that unproven means failing, and
-that phase was never proved on a clean run.
+that phase was never proved on a clean run. Four later items (14 to 17) are also
+`failing` and recorded only, not built: social login accepting an unverified or
+empty provider email, and three impersonation gaps (the log is not ended when a
+session expires or `EnsureUserIsActive` tears it down, `StartImpersonation` does
+not check the target is active, a target with no organization writes no activity
+row).
 
 ## The decisions that outlived the plan
 

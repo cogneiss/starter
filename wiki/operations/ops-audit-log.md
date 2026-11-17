@@ -10,7 +10,7 @@ code_refs:
     - config/audit.php
     - tests/Feature/AuditLogTest.php
     - tests/Feature/AuditRedactionTest.php
-updated: 2026-10-31
+updated: 2026-11-18
 ---
 
 # The audit log
@@ -20,13 +20,19 @@ An append-only record of who did what: model writes captured by
 application records deliberately. Rows are never updated and never edited —
 corrections are new rows.
 
+`ImpersonationLog` and `LoginHistory` keep their own tables and each bridges one
+entry into this log on create; `ImpersonationLog` bridges one more when it ends
+(`ended_at` changes).
+
 ## What a row holds
 
 The actor, the organization, the event, the subject, and a redacted snapshot
 of what changed. Redaction happens on the way in: secret-shaped attributes
 (hashed tokens, webhook secrets, passwords) are stripped before the row is
 written, so the log cannot leak what the models were careful not to. See
-`tests/Feature/AuditRedactionTest.php` for the exact contract.
+`tests/Feature/AuditRedactionTest.php` for the exact contract. During an
+impersonated session the row's `properties` also carry `impersonator_id`; the
+causer stays the person being impersonated.
 
 ## Reading it
 

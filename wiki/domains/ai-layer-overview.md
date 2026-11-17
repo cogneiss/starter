@@ -9,7 +9,7 @@ code_refs:
     - app/Ai/Agents/Concerns/HasDefaultMiddleware.php
     - app/Ai/Concerns/OrganizationScopedAgent.php
     - app/Console/Commands/AiInstallCommand.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # AI layer overview
@@ -60,7 +60,8 @@ names a primary provider and a `failover` provider. When both carry a key,
 right and leaves the model itself null. Otherwise it returns the single primary
 provider, which is the only shape a boot with blank keys sees. Each tier's
 model and failover model default in `config/ai.php` and are overridable by an
-env var. A model-name literal in an agent
+env var; a blank value falls back to the default. By default `cheap` is Claude
+Haiku, `standard` Sonnet and `smart` Opus. A model-name literal in an agent
 class is the thing this exists to prevent — see [[domains/ai-metering-and-quotas]]
 for how a tier's price is read back out of the same config.
 

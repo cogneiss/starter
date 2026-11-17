@@ -11,7 +11,7 @@ code_refs:
     - tests/Evals/DashboardBriefingEvalTest.php
     - .github/workflows/evals.yml
     - composer.json
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # AI evals

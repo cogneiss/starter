@@ -16,7 +16,7 @@ code_refs:
     - app/Actions/LinkSocialAccount.php
     - app/Actions/EnabledSocialProviders.php
     - app/Http/Requests/CreateSessionRequest.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Authentication
@@ -88,7 +88,7 @@ more: it only ever accepted `password`, and the pluggable driver seam it fronted
 was removed. The superseded page `wiki/domains/auth-drivers.md` keeps the reasoning.
 
 Anyone adding SAML or OIDC later must follow the rules that lived on the old
-interface, which are now a docblock on `SocialAuthController`:
+interface; the first two are now a docblock on `SocialAuthController`:
 
 - Check the assertion against the request host before trusting it. An assertion
   minted for one host and replayed at another signs the attacker into a different
@@ -96,6 +96,9 @@ interface, which are now a docblock on `SocialAuthController`:
 - Deny by default. Do not provision an account for an unknown identity unless the
   organization has explicitly opted in.
 - Fail closed when the configured flow is unknown or cannot decide.
+
+Signing out ends an active impersonation first: `SessionController::destroy`
+calls `StopImpersonation` before logging the guard out.
 
 Sign-in attempts are recorded by listeners
 ([[domains/events-and-notifications]]).

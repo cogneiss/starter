@@ -10,7 +10,7 @@ code_refs:
     - app/Services/.gitkeep
     - app/Actions/SummarizeAiUsage.php
     - tests/Unit/ArchTest.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # Actions and cruddy controllers
@@ -79,6 +79,11 @@ same file scans the source of every tool for write verbs such as `save`,
 `update`, `create`, `delete` and `sync`. It skips `ProposeAction`,
 `ProposeChange` and `AuthorizesToolCall`, which writes only the audit record of a
 refusal.
+
+Tools also may not use an outbound channel: a second rule in `tests/Unit/ArchTest.php`
+bars `Http`, `Mail`, `Notification`, `Process` and the Guzzle and Symfony Process
+classes from both namespaces. A tool already reads private data and sees untrusted
+content, so it must not also be able to send data out.
 
 ## Writing one
 

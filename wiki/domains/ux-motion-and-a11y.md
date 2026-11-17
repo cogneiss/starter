@@ -11,7 +11,7 @@ code_refs:
     - tests/Unit/Conventions/AriaLiveGuardTest.php
     - tests/Browser/AccessibilityTest.php
     - tests/Browser/RouteAnnouncerTest.php
-updated: 2026-10-28
+updated: 2026-11-18
 ---
 
 # Motion and accessibility
@@ -31,7 +31,9 @@ quicker slide is still a slide, and the setting is a request for no movement at
 all — so every named transition emits a zero duration when it is on
 (`tests/Unit/Support/ReducedMotionTest.php`). `resources/css/app.css` makes the
 same promise for CSS-driven animation under
-`@media (prefers-reduced-motion: reduce)`.
+`@media (prefers-reduced-motion: reduce)`. That block also zeroes the duration of
+the `::view-transition-*` pseudo-elements, which the universal selector does not
+reach.
 
 ## Announcing single-page navigations
 

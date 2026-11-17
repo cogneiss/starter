@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - .githooks/post-commit
     - .ai/rules/general.md
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # Code knowledge graphs

@@ -11,7 +11,7 @@ code_refs:
     - tests/Feature/Console/InstallWizardPruneTest.php
     - phpunit.xml
     - tests/bootstrap.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # Testing
@@ -26,9 +26,10 @@ Pest 5, covering every controller, action, rule and middleware.
 - **100% type coverage** (`composer test:type-coverage`).
 - **Architecture presets** — php, strict, laravel, security — in
   `tests/Unit/ArchTest.php`, catching `dd()` leftovers, loose comparisons,
-  non-final classes and insecure calls. The AI layer adds four rules of its own
+  non-final classes and insecure calls. The AI layer adds five rules of its own
   there: tools never touch `DB` or `ConsumeConfirmToken` (with `ProposeAction`
-  the one named exemption), and every agent implements `OrganizationScoped` and
+  the one named exemption), tools never use an outbound channel (`Http`, `Mail`,
+  `Notification`, `Process`), and every agent implements `OrganizationScoped` and
   `HasMiddleware` and never reaches for `DB`, the confirm-token action or the
   invitation action ([[domains/ai-agents-and-tools]]). A separate rule keeps
   controllers from being called by anything else — a controller is an endpoint,

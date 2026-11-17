@@ -14,13 +14,13 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # The HTTP layer
 
 Fifty-one controllers (three of them under `app/Http/Controllers/Admin`, the API
-controllers not counted), twenty-five form requests, seventeen middleware, two
+controllers not counted), twenty-five form requests, eighteen middleware, two
 validation rules (`ValidEmail` and `PublicHttpsUrl`).
 
 ## Routes
@@ -81,7 +81,10 @@ A separate `admin/*` group sits behind `auth`, `two-factor` and
 `EnsurePlatformAdmin`, deliberately outside the `organization` middleware: the
 control plane reads across every organization, and the gate denies with a 404,
 so to anyone without the platform ability the routes simply do not exist
-([[operations/ops-admin-area]]).
+([[operations/ops-admin-area]]). Starting an impersonation
+(`users/{user}/impersonation`, `user-impersonation.store`) is in that group, so
+it needs the platform ability; stopping it (`DELETE impersonation`) stays in the
+signed-in group.
 
 Register, the magic-link request and invitation acceptance also picked up a
 `friction` middleware alongside their existing throttle, and `UserController`
@@ -122,6 +125,12 @@ the bound organization, not a filter over the user's notifications — a count
 cannot be filtered after the fact ([[domains/multi-tenancy]]). Only the five most
 recent rows are shared; the rest are a request away.
 
+`impersonating` is shared whenever the session is impersonating, even if the
+impersonator can no longer be loaded: the prop then carries the id with a null
+name, so the Stop button still renders. The middleware also turns server
+rendering off for signed-in users and whenever `inertia.ssr.enabled` is false,
+so SSR is opt-in and guest-only.
+
 A sixth prop, `announcements`, carries the active banners for the bound
 organization that the user has not dismissed: an empty array without a user and
 an organization, otherwise one query through `VisibleAnnouncements` with the
@@ -148,7 +157,7 @@ Authorization does not live here; it lives in the policies
 | `ResolveOrganization`          | binds the current organization ([[domains/organization-resolvers]])       |
 | `RequireOrganization`          | alias `organization` — no organization, no further                        |
 | `EnsureUserIsActive`           | a suspended or deactivated user is signed out of the request              |
-| `EnsureTwoFactorEnabled`       | alias `two-factor` — holds a member on setup when their org requires it   |
+| `EnsureTwoFactorEnabled`       | alias `two-factor` — holds a member on setup when their org requires it, except while impersonating |
 | `ForbiddenDuringImpersonation` | alias `not-impersonating` — blocks destructive routes while impersonating |
 | `HandleAppearance`             | reads the `appearance` cookie so the server renders the right theme       |
 | `HonorDoNotTrack`              | respects the `DNT` header                                                 |

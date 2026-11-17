@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Setting up a clone
@@ -38,7 +38,10 @@ degraded check still passes doctor. Every failure prints its fix
 ([[domains/console-commands]]).
 
 Below the failures it prints an optional section — mail transport, the pgvector
-extension, AI provider keys, the AI gateway, and the file scanner. Those are
+extension, AI provider keys, the AI gateway, and the file scanner, plus two PHP
+runtime notes: a patch level below the one the command pins, and
+`session.upload_progress.enabled` left on (the app never uses it, and it lets a
+request write data into a session file). Those are
 reported, never failed, because the kit is designed to run with all of them
 absent. The scanner entry reads unset when `UPLOAD_SCANNER` resolves to
 `NullScanner`, which is the default: a machine with no ClamAV still imports

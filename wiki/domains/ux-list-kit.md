@@ -21,7 +21,7 @@ code_refs:
     - tests/Browser/DataTableTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # The server-driven list kit
@@ -129,7 +129,7 @@ is why the scope is part of the builder and why
 `tests/Feature/Resources/CsvExportScopeTest.php` exists.
 
 A list and its export share one URL: the same request with `Accept: text/csv`
-streams the CSV (the browser side is `resources/js/components/data-table-export.ts`), so an export cannot drift away from the filters on screen.
+streams the CSV (`ResourceQuery::wantsCsv()` reads the header; the browser side is `resources/js/components/data-table-export.ts`), so an export cannot drift away from the filters on screen.
 
 Handing over a spreadsheet of an organization's data is itself worth a record,
 so a scoped export writes an audit entry before the first row streams — see

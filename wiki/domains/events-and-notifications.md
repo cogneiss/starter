@@ -11,7 +11,7 @@ code_refs:
     - app/Notifications/OrganizationInvitationNotification.php
     - app/Notifications/UserMagicLink.php
     - app/Actions/SeedOrganizationRoles.php
-updated: 2026-10-28
+updated: 2026-11-18
 ---
 
 # Events, listeners and notifications
@@ -42,6 +42,7 @@ authentication events and write `LoginHistory` rows. They are listeners rather
 than code in the controller because Fortify owns those flows: password, magic
 link, passkey and social sign-in all end in a framework event, and a listener
 records all of them once instead of four controllers each remembering to.
+`RecordSuccessfulLogin` writes nothing while an impersonation is active.
 
 ## Notifications
 

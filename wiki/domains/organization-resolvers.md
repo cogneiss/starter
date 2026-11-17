@@ -10,7 +10,7 @@ code_refs:
     - app/Http/Middleware/ResolveOrganization.php
     - app/Providers/AppServiceProvider.php
     - config/organizations.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Organization resolvers
@@ -50,8 +50,8 @@ directory is gone ([[domains/auth-drivers]], superseded).
 
 ## What else the provider binds
 
-`AppServiceProvider` is where two other tenancy-shaped decisions are made once
-rather than at every call site:
+`AppServiceProvider` is where other decisions are made once rather than at every call
+site:
 
 - `FileScanner` resolves from `config('uploads.scanner')` against the named map
   in `config('uploads.scanners')`, falling back to `NullScanner` when the name is
@@ -62,3 +62,6 @@ rather than at every call site:
   stored notification carries the organization it was raised in. Laravel resolves
   that driver through the container, which is why the swap belongs here and not
   in each notification ([[domains/ux-realtime-notifications]]).
+- `boot()` registers the health checks on the `spatie/laravel-health` registry:
+  database, cache, queue, schedule, disk and debug mode. `HealthReport` reads that
+  registry rather than being bound here ([[operations/ops-health]]).

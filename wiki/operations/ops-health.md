@@ -14,7 +14,7 @@ code_refs:
     - config/health.php
     - bootstrap/app.php
     - tests/Feature/HealthTest.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # The health endpoint

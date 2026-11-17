@@ -12,7 +12,7 @@ code_refs:
     - config/inertia.php
     - app/Http/Middleware/HandleInertiaRequests.php
     - tests/Unit/Middleware/HandleInertiaRequestsTest.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Interface

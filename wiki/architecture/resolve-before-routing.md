@@ -4,9 +4,10 @@ status: current
 supersedes: []
 code_refs:
     - bootstrap/app.php
+    - app/Http/Middleware/ReadOnlyWhileImpersonating.php
     - app/Http/Middleware/ResolveOrganization.php
     - .ai/rules/bootstrap.md
-updated: 2026-10-28
+updated: 2026-11-18
 ---
 
 # Why the organization resolves before route model binding
@@ -37,8 +38,10 @@ Appending middleware to the `web` group is routine. The current order in
 `bootstrap/app.php` is:
 
 `SetContentSecurityPolicy`, `AuthenticateSession`, `EnsureUserIsActive`,
-`HandleAppearance`, `SetLocale`, `HonorDoNotTrack`, `ResolveOrganization`,
+`ReadOnlyWhileImpersonating`, `HandleAppearance`, `SetLocale`, `HonorDoNotTrack`, `ResolveOrganization`,
 `HandleBrand`, `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`.
+`ReadOnlyWhileImpersonating` refuses writes during an impersonated session, and
+sits right after the active-user check.
 `SetContentSecurityPolicy` sits first because it only mints the per-request
 nonce the response's headers and inline scripts share; it has no organization
 to read and nothing later in the stack depends on it running after anything

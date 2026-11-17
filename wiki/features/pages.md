@@ -21,7 +21,7 @@ code_refs:
     - resources/js/components/activity-chart.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Pages

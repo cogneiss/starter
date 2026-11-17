@@ -12,7 +12,7 @@ code_refs:
     - resources/js/app.tsx
     - resources/css/app.css
     - vite.config.ts
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # Content Security Policy and form friction

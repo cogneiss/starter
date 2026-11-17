@@ -17,7 +17,7 @@ code_refs:
     - resources/js/components/assistant-chat.tsx
     - tests/Feature/Ai/AssistantTest.php
     - tests/Browser/AssistantTest.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # AI assistant
@@ -78,7 +78,7 @@ state.
 
 The list page defers its data and shows a skeleton while it loads, then either
 the conversations or an empty state. The chat page shows an intro when empty, a
-sending indicator, and distinct failure and quota messages. A confirm block is
+sending indicator, and distinct failure and quota messages. The message list is a `role="log"` region, and every assistant reply carries an "AI-generated" badge (`resources/js/components/assistant-chat.tsx`). A confirm block is
 rendered by the existing confirm component, which posts to the confirm route.
 The sidebar entry appears only when the `aiAssist` shared prop is true. Strings
 are in `lang/en/ui.php` and `lang/nl/ui.php` under `assistant`.

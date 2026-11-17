@@ -17,7 +17,7 @@ code_refs:
     - database/migrations/2026_08_25_090000_create_ai_documents_table.php
     - app/Support/Health/HealthReport.php
     - .work/reports/Laravel Inertia starter rebuild 2026.md
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Hosting
@@ -69,7 +69,7 @@ search ([[domains/ai-retrieval]]).
 **Health.** `GET /health` returns a JSON report and a non-200 code when a check
 fails. It is registered in `bootstrap/app.php` with no web middleware, so it
 answers while the database is down. It checks database, cache, disk, queue and
-schedule, so a green report also proves the worker and scheduler run
+schedule, and warns when `APP_DEBUG` is on in production, so a green report also proves the worker and scheduler run
 (`app/Support/Health/HealthReport.php`, `config/health.php`). Point the host's
 health probe or an uptime monitor at it ([[operations/ops-health]]).
 
@@ -93,7 +93,9 @@ The report does not mention Forge. This follows from the needs above.
 - Postgres: install pgvector on the server yourself, then run the migration or
   `php artisan ai:install` with a role that may create extensions.
 - PHP: the report asks you to confirm a current PHP 8.5 patch release and set
-  `session.upload_progress.enabled = Off`.
+  `session.upload_progress.enabled = Off`. `app:doctor` reports both: the
+  patch level against a floor hard-coded in `DoctorCommand.php`, and the ini
+  value.
 - Health: use `/health`. Not covered: Forge menus, server sizing.
 
 ## Docker

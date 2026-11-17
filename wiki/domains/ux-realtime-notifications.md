@@ -18,7 +18,7 @@ code_refs:
     - tests/Feature/RealtimeNoKeyTest.php
     - tests/Mutations/phase10-channel.patch
     - tests/Mutations/phase10-unread-scope.patch
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # In-app notifications and realtime
@@ -68,7 +68,14 @@ bin/prove-control.sh phase10-unread-scope NotificationScope
 
 `use-organization-channel.ts` does nothing when `VITE_REVERB_APP_KEY` is
 absent. Echo is never configured, no connection is attempted, no error is
-logged — the bell simply updates on the next page visit.
+logged — the bell simply updates on the next page visit. When the key is
+present the hook configures the shared Echo instance from `@laravel/echo-react`
+once and drives the channel itself, because the package's own hooks throw until
+it is configured.
+
+Marking a notification read in `notification-panel.tsx` is an optimistic
+`router.patch`: the row leaves `recentNotifications` and `unreadNotifications`
+drops by one before the server answers.
 `tests/Feature/RealtimeNoKeyTest.php` and `tests/Feature/ZeroKeyBootTest.php`
 keep a fresh clone with an empty `.env` booting and passing.
 

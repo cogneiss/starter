@@ -9,7 +9,7 @@ code_refs:
     - tests/Feature/Ai/AssistantMemoryTest.php
     - app/Ai/Actions/RememberAssistantFact.php
     - app/Ai/Agents/Assistant.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # AI memory
@@ -42,6 +42,11 @@ remembered text is a customer's words ([[domains/ai-injection-defense]]). The
 fence sits in the agent's `instructions()` so `tests/Unit/Conventions/InjectionConventionTest.php`
 can see it. With no facts the agent adds nothing rather than an empty fence: a
 fence promising facts that are not there is just a worse prompt.
+
+Because the instructions end in this person's facts, the assistant's
+`#[CacheInstructions]` breakpoint is per member, and it only applies on Anthropic
+and Bedrock. The tool list is identical for everyone, so its
+`#[CacheToolDefinitions]` breakpoint is shared.
 
 `remember()` writes one fact under a key, replacing whatever was there, inside a
 transaction that also evicts. An agent does not call it. `app/Ai/Tools/RememberFact.php`

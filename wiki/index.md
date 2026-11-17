@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # Wiki index
@@ -38,6 +38,8 @@ Answer in this order, and put it in exactly one place:
    `config/boost.php`, which turns it on; Boost's own default in
    `vendor/laravel/boost/config/boost.php` is off). Claude Code reads the whole tree through the
    `.claude/rules` symlink.
+   `config/boost.php` also points Claude Code's rendered guidelines at `AGENTS.md`,
+   which leaves `CLAUDE.md` as the one-line `@AGENTS.md` import.
 2. **Is it a procedure for a task — "when you are doing X, do Y, in this order"?**
    A skill. `.ai/skills/<name>/SKILL.md`, authored here and published into the
    agent directories by `php artisan boost:install --skills`. Seven ship:

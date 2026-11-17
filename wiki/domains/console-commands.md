@@ -18,7 +18,7 @@ code_refs:
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Console commands
@@ -103,7 +103,8 @@ broken binding ([[domains/ux-import-and-uploads]]).
 The AI credentials sit in the same optional block, alongside two reports that
 never move the exit code either: whether quotas are configured, and whether every
 model the application names has a price. A missing price is not a broken machine,
-it is a bill reported as zero, which is worth reading before it surprises someone
+it is a model billed at the `pricing_fallback` ceiling, so spend is overstated until
+someone adds the row, which is worth reading before it surprises someone
 ([[domains/ai-metering-and-quotas]]).
 
 ## ai:install and ai:usage

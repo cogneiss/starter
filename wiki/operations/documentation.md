@@ -15,7 +15,7 @@ code_refs:
     - app/Console/Commands/AgentsContextCommand.php
     - tests/Feature/Docs/NestedAgentContextTest.php
     - .claude/hooks/guard-generated.sh
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Documentation

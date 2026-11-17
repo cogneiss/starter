@@ -12,8 +12,9 @@ code_refs:
     - config/fortify.php
     - config/boost.php
     - config/ai.php
+    - config/inertia.php
     - vet.json
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Packages
@@ -31,7 +32,9 @@ install step. Two rules keep it that way.
 A package config file in `config/` lists only the values that differ from the
 package's own defaults. `config/permission.php` turns on teams and swaps the
 role model. `config/activitylog.php` swaps the activity model.
-`config/pennant.php` changes the default store. `config/ai.php` sets the
+`config/pennant.php` changes the default store. `config/inertia.php` publishes
+only the `ssr` key, so it lists every ssr option the vendor file does and turns
+server rendering on with `INERTIA_SSR_ENABLED`. `config/ai.php` sets the
 default provider and embedding caching and adds the app's tiers, quotas and
 guardrails, while the provider list itself comes from laravel/ai. Each file
 says so in its docblock. A package with nothing to change has no file at all, so
@@ -91,7 +94,7 @@ boots the app with the keys empty and fails a change that makes one required.
 | `laravel/pint` | Code style. | `pint.json` | [[operations/tooling]] |
 | `icanhazstring/composer-unused` | `composer test:deps` fails on an unused Composer package. | `composer-unused.php` | [[operations/tooling]] |
 | `heyosseus/sloppy` | Reports agent-style code debt on push. It never blocks. | package defaults | [[operations/contributing]] |
-| `laravel/boost` | MCP server, skill packs and the generated agent guideline files. | `config/boost.php`, `boost.json` | [[operations/tooling]] |
+| `laravel/boost` | MCP server, skill packs and the generated agent guideline files. `config/boost.php` points Claude Code at `AGENTS.md`, so `CLAUDE.md` stays a one-line import. | `config/boost.php`, `boost.json` | [[operations/tooling]] |
 | `laramint/laravel-brain` | The code knowledge graph, rebuilt after each commit. | package defaults | [[operations/code-knowledge-graphs]] |
 | `laravel/pail` | Tails the log in `composer dev`. | package defaults | [[operations/tooling]] |
 | `laravel/tinker` | `php artisan tinker`. | package defaults | [[operations/commands]] |

@@ -11,7 +11,7 @@ code_refs:
     - app/Data/LoginHistoryData.php
     - app/Data/PasskeyData.php
     - app/Data/ImpersonatorData.php
-updated: 2026-09-01
+updated: 2026-11-18
 ---
 
 # Data objects
@@ -29,6 +29,9 @@ these; a raw array or an Eloquent model never goes to `Inertia::render`.
 | `LoginHistoryData`           | one sign-in attempt                            |
 | `PasskeyData`                | one registered WebAuthn credential             |
 | `ImpersonatorData`           | who is impersonating, while impersonating      |
+
+`ImpersonatorData` carries a nullable `name`, so an impersonator without a name still
+serializes.
 
 ## Why not just pass the model
 
