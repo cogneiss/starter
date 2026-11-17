@@ -7,8 +7,13 @@ code_refs:
     - app/Support/Reporting/SentryErrorReporter.php
     - app/Support/Reporting/NullErrorReporter.php
     - config/services.php
+    - .env.example
+    - vendor/sentry/sentry-laravel/config/sentry.php
+    - vendor/sentry/sentry-laravel/src/Sentry/Laravel/Features/AiIntegration.php
+    - vendor/sentry/sentry-laravel/src/Sentry/Laravel/Features/Feature.php
+    - app/Ai/Middleware/RecordAudit.php
     - tests/Feature/ErrorReporterTest.php
-updated: 2026-10-28
+updated: 2026-11-17
 ---
 
 # The error reporting seam
@@ -32,5 +37,19 @@ Three reasons, all of them the same reason the AI layer boots keyless:
 What is reported is the exception and its context — never a token, a webhook
 secret or a provider key; the same redaction rules as the audit log
 ([[operations/ops-audit-log]]) apply to anything attached as context.
+
+## AI tracing
+
+`sentry/sentry-laravel` ships gen_ai spans for laravel/ai calls (invoke_agent,
+chat, execute_tool, embeddings), each on by default under `tracing` in
+`vendor/sentry/sentry-laravel/config/sentry.php`. They exist only when
+`traces_sample_rate` is above zero, and it reads `SENTRY_TRACES_SAMPLE_RATE`,
+which is blank in `.env.example`; tracing then also covers request, database
+and queue spans. Model, token counts and agent name are always attached.
+Prompts, instructions and responses are attached only when `send_default_pii`
+is on (`Features/Feature.php`, `Features/AiIntegration.php`), and it defaults
+to off, so tenant content stays out. Per-organization metering in
+`ai_audit_logs` (`app/Ai/Middleware/RecordAudit.php`) stays the source of truth
+for cost; the spans are for latency and debugging.
 
 The analytics seam is the same shape — [[operations/ops-analytics]].

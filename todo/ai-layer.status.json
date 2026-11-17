@@ -100,6 +100,24 @@
             "name": "full gate green",
             "status": "passing",
             "command": "composer test"
+        },
+        {
+            "id": 17,
+            "name": "cache token columns, cache cost formula and confirmed cache prices as one change",
+            "status": "passing",
+            "command": "php artisan db:table ai_audit_logs --json | rg -q cache_read_tokens"
+        },
+        {
+            "id": 18,
+            "name": "A replayed agent step is metered once: (run_id, step_number) is unique and the record path is idempotent",
+            "status": "passing",
+            "command": "vendor/bin/pest --filter='meters a retried run once' --compact --no-coverage"
+        },
+        {
+            "id": 19,
+            "name": "Long-context pricing tiers: a prompt over a row's threshold bills at the tier rates (claude-haiku-5-5 only)",
+            "status": "passing",
+            "command": "vendor/bin/pest --filter='meters long-context runs at the higher tier' --compact --no-coverage"
         }
     ]
 }

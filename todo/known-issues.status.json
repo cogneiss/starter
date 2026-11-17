@@ -23,6 +23,19 @@
             "status": "failing",
             "note": "Xdebug is not loaded by default, so the check fails on a machine where nothing is wrong. Its fix line already names `herd coverage composer test:unit`; the check could detect Herd and report the wrapper instead of a failure.",
             "command": "php artisan app:doctor"
+        },
+        {
+            "id": 4,
+            "name": "bun audit ignores GHSA-fc5q-39xc-vjpf (picomatch ReDoS) because no fixed release exists",
+            "status": "failing",
+            "note": "Added 2026-11-18. picomatch <=4.0.7 is flagged and 4.0.7 is the latest release, so there is nothing to upgrade to. It arrives through build tooling (knip, shadcn, vite-plus, laravel-vite-plugin, @inertiajs/vite, @rolldown/plugin-babel) and matches globs the repo writes, not request input. composer.json test:audit passes --ignore for this one advisory. Remove the flag when a fixed picomatch ships.",
+            "command": "! grep -q 'GHSA-fc5q-39xc-vjpf' composer.json && bun audit --prod"
+        },
+        {
+            "id": 5,
+            "name": "GitHub branch ruleset 26004808 still requires the old CI check names; update to verify, secrets, semgrep, a11y when CI resumes",
+            "status": "failing",
+            "command": "gh api repos/cogneiss/starter/rulesets/26004808 --jq '.rules[]|select(.type==\"required_status_checks\")|.parameters.required_status_checks[].context' | /usr/bin/grep -qx verify"
         }
     ]
 }

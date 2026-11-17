@@ -1,17 +1,23 @@
 ---
 title: The auth driver seam
-status: current
+status: superseded
 supersedes: []
 code_refs:
-    - app/Auth/AuthDriverResolver.php
-    - app/Auth/Contracts/AuthDriver.php
-    - app/Auth/Drivers/PasswordAuthDriver.php
-    - app/Auth/Drivers/SocialAuthDriver.php
+    - app/Http/Controllers/SessionController.php
+    - app/Http/Controllers/SocialAuthController.php
+    - app/Actions/EnabledSocialProviders.php
     - config/services.php
-updated: 2026-10-28
+updated: 2026-11-17
 ---
 
 # The auth driver seam
+
+Superseded by [[features/authentication]]. The `AuthDriver` interface, its
+resolver and both drivers were removed: only the password driver was ever
+registered, so the seam had no second user. `SessionController` and
+`SocialAuthController` now do the work directly, and
+`app/Actions/EnabledSocialProviders.php` holds the provider list. The text below
+is kept for the record of what existed and why.
 
 `app/Auth/Contracts/AuthDriver.php` is a three-method interface — `key()`,
 `redirect()`, `authenticate()` — and `app/Auth/AuthDriverResolver.php` hands out

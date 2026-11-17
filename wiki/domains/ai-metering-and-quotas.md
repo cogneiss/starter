@@ -10,6 +10,7 @@ code_refs:
     - app/Support/AiTier.php
     - config/ai.php
     - database/migrations/2026_11_14_173854_add_run_id_tool_arguments_and_error_to_ai_audit_logs_table.php
+    - database/migrations/2026_11_17_204024_add_cache_tokens_and_step_number_to_ai_audit_logs_table.php
     - tests/Feature/Ai/AiPricingTest.php
     - tests/Feature/Ai/AiAuditTest.php
     - app/Models/AiAuditLog.php
@@ -18,7 +19,7 @@ code_refs:
     - app/Console/Commands/AiUsageCommand.php
     - tests/Feature/Ai/AiQuotaTest.php
     - tests/Feature/Console/AiUsageCommandTest.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # AI metering and quotas
@@ -52,13 +53,53 @@ propagates. A streamed step that fails is not audited, because streams are meter
 only when they complete.
 
 Cost comes from `app/Support/AiPricing.php`, which reads `ai.pricing` keyed by
-provider and model and prices `inputTokens` and `outputTokens` per million. A model
-with no entry, or no provider, is priced at `ai.pricing_fallback`, set at the
-dearest listed rate. Unpriced runs therefore over-count against the budget rather
-than costing nothing. `tests/Feature/Ai/AiPricingTest.php` walks every tier and
-failover model and fails when one has no price, and `php artisan app:doctor` also
-reports an unpriced configured model. The failover prices in `config/ai.php` are
-placeholders at the ceiling rate and are not verified.
+provider and model and prices `inputTokens` and `outputTokens` per million.
+`AiPricing::listed()` reads the price by array key and never by dot notation,
+because a model name such as `gpt-6.1-terra` contains a dot and a dotted config
+lookup would bill the fallback instead. A model with no entry, or no provider,
+is priced at `ai.pricing_fallback`, set at the dearest listed rate. Unpriced runs therefore over-count against the budget rather
+than costing nothing.
+
+A provider may return a dated snapshot id such as `claude-sonnet-5-5-20261001`.
+`listed()` tries the exact id first. On a miss it strips one trailing suffix
+matching `-YYYYMMDD` or `-YYYY-MM-DD` and retries once, so the snapshot bills the
+listed model's price. Prefix matching is not used: `claude-sonnet-5-5-fast` stays
+unlisted and bills the ceiling. A price row without an integer `input` and
+`output` is also treated as unlisted, so a malformed config row bills the ceiling
+instead of throwing inside `RecordAudit` after the provider call was paid for.
+`tests/Feature/Ai/AiPricingTest.php` and `tests/Feature/Ai/AiAuditTest.php`
+cover both rules.
+
+Cache tokens. Both gateways report `inputTokens` as the whole prompt with the
+cache buckets inside it (`Laravel\Ai\Responses\Data\TextUsage::uncachedInputTokens()`),
+so `AiPricing::costMicros()` carves cache reads and writes out of the input
+rather than adding them: the uncached remainder bills at `input`, reads at
+`cache_read`, writes at `cache_write`. A price row without those keys bills
+cached tokens at `input`, which overstates and never understates. Only the
+Anthropic rows carry them, from the Claude API pricing reference: reads at
+0.1x input for Sonnet 5.5 and Haiku 5.5 and 0.05x for Opus 5.5, 5-minute writes
+at 1.25x. The OpenAI rows have none. `ai_audit_logs.cache_read_tokens` and
+`cache_write_tokens` record the buckets (migration
+`2026_11_17_204024_add_cache_tokens_and_step_number_to_ai_audit_logs_table.php`).
+
+Long-context tiers. A row may carry `long_context => [above, input, output]`,
+optionally with its own `cache_read` and `cache_write`. When `inputTokens`, the
+whole prompt, exceeds `above`, the whole request bills at the tier rates, as the
+provider bills it; cache tokens there bill at the tier's own cache prices or, lacking
+them, at the tier's `input`. Only `claude-haiku-5-5` has a tier (over 100k tokens).
+No other row has one, because no source in the repo confirms it. A malformed
+optional key is dropped and the base price used, never thrown on.
+
+Idempotency. A run writes one row per generation step, and `step_number` is set
+only on a metered success row. `(run_id, step_number)` is unique, so a replayed
+step collides on insert, `RecordAudit::record()` catches the violation, and the
+rolled-back transaction leaves one log and one debit. Error rows leave
+`step_number` null and are not constrained. A retry that reaches the provider
+again carries a new invocation id and is billed, since the provider billed it.
+`tests/Feature/Ai/AiPricingTest.php` walks every tier and failover model and
+fails when one has no price, and `php artisan app:doctor` also reports an
+unpriced configured model. The OpenAI prices in `config/ai.php` are unconfirmed,
+and its pricing comment says where each figure came from.
 
 ## Failover
 

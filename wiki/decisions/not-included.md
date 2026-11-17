@@ -5,7 +5,10 @@ supersedes: []
 code_refs:
     - FEATURES.md
     - todo/specs/theming-system.md
-updated: 2026-11-15
+    - app/Support/ResourceQuery.php
+    - app/Ai/ConfirmableActions.php
+    - app/Ai/Middleware/RecordAudit.php
+updated: 2026-11-18
 ---
 
 # Not included
@@ -32,6 +35,9 @@ Announcements are in, as banners rather than a messaging product: scheduled,
 per-organization or global, dismissed for good per member, and written from the
 admin area (`FEATURES.md`, [[operations/ops-admin-area]]).
 
+Backup and generated API docs are absent. The report lists them as optional
+modules for regulated or protocol surfaces, which the kit does not target.
+
 Filament is absent. The admin area already serves platform operations on the
 same Inertia stack ([[operations/ops-admin-area]]); a second UI framework would
 double the component layer to maintain.
@@ -44,11 +50,13 @@ double the component layer to maintain.
 | Custom domains with on-demand TLS           | Depends entirely on the deploy target                                                        |
 | Self-serve role builder UI                  | Most products need three fixed roles; `PermissionCatalog` is the data such a UI would render |
 | Plan catalog and seat quotas                | Billing-shaped                                                                               |
-| SAML / OIDC drivers                         | Heavy dependencies and per-provider debugging; the `AuthDriver` seam is the hook             |
+| SAML / OIDC drivers                         | Heavy dependencies and per-provider debugging; a new login flow follows the rules on `SocialAuthController` |
 | Access requests, cross-organization invites | Marketplace-shaped rather than universal                                                     |
 | Device fingerprinting                       | Privacy-hostile, and in practice serves marketing attribution rather than authentication     |
+| Postgres row-level security                 | Optional second layer behind the query-level scopes; the scopes already fail closed          |
+| SSO and SCIM                                | Optional module; the report points at a WorkOS driver, priced per connection                 |
 
-See [[decisions/org-access]] and [[domains/auth-drivers]].
+See [[decisions/org-access]] and [[features/authentication]].
 
 ## CI
 
@@ -58,6 +66,8 @@ See [[decisions/org-access]] and [[domains/auth-drivers]].
 | Lighthouse / performance budgets | Scores swing with the runner, so the gate would flake and get ignored          |
 | `composer-require-checker`       | Overlaps `composer-unused` and is noisy against a runtime-resolving framework  |
 | envy (`.env` drift)              | `.env.example` and `app:doctor` cover it; the check fires on unrelated changes |
+| Splitting `composer verify`      | The full gate stays on pre-push while CI is on hold; a fast pre-commit set was never timed |
+| Dropping `jscpd`                 | Stays as the duplicate-code gate; its overlap with the other gates was not measured |
 
 See [[decisions/ci-quality]].
 
@@ -74,7 +84,7 @@ entries above are now shipped rather than skipped:
 
 | Was skipped                                   | What shipped instead                                                                                                                                                  |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `searchQuery()` / Scout / a generic `/search` | A scoped `search` endpoint over the registry, still `where like` and still driver-free — the Scout decision is deferred, not made ([[domains/ux-search-and-palette]]) |
+| `searchQuery()` / Scout / a generic `/search` | A scoped `search` endpoint over the registry, a word-prefix match through `ResourceQuery` (full-text on Postgres, `like` elsewhere) and still driver-free — the Scout decision is deferred, not made ([[domains/ux-search-and-palette]]) |
 | ⌘K palette                                    | The client half of that endpoint, keyboard-first ([[domains/ux-search-and-palette]])                                                                                  |
 | `visibleTo()` / `scopeFilter()` / `find()`    | Not resurrected as adapter methods. The list kit filters at the query level and lets the policy answer the rest ([[domains/ux-list-kit]])                             |
 | The motion layer                              | A token module the components read, honouring `prefers-reduced-motion` ([[domains/ux-motion-and-a11y]])                                                               |
@@ -98,6 +108,14 @@ this is the reasoning:
 | Images, speech, transcription, provider file storage | Supported by the SDK, but each brings storage, moderation and a second provider account                     |
 | Reranking                                            | Pays off against a tuned corpus, and there is no corpus here to tune                                        |
 | Provider-hosted vector stores                        | pgvector keeps the corpus inside the tenancy boundary the rest of the kit enforces                          |
+| `Approvable` from laravel/ai                         | The propose-then-confirm token also covers MCP and needs no `Conversational` agent; `app/Ai/ConfirmableActions.php` |
+| OpenTelemetry gen_ai exporter                        | Still in Development status upstream; Sentry already emits gen_ai spans ([[operations/ops-error-reporting]]) |
+| Contextual retrieval                                 | Only vendor evidence for it; would be an opt-in flag |
+| MCP spec 2026-07-28 features                         | laravel/mcp serves the version but still advertises dynamic client registration; stdio is enough for now |
+| A prompt-injection classifier                        | No production path; deterministic controls (fencing, read-only tools, confirm tokens) stay instead |
+| Durable workflows (`durable-workflow/workflow`)      | Queue plus Reverb already covers long runs; maturity was not the reason |
+| Provider-hosted agents                               | Beta and not zero-data-retention eligible, so tenant data would leave the boundary |
+| A2A, ACP, AP2, x402, WebMCP                          | No current need; watch only |
 
 The last row is the one with teeth. Every other control in the layer assumes the
 data never leaves a database this application scopes — see
@@ -117,6 +135,15 @@ Three language-level code graphs (graphify, code-review-graph and gitnexus) were
 rebuilt after every commit until 2026-10-29. They were dropped for lack of
 evidence that they made agents more accurate here; `FEATURES.md` now lists
 Laravel Brain as the only code graph ([[architecture/graph-before-grep]]).
+
+Also absent. The `@laravel/stream-react` plus Streamdown chat client waits on a
+spike, since it is pre-1.0 and has no confirmed Inertia 3 fit. Chisel is
+pre-1.0 and only strips optional modules for forks. Inertia DevTools is not in
+the 3.11 release notes and Live Props has no screen that needs it. Instant
+visits have no call site yet; adopt them on the first page that ships a
+loading skeleton. Promptfoo, Braintrust and a Node
+sidecar are not part of the kit: the Pest evals plugin and `laravel/ai` cover
+what they would add.
 
 ## Drafted, not shipped
 

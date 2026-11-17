@@ -18,7 +18,7 @@ code_refs:
     - tests/Feature/RealtimeNoKeyTest.php
     - tests/Mutations/phase10-channel.patch
     - tests/Mutations/phase10-unread-scope.patch
-updated: 2026-10-28
+updated: 2026-11-17
 ---
 
 # In-app notifications and realtime
@@ -66,8 +66,8 @@ bin/prove-control.sh phase10-unread-scope NotificationScope
 
 ## No key is a supported state
 
-`use-organization-channel.ts` returns `null` when `VITE_REVERB_APP_KEY` is
-absent. No Echo instance is constructed, no connection is attempted, no error is
+`use-organization-channel.ts` does nothing when `VITE_REVERB_APP_KEY` is
+absent. Echo is never configured, no connection is attempted, no error is
 logged — the bell simply updates on the next page visit.
 `tests/Feature/RealtimeNoKeyTest.php` and `tests/Feature/ZeroKeyBootTest.php`
 keep a fresh clone with an empty `.env` booting and passing.

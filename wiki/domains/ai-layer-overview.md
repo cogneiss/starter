@@ -9,7 +9,7 @@ code_refs:
     - app/Ai/Agents/Concerns/HasDefaultMiddleware.php
     - app/Ai/Concerns/OrganizationScopedAgent.php
     - app/Console/Commands/AiInstallCommand.php
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # AI layer overview
@@ -54,13 +54,13 @@ scope of [[domains/multi-tenancy]] does the filtering.
 ## Choosing a model
 
 Agents ask for a tier, not a model name. `App\Support\AiTier::for()` resolves
-`cheap` or `smart` from `config/ai.php` into a provider and a model. Each tier
+`cheap`, `standard` or `smart` from `config/ai.php` into a provider and a model. Each tier
 names a primary provider and a `failover` provider. When both carry a key,
 `AiTier::for()` returns a `[provider => model]` map that the SDK walks left to
 right and leaves the model itself null. Otherwise it returns the single primary
-provider, which is the only shape a boot with blank keys sees. The tiers default
-to `claude-haiku-5-5` and `claude-sonnet-5-5` with OpenAI failover models, each
-overridable by an env var. A model-name literal in an agent
+provider, which is the only shape a boot with blank keys sees. Each tier's
+model and failover model default in `config/ai.php` and are overridable by an
+env var. A model-name literal in an agent
 class is the thing this exists to prevent — see [[domains/ai-metering-and-quotas]]
 for how a tier's price is read back out of the same config.
 

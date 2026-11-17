@@ -98,7 +98,9 @@ build.
 - Small hooks for the fiddly parts: clipboard copy for recovery codes, initials
   for avatars, mobile breakpoint and navigation, current URL, appearance.
 - One entry (`resources/js/app.tsx`) for the browser and SSR through
-  `@inertiajs/vite`, built with `bun run build:ssr`.
+  `@inertiajs/vite`, built with `bun run build:ssr`. Server rendering is off by
+  default (`config/inertia.php`) and, when `INERTIA_SSR_ENABLED=true`, renders
+  guest requests only.
 - Preload `Link` headers on responses, and `appearance` and `sidebar_state`
   cookies left unencrypted so the server can read them before hydration.
 
@@ -181,8 +183,9 @@ credential resolves, never to a header or a route parameter.
 5. **GDPR** — a queued personal-data export and an anonymising deletion with a
    purge window (`app/Jobs/BuildGdprExport.php`,
    `app/Actions/DeleteAccount.php`).
-6. **Health** — a `/health` endpoint reporting database, queue, cache and
-   scheduler checks (`app/Http/Controllers/HealthController.php`).
+6. **Health** — a `/health` endpoint reporting database, cache, queue,
+   schedule, disk and debug-mode checks
+   (`app/Http/Controllers/HealthController.php`).
 7. **Error reporting and analytics seams** — Sentry and PostHog wired but
    silent until their keys exist (`config/services.php`,
    `app/Support/Analytics/`).
@@ -304,7 +307,7 @@ Each failure message names the exact command that fixes it.
 
 ### Testing
 
-- Pest 5 with 1538 tests covering every controller, action, rule, and middleware.
+- Pest 5 with about 2,018 tests covering every controller, action, rule, and middleware.
 - Coverage gate at `--exactly=100.0` — not a minimum, an exact match, so dead
   code fails the build too.
 - Architecture presets (php, strict, laravel, security) catch `dd()` leftovers,
@@ -333,12 +336,13 @@ Each failure message names the exact command that fixes it.
 
 ### CI and quality gates
 
-One `setup` job installs Composer and Bun dependencies, builds the frontend and
-uploads the build as an artifact. Everything after it downloads that artifact
-and runs in parallel: `tests` (the full `composer test` gate), `security`
-(gitleaks, `composer audit`, `bun audit`), `static` (dead code, unused Composer
-packages, knip) and `a11y` (the axe-core browser suite). A second job costs a
-job slot, not a second install.
+One workflow, `.github/workflows/ci.yml`, carries every required check. `verify`
+runs `composer verify`, the same gate as the pre-push hook: the full suite with
+the browser tests, static analysis, dead code, unused Composer packages, knip,
+the wiki lint, `composer audit` and `bun audit`. `secrets` runs gitleaks and
+`semgrep` runs the Semgrep scan. A `setup` job builds the frontend once and
+uploads it as an artifact for `a11y` (the axe-core browser suite). `advisory`
+reports and never blocks.
 
 | Runs                          | What                                                                                      |
 | ----------------------------- | ----------------------------------------------------------------------------------------- |
@@ -372,15 +376,14 @@ reason, or fix the code.
   `resources/js/components/ui`.
 - **Laravel Boost** MCP server (including browser log capture at
   `_boost/browser-logs`) plus per-domain skills and guidelines in `.ai/`, so AI
-  agents get version-correct docs and this project's conventions. Ten skills
-  ship (Laravel best practices, AI SDK, Fortify, Inertia+React, Wayfinder,
-  testing best practices, Tailwind, Pennant, Socialite, infer-conventions),
-  mirrored into `.agents/`, `.claude/`, `.cursor/`, `.github/`, and `.junie/`.
-- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.junie/guidelines.md`, and
-  `opencode.json` ship configured. `boost.json` records which agents and skills
-  are installed; `php artisan boost:install --guidelines --skills` regenerates
-  them all. Boost no longer emits `GEMINI.md`, so keep it in sync by hand
-  (`cp AGENTS.md GEMINI.md`) after a Boost update.
+  agents get version-correct docs and this project's conventions. The skills
+  `boost.json` lists ship: package skills (Laravel best practices, AI SDK,
+  Fortify, Inertia+React, Wayfinder, Tailwind, Pennant, Socialite and more)
+  plus the first-party packs in `.ai/skills`, mirrored into `.agents/` and
+  `.claude/`.
+- `AGENTS.md`, `CLAUDE.md` (the one line `@AGENTS.md`) and `opencode.json` ship
+  configured. `boost.json` records which agents and skills are installed;
+  `php artisan boost:install --guidelines --skills` regenerates them.
 - `.ai/rules/` holds the committed, path-scoped project rules; `.ai/rules/index.md`
   maps globs to rule files, and Boost's `record-rule` tool adds to it.
 - **A code knowledge graph** (Laravel Brain) wired into a post-commit hook, so AI agents answer
@@ -396,7 +399,7 @@ reason, or fix the code.
   Each records its accepted findings in one place — `phpstan-deadcode-baseline.neon`,
   `composer-unused.php`, `knip.json` — with a comment saying why, rather than
   being silenced by loosening the tool.
-- **An autofix bot** — `lint-autofix.yml` runs the formatters on a branch push
+- **An autofix bot** — the `autofix` job in `ci.yml` runs the formatters on a pull request
   and commits the result back, so formatting never costs a review round. It is
   hard-skipped on forks; that guard is a security control, do not touch it.
 - **Pail** for readable log tailing during development.
@@ -447,13 +450,12 @@ Five pieces, each aimed at the same problem: an agent opening this repo for the
 first time has no idea what is load-bearing, and the usual answer — a long
 `CLAUDE.md` nobody maintains — goes stale in a week.
 
-**One source for the agent guidelines.** `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
-`.cursor/rules/laravel-boost.mdc` and `.junie/guidelines.md` are all generated
-from `.ai/guidelines/*.blade.php` by `php artisan boost:install --guidelines
---skills`, which runs on every `composer update`.
-`tests/Feature/Docs/GuidelinesAreCurrentTest.php` fails when a generated file
-drifts from its source, so the five files agree with each other by construction
-instead of by discipline. Edit the Blade source; never the outputs.
+**One source for the agent guidelines.** `AGENTS.md` is generated from
+`.ai/guidelines/*.blade.php` by `php artisan boost:install --guidelines
+--skills`, which runs on every `composer update`, and `CLAUDE.md` is the one
+line `@AGENTS.md`. `tests/Feature/Docs/GuidelinesAreCurrentTest.php` fails when
+`AGENTS.md` drifts from its source or `CLAUDE.md` stops being that import, so
+every agent reads one file. Edit the Blade source; never the output.
 
 **A wiki with a blocking lint.** `wiki/**` holds the long explanations that do
 not fit in a terse rule — how a thing works, why it is shaped that way, what was
@@ -462,11 +464,6 @@ rejected. Every page carries frontmatter listing the files it describes in
 on five conditions, the sharp one being staleness: change a file a page cites
 without updating the page and CI goes red. That makes documentation drift a test
 failure rather than a good intention.
-
-**An `llms.txt` for agents.** `php artisan wiki:llms` writes `llms.txt` at the repo
-root (llmstxt.org format) from the wiki's titles and opening paragraphs, grouped by
-folder, with repo-relative links. It is generated output; `tests/Feature/Console/WikiLlmsTxtCommandTest.php`
-runs `--check` and fails the suite when the committed file differs from the wiki.
 
 **A documentation worklist.** `php artisan wiki:audit` writes
 `wiki/_meta/audit.json`: pages gone stale, application files no page mentions,
@@ -480,7 +477,7 @@ is no API key in the build and no per-push cost.
 **Three first-party skill packs.** `.ai/skills/resource-spine`,
 `.ai/skills/org-access` and `.ai/skills/testing-gates` are procedures — do X,
 then Y, in this order — loaded only when the domain is entered, and published
-into `.claude/`, `.agents/`, `.cursor/`, `.junie/` and `.github/` by the same
+into `.claude/` and `.agents/` by the same
 `boost:install` run. They cover the three places an agent reliably gets this kit
 wrong: skipping the resource generator, writing a query with no organization
 bound, and reaching for the wrong test command. The layering rule is in
@@ -508,7 +505,7 @@ pages and runs the whole suite without an account anywhere.
 and runs four middleware in `app/Ai/Middleware` — a quota check, an untrusted
 input fence, a topic filter, and an audit record. `tests/Unit/ArchTest.php` fails
 the build when a new agent skips either interface, so the pipeline is inherited
-rather than remembered. Agents pick a tier (`cheap` or `smart`), never a
+rather than remembered. Agents pick a tier (`cheap`, `standard` or `smart`), never a
 model name, and `config/ai.php` maps each tier to a provider and model.
 
 **Tools ask the policy.** `app/Ai/Tools` reads through the resource registry —
@@ -576,9 +573,10 @@ green:
 | `composer test:dead-code` | PHPStan's dead-code rules over `app/`.                                 |
 | `composer test:deps`      | `composer-unused` — Composer packages nothing requires.                |
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies.                |
+| `composer test:js`        | Vitest unit tests under `resources/js`. Runs `bun run test:js`.        |
 | `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity. |
 | `composer test:wiki`      | `php artisan wiki:lint` — the wiki rules, all five blocking.           |
-| `composer verify`         | `test`, `test:dead-code`, `test:deps`, `test:knip`, `test:wiki`, `test:audit`, `wiki:llms --check` and the copy-paste report, in one run. |
+| `composer verify`         | `test`, `test:dead-code`, `test:deps`, `test:knip`, `test:wiki`, `test:audit` and the copy-paste report, in one run. |
 | `composer test:ai`        | Only the AI layer's tests and the architecture rules. The loop while editing `app/Ai`. |
 
 Scheduled — these report, they never block:
@@ -620,7 +618,6 @@ Local loops:
 | `php artisan brand:preview <primary> <accent>` | Print the palette two brand hexes derive, with every measured contrast ratio. |
 | `php artisan wiki:lint`                        | The five wiki rules. What `composer test:wiki` runs.                          |
 | `php artisan wiki:audit`                       | Rewrite `wiki/_meta/audit.json`, the worklist `/document` reads.              |
-| `php artisan wiki:llms`                        | Rewrite `llms.txt` from the wiki; `--check` fails when the committed file drifts. |
 | `php artisan agents:context`                   | Write the nested `AGENTS.md` files from `.ai/rules/index.md`; `--check` fails on drift. |
 | `bun run knip:fix`                             | Apply knip's removals instead of only reporting them.                         |
 | `bun run types`                                | Type-check the front end with `tsc --noEmit`, no build.                       |
@@ -673,7 +670,7 @@ so you can tell a decision from a gap:
 | Custom domains with on-demand TLS                  | Depends entirely on the deploy target — Caddy, Laravel Cloud and Vercel all want something different.                                   |
 | Self-serve role builder UI                         | Most products need three fixed roles. `PermissionCatalog` is the data such a UI would render, so it is there when you want one.         |
 | Plan catalog and seat quotas                       | Billing-shaped; it belongs with whichever billing module you pick.                                                                      |
-| SAML / OIDC drivers                                | Heavy dependencies and per-provider debugging. The `AuthDriver` seam is the hook — read the warning in its docblock before writing one. |
+| SAML / OIDC drivers                                | Heavy dependencies and per-provider debugging. Read the warning in the `SocialAuthController` docblock before writing one. |
 | Access requests and cross-organization invitations | Marketplace-shaped rather than universal.                                                                                               |
 | Device fingerprinting                              | Privacy-hostile, and in practice it serves marketing attribution rather than authentication.                                            |
 
@@ -709,7 +706,7 @@ several consumers reading one adapter, and this kit has none yet:
 
 | Skipped                                              | Why                                                                                                                                                                                                                                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Scout and a search driver                            | Scout forces a driver decision (Meilisearch, Typesense, database) a starter should not make for you. The `search` endpoint the UX layer shipped is still `where like` and still driver-free, so the decision is deferred rather than made.                                     |
+| Scout and a search driver                            | Scout forces a driver decision (Meilisearch, Typesense, database) a starter should not make for you. The `search` endpoint the UX layer shipped uses Postgres full-text prefix matching, a substring `like` on other drivers, and is still driver-free, so the decision is deferred rather than made.                                     |
 | `visibleTo()` / `scopeFilter()` / `find()`           | These exist to make search results safe. Policies already answer that question, and duplicating the rule in an adapter is two places to get it wrong. The list kit scopes at the query level and lets the policy answer the rest, so there is still no third copy of the rule. |
 | `actions()` / `actionSchemas()`                      | Only useful to an AI assistant layer, and the AI layer answered it explicitly instead: `app/Ai/ConfirmableActions.php` lists the writes an agent may propose, by hand.                                                                                                         |
 | `ApiExposable` / `ApiWritable` REST surface          | Drags in Sanctum, an ability catalog, versioning and pagination conventions. The "no token-auth API" line above is the decision; the registry is the seam that module hangs off.                                                                                               |

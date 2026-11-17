@@ -73,7 +73,7 @@ See [[operations/documentation]] for the loop that keeps pages current.
 
 - [[domains/multi-tenancy]]
 - [[domains/organization-resolvers]]
-- [[domains/auth-drivers]]
+- [[domains/auth-drivers]] (superseded by [[features/authentication]])
 - [[domains/authorization]]
 - [[domains/resources]]
 - [[domains/feature-flags]]
@@ -130,6 +130,7 @@ See [[operations/documentation]] for the loop that keeps pages current.
 - [[operations/releases]]
 - [[operations/code-knowledge-graphs]]
 - [[operations/runtime]]
+- [[operations/hosting]]
 - [[operations/documentation]]
 - [[operations/ops-api-tokens]]
 - [[operations/ops-read-api]]

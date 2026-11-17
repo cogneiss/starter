@@ -6,14 +6,16 @@ code_refs:
     - .githooks/post-commit
     - .ai/rules/general.md
     - .claude/settings.json
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Why agents query a graph before grepping
 
 Laravel Brain's index is rebuilt after every commit by `.githooks/post-commit`.
-An agent asking a structural question is meant to query it instead of fanning out
-with grep.
+An agent asking a wiring question (which controller a route binds to, which
+listeners an event has, which job is queued) is meant to query it instead of
+fanning out with grep. Plain text and symbol search still go to grep; the rule in
+`.ai/rules/general.md` covers wiring only.
 
 ## The economics
 

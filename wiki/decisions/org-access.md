@@ -4,7 +4,7 @@ status: current
 supersedes: []
 code_refs:
     - todo/org-access.status.json
-updated: 2026-08-24
+updated: 2026-11-17
 ---
 
 # Decision log — organizations and access
@@ -28,9 +28,10 @@ that phase was never proved on a clean run.
   ([[architecture/two-gate-authorization]]).
 - **The organization is resolved before routing.** Middleware order is the
   contract ([[architecture/resolve-before-routing]]).
-- **Auth is a seam, not a driver zoo.** One interface, two implementations, and a
-  docblock warning for whoever writes the third
-  ([[domains/auth-drivers]]).
+- **Auth is one flow, not a driver zoo.** A driver seam existed and was removed
+  once only the password driver was ever registered; the SSO warnings now live on
+  `SocialAuthController` ([[features/authentication]], [[domains/auth-drivers]]
+  superseded).
 
 ## What was considered and left out
 

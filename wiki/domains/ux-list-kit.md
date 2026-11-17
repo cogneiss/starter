@@ -10,12 +10,18 @@ code_refs:
     - app/Actions/ExportResource.php
     - app/Actions/ApplyBulkAction.php
     - resources/js/components/data-table.tsx
+    - resources/js/components/data-table-body.tsx
+    - resources/js/components/data-table-export.ts
+    - resources/js/components/data-table-preferences.ts
+    - resources/js/components/data-table-query.ts
+    - resources/js/components/data-table-visits.ts
+    - tests/Unit/Support/ResourceQueryTest.php
     - tests/Feature/Controllers/ListsResourcesTest.php
     - tests/Feature/Resources/CsvExportScopeTest.php
     - tests/Browser/DataTableTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-10-29
+updated: 2026-11-17
 ---
 
 # The server-driven list kit
@@ -26,8 +32,10 @@ object, so a new index page is a controller that calls `listResource()` and a
 page that renders `<DataTable>`.
 
 The server decides everything. The table component holds no query state of its
-own: it reads what the server sent and puts the next query in the address bar.
-That is what makes a list view linkable — see [[domains/ux-filters-and-saved-searches]].
+own: it reads what the server sent and puts the next query in the address bar
+(`resources/js/components/data-table-visits.ts` makes the visit,
+`resources/js/components/data-table-query.ts` writes the parameters and leaves
+out the defaults). That is what makes a list view linkable — see [[domains/ux-filters-and-saved-searches]].
 
 ## Where a list starts
 
@@ -56,6 +64,25 @@ was not meant to expose.
 
 The keys a list owns are fixed: `q`, `sort`, `dir`, `page`, `per`, `f`.
 
+## Search
+
+`ResourceQuery::applyTerm()` matches the `q` term against the resource's
+`searchable()` columns, and the whole clause sits in one grouped `where` so it
+cannot escape the organization scope. On Postgres it is full-text word-prefix
+matching. Every word of the term must start a word in one searchable column,
+in any order, so `acme john` finds `John@acme.test`. Punctuation and whitespace
+split words, which is why `user@gmail.com` can be found by `gmail`. The split
+uses the `WORD_BREAKS` list in `ResourceQuery` instead of a locale character
+class, so an accented letter stays inside its word under any database
+collation. A fragment from the middle of a word no longer matches: `ohn` does
+not find `John`. A term with no letters or digits, such as `%` or `@`, has no
+words to search for, so it falls back to the literal substring match. Every
+other database driver uses that case-insensitive substring `like` for every
+term. No index ships. The code comment on
+`applyTerm()` names the ceiling: Postgres scans the table, and a GIN expression
+index over the same `to_tsvector` expression is the upgrade when a table grows.
+`tests/Unit/Support/ResourceQueryTest.php` holds the cases.
+
 ## Columns
 
 `App\Resources\ResourceColumn::visibleTo()` filters the column set by the
@@ -64,11 +91,13 @@ not see on screen is not in their CSV either. Which columns a person hid and how
 wide the table is are per-user comfort settings and live in `localStorage`, not
 in the URL and not in the database — see [SETUP.md](../../SETUP.md). The key
 is the page path plus the signed-in user's id, and a stored value of the wrong
-shape is discarded rather than trusted (`resources/js/components/data-table.tsx`).
+shape is discarded rather than trusted (`resources/js/components/data-table-preferences.ts`,
+with the key built in `resources/js/components/data-table.tsx`).
 
 While a search, sort or page change is in flight, only the table body is busy:
-it carries `data-pending` and `aria-busy`, and the toolbar stays usable. The
-busy state is held for at least 600 ms so a fast response does not flicker. Each
+it carries `data-pending` and `aria-busy` (`resources/js/components/data-table-body.tsx`),
+and the toolbar stays usable. `resources/js/components/data-table-visits.ts`
+holds the busy state for at least 600 ms so a fast response does not flicker. Each
 new request cancels the hold left over from the one before, otherwise that old
 timer would clear the busy state while the new request is still loading.
 `tests/Browser/DataTableTest.php` checks that only the body went busy, on each
@@ -100,7 +129,7 @@ is why the scope is part of the builder and why
 `tests/Feature/Resources/CsvExportScopeTest.php` exists.
 
 A list and its export share one URL: the same request with `Accept: text/csv`
-streams the CSV, so an export cannot drift away from the filters on screen.
+streams the CSV (the browser side is `resources/js/components/data-table-export.ts`), so an export cannot drift away from the filters on screen.
 
 Handing over a spreadsheet of an organization's data is itself worth a record,
 so a scoped export writes an audit entry before the first row streams — see

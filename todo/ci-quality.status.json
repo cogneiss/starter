@@ -12,7 +12,7 @@
             "id": 1,
             "name": "CI fan-out topology",
             "status": "passing",
-            "command": "gh run list -R cogneiss/starter --workflow=tests.yml --branch main --limit 1 --json conclusion"
+            "command": "gh run list -R cogneiss/starter --workflow=ci.yml --branch main --limit 1 --json conclusion"
         },
         {
             "id": 2,
@@ -24,7 +24,7 @@
             "id": 3,
             "name": "autofix bot",
             "status": "passing",
-            "command": "test -f .github/workflows/lint-autofix.yml && rg -q 'head.repo.full_name' .github/workflows/lint-autofix.yml"
+            "command": "test -f .github/workflows/ci.yml && rg -q 'head.repo.full_name' .github/workflows/ci.yml"
         },
         {
             "id": 4,

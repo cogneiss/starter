@@ -16,7 +16,7 @@ updated: 2026-11-17
 
 # AI evals
 
-The SDK is `laravel/ai` `^1.4` (`composer.json`); `laravel/mcp` arrives through it and is not required directly. The evals are written with `pestphp/pest-plugin-evals` `^5.1`, which adds `prompt()`, `toSatisfy()` and the LLM judge to `expect()`.
+The SDK is `laravel/ai` `^1.4`, and `laravel/mcp` `^1.2` is required beside it (`composer.json`): the MCP server builds on it, and without the direct line only the dev-only `laravel/boost` would pull it in. The evals are written with `pestphp/pest-plugin-evals` `^5.1`, which adds `prompt()`, `toSatisfy()` and the LLM judge to `expect()`.
 
 Two kinds of test exist here, and conflating them is how a suite ends up both
 flaky and expensive.

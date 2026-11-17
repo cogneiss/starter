@@ -3,11 +3,11 @@ title: Why blocking gates stay fast and deterministic
 status: current
 supersedes: []
 code_refs:
-    - .github/workflows/tests.yml
+    - .github/workflows/ci.yml
     - .github/workflows/nightly.yml
     - .github/workflows/mutation.yml
     - .ai/rules/ci.md
-updated: 2026-10-28
+updated: 2026-11-18
 ---
 
 # Why blocking gates stay fast and deterministic
@@ -24,11 +24,12 @@ stops protecting anything, including the parts of it that were working.
 
 That is the whole reason for the split in `.github/workflows/`:
 
-- Blocking, on every pull request: `.github/workflows/tests.yml` — `composer test`,
-  gitleaks, dependency audits, dead code, unused Composer packages, knip, wiki
-  rot (`composer test:wiki`), and the axe-core accessibility suite.
-- Reporting on every pull request without blocking: the `docs` job in the same
-  file, which posts the documentation worklist counts to the job summary.
+- Blocking, on every pull request: `.github/workflows/ci.yml`. It runs
+  `composer verify` (the suite, dead code, unused Composer packages, knip, wiki
+  rot and the dependency audits), gitleaks, Semgrep and the axe-core
+  accessibility suite.
+- Reporting on every pull request without blocking: the `advisory` job in the
+  same file, which posts the documentation worklist counts to the job summary.
 - Scheduled, reporting: `.github/workflows/nightly.yml` (the suite on SQLite,
   minus vector search) and `.github/workflows/mutation.yml` (the mutation score).
 
@@ -53,7 +54,7 @@ means making it deterministic first.
 - CI runs the full suite. Test Impact Analysis is local only, because CI has no
   reason to trust an impact map it did not build. Never add `--dirty` or `--tia`
   to a workflow.
-- The fork guard in `.github/workflows/lint-autofix.yml` is a security control,
+- The fork guard on the `autofix` job in `.github/workflows/ci.yml` is a security control,
   not a tidy-up target: it stops a pull request from a fork running
   repo-controlled workflow steps against a branch we do not own.
 

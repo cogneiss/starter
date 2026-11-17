@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Commands
@@ -24,13 +24,14 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 | ------------------------- | ---------------------------------------------------------------- |
 | `composer test`           | Lint, type coverage, PHPStan, and the suite at `--exactly=100.0` |
 | `composer test:a11y`      | axe-core at level 3 over every page the kit ships                |
-| `composer test:audit`     | `composer audit` plus `bun audit`                                |
+| `composer test:audit`     | `composer audit` plus `bun audit`, one advisory ignored by id    |
 | `composer test:dead-code` | PHPStan's dead-code rules over `app/`                            |
 | `composer test:deps`      | `composer-unused` — Composer packages nothing requires           |
 | `composer test:knip`      | knip — unused frontend files, exports and dependencies           |
+| `composer test:js`        | Vitest through `vp test` — the unit tests under `resources/js`   |
 | `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity |
 | `composer test:wiki`      | `wiki:lint` — dead code refs, dangling links, stale pages        |
-| `composer verify`         | `test`, dead code, deps, knip, wiki, audit, `llms.txt` and jscpd |
+| `composer verify`         | `test`, dead code, deps, knip, wiki, audit and jscpd |
 | `composer test:ai`        | The AI layer's tests and `ArchTest`, the loop for `app/Ai`       |
 
 ## Reporting — scheduled, never blocking

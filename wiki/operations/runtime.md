@@ -4,11 +4,12 @@ status: current
 supersedes: []
 code_refs:
     - .env.example
+    - config/inertia.php
     - config/database.php
     - config/queue.php
     - config/mail.php
     - config/ai.php
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Runtime
@@ -35,10 +36,10 @@ proves nightly: the whole suite minus the `pgvector` group, on SQLite in memory
 | `ORGANIZATIONS_RESOLVER`  | `session` | How the active organization is picked ([[domains/organization-resolvers]])       |
 | `ORGANIZATIONS_STRICT`    | `true`    | Fail closed when no organization is bound ([[architecture/fail-closed-scoping]]) |
 | `INERTIA_ENCRYPT_HISTORY` | off       | Encrypt Inertia history state                                                    |
-| `INERTIA_SSR_ENABLED`     | `true`    | Inertia server-side rendering; needs a separate render service to take effect (Inertia's own default config) |
+| `INERTIA_SSR_ENABLED`     | `false`   | Server-side rendering of guest requests only; needs `bun run build:ssr` and `php artisan inertia:start-ssr` (`config/inertia.php`) |
 | `AI_FAKE`                 | `false`   | Answer every agent from a canned response, no provider call                      |
-| `AI_MODEL_CHEAP`, `AI_MODEL_SMART` | `claude-haiku-5-5`, `claude-sonnet-5-5` | Model behind each tier (`config/ai.php`)                  |
-| `AI_MODEL_CHEAP_FAILOVER`, `AI_MODEL_SMART_FAILOVER` | `gpt-6-luna`, `gpt-6-astra` | Model of the failover provider for each tier (`config/ai.php`) |
+| `AI_MODEL_CHEAP`, `AI_MODEL_STANDARD`, `AI_MODEL_SMART` | see `config/ai.php` | Model behind each tier                                  |
+| `AI_MODEL_CHEAP_FAILOVER`, `AI_MODEL_STANDARD_FAILOVER`, `AI_MODEL_SMART_FAILOVER` | see `config/ai.php` | Model of the failover provider for each tier |
 | `BROADCAST_CONNECTION`    | `null`    | Where broadcasts go; `reverb` turns live notifications on                        |
 
 Broadcasting is off by default. `.env.example` sets `APP_URL` to `http://localhost:8000`. It carries the Reverb block —
@@ -51,7 +52,7 @@ written to the database and the panel fetches them, so the websocket is the
 upgrade rather than the requirement ([[domains/ux-realtime-notifications]]).
 
 Third-party credentials are all optional: the app boots and the suite passes with
-every social, mail and AI provider key blank ([[domains/auth-drivers]],
+every social, mail and AI provider key blank ([[features/authentication]],
 [[domains/ai-layer-overview]]). The same holds for `SENTRY_DSN`/`SENTRY_RELEASE`
 and `POSTHOG_KEY`/`POSTHOG_HOST`: blank by default, and error reporting and
 analytics both stay local (`NullErrorReporter`, `NullAnalyticsReporter`) until a

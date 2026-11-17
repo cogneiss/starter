@@ -17,7 +17,7 @@ code_refs:
     - resources/js/components/assistant-chat.tsx
     - tests/Feature/Ai/AssistantTest.php
     - tests/Browser/AssistantTest.php
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # AI assistant
@@ -31,7 +31,11 @@ would change data comes back as a proposal the member confirms. See
 
 `app/Ai/Agents/Assistant.php` is organization scoped and runs the default
 middleware, so quota, fencing, topic filter and audit apply like any other
-agent. It uses the `smart` tier. Its tools are the knowledge search, the record
+agent. It uses the `standard` tier, and
+it carries `#[CacheInstructions]` and `#[CacheToolDefinitions]`, which stamp one
+cache breakpoint each and apply to Anthropic and Bedrock only (the class
+docblock explains the split between the shared tool list and the per-member
+instructions). Its tools are the knowledge search, the record
 list and show tools, `RememberFact` and `ProposeAction`. None writes. The system
 prompt is `resources/prompts/assistant.md`, followed by the member's fenced
 memory when there is any.

@@ -17,7 +17,9 @@ code_refs:
     - bin/worktree-setup
     - tests/bootstrap.php
     - composer.json
-updated: 2026-11-17
+    - package.json
+    - scripts/agent-setup.sh
+updated: 2026-11-18
 ---
 
 # Contributing
@@ -41,10 +43,10 @@ hunks you held back. Whatever the fixers can't repair fails the commit.
 `.githooks/pre-push` runs `composer verify`, so CI is a second opinion rather
 than the first. The `verify` script in `composer.json` is `composer test` (lint,
 Larastan and `tsc`, strict PHPStan, 100% type coverage, the suite at 100%
-coverage), then dead code, unused Composer packages, knip, the wiki lint,
-`php artisan wiki:llms --check`, the dependency audit and the duplicate-code
-check. A Sloppy report on the pushed range prints last and never blocks. It takes a few
-minutes. Mutation testing stays on demand (`composer test:mutate`).
+coverage), then dead code, unused Composer packages, knip, the Vitest unit
+tests (`composer test:js`), the wiki lint, the dependency audit and the
+duplicate-code check. A Sloppy report on the pushed
+range prints last and never blocks. It takes a few minutes. Mutation testing stays on demand (`composer test:mutate`).
 
 A fresh `composer create-project` ends by running `php artisan starter:install`
 (the `post-create-project-cmd` script in `composer.json`). It asks which
@@ -54,6 +56,15 @@ declined, and then deletes itself.
 `.githooks/post-merge`, and `.githooks/post-checkout` on a branch switch, run
 `composer install` or `bun install` when `composer.lock` or `bun.lock` changed,
 and `php artisan migrate --graceful` when the change brought new migrations.
+
+`scripts/agent-setup.sh` prepares a fresh checkout for a sandboxed agent. It
+copies `.env.example`, installs from both lockfiles (`bun install
+--frozen-lockfile`), generates the app key and builds the frontend. It has not
+been run in a cloud sandbox yet, so treat it as a starting point.
+
+`package.json` keeps `trustedDependencies` empty: this project grants no
+package an install script. Add a package to that list only after reading its
+postinstall.
 
 ## Claude Code sessions check themselves
 
@@ -66,13 +77,16 @@ already requires.
   asks a human before an agent edits gate config: PHPStan, Rector, Pint, knip,
   the Sloppy baseline, `vite.config.ts`, the arch test, the mutation patches in
   `tests/Mutations/`, the workflows, `bin/worktree-setup` and the hooks
-  themselves. Once `/contract` has frozen its criteria (`.work/feature_list.json`
+  themselves. It asks the same way before an edit to `composer.json`,
+  `package.json` or `vet.json`, which hold the gate thresholds and the
+  dependency set, and before a command that adds, removes or updates a
+  dependency (`composer require`, `bun add` and their siblings). A plain
+  `composer install` or `bun install` passes. Once `/contract` has frozen its criteria (`.work/feature_list.json`
   exists), it also asks before `.work/contract.md` changes, so an agent cannot
-  rewrite the contract to fit the code it wrote. It only sees the Edit and Write
-  tools. A shell redirect into the same file gets past it, which is one reason
-  the git hooks still run the full gate.
-- `.claude/hooks/guard-generated.sh` denies an edit to `AGENTS.md`, `CLAUDE.md`,
-  `GEMINI.md`, `.cursor/rules/laravel-boost.mdc` and `.junie/guidelines.md`, and
+  rewrite the contract to fit the code it wrote. For files it only sees the Edit
+  and Write tools. A shell redirect into the same file gets past it, which is
+  one reason the git hooks still run the full gate.
+- `.claude/hooks/guard-generated.sh` denies an edit to the root `AGENTS.md` and
   to a nested `AGENTS.md` that carries the `agents:context` generated marker. The
   denial names the regenerate command. Like the gate guard, it only sees the Edit
   and Write tools.
@@ -167,10 +181,10 @@ saying why. Never lower a threshold ([[architecture/fast-blocking-gates]]).
 
 ## Generated files are never hand-edited
 
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules/laravel-boost.mdc`,
-`.junie/guidelines.md`, `resources/js/types/generated.d.ts` and `CHANGELOG.md` are
-all outputs. Change the source and regenerate; a test fails when they drift
-([[operations/documentation]], [[architecture/type-safety]]).
+`AGENTS.md`, `resources/js/types/generated.d.ts` and `CHANGELOG.md` are all
+outputs. Change the source and regenerate; a test fails when they drift
+([[operations/documentation]], [[architecture/type-safety]]). `CLAUDE.md` is the
+one line `@AGENTS.md`, so Claude Code reads the same file as every other agent.
 
 ## Documentation is part of the change
 

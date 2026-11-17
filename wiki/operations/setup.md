@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Setting up a clone
@@ -71,7 +71,9 @@ test is allowed to reach a provider ([[domains/ai-evals]]).
   existing database ([[architecture/fail-closed-scoping]]).
 - **Super admin** — `SETUP.md` has the steps; there is no UI for it on purpose.
 - **Social login** — credentials in `.env` plus the feature flag; without both,
-  the provider button is absent ([[domains/auth-drivers]]).
+  the provider button is absent ([[features/authentication]]). The old
+  `AUTH_DRIVER` setting no longer exists; login is always password plus the
+  enabled social providers.
 - **Live notifications** — `BROADCAST_CONNECTION` and the Reverb block, all
   blank by default; the bell reads the database until they are filled in
   ([[operations/runtime]], [[domains/ux-realtime-notifications]]).

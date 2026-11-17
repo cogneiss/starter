@@ -40,9 +40,9 @@
         },
         {
             "id": 7,
-            "name": "auth driver seam",
+            "name": "auth driver seam (collapsed into SessionController and EnabledSocialProviders)",
             "status": "passing",
-            "command": "php artisan test --compact --filter=AuthDriver"
+            "command": "php artisan test --compact --filter=EnabledSocialProviders"
         },
         {
             "id": 8,
@@ -80,6 +80,34 @@
             "status": "failing",
             "command": "composer test",
             "note": "composer lint clean; test:type-coverage 100.0%; test:types phpstan 0 errors + tsc clean; bun run build ok; php artisan test --compact 383/383 passing. Local composer test still fails at test:unit: under Xdebug the default (all-suite) run reports Total 91.0%, and --testsuite=Unit,Feature reports 99.9%. Clover from those runs shows the only uncovered line repo-wide is app/Http/Controllers/UserPasskeyController.php:43 (pre-existing, the else arm of a multi-line ternary that Xdebug does not attribute; CI uses pcov). Manual UX pass (7 steps) not performed."
+        },
+        {
+            "id": 14,
+            "name": "social login refuses an unverified provider email and an empty one",
+            "status": "failing",
+            "command": "php artisan test --compact --filter='SocialAuthController.*(unverified provider|empty provider email)'",
+            "note": "Recorded from the phase 14 review, not built. LinkSocialAccount links a provider identity to a verified local account by email without checking the provider vouches for that email, and (string) getEmail() can be empty. Decide the rule, add those tests, then flip to passing."
+        },
+        {
+            "id": 15,
+            "name": "impersonation: end the log when a session expires or EnsureUserIsActive tears it down",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=ImpersonationSessionExpiry",
+            "note": "Record only. ended_at stays null on expiry or teardown. Logout while impersonating (B6) is a separate item."
+        },
+        {
+            "id": 16,
+            "name": "impersonation: StartImpersonation checks the target is active",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=ImpersonationInactiveTarget",
+            "note": "Record only. Column semantics unverified."
+        },
+        {
+            "id": 17,
+            "name": "impersonation: a target with no organization writes no activity row",
+            "status": "failing",
+            "command": "php artisan test --compact --filter=ImpersonationNoOrganizationAudit",
+            "note": "Record only. ImpersonationLog is the audit of record meanwhile."
         }
     ]
 }

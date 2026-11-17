@@ -83,16 +83,8 @@ php artisan boost:install --guidelines --skills --no-interaction
 ```
 
 Pass both flags. `--guidelines` on its own drops the "Skills Activation" section
-from `AGENTS.md` and `CLAUDE.md`; adding `--skills` puts it back.
+from `AGENTS.md`; adding `--skills` puts it back.
 `php artisan boost:update` also works and preserves that section.
-
-Neither command writes `GEMINI.md`, even though `gemini` is still listed in
-`boost.json` — Boost dropped it from the agents it renders, so it goes stale
-without warning. Re-sync it by hand afterwards:
-
-```bash
-cp AGENTS.md GEMINI.md
-```
 
 ## The documentation loop
 
@@ -525,6 +517,7 @@ code.
 | `composer test:dead-code` | PHPStan found code nothing reaches.               | Delete it. If it is a framework entry point, add it to `phpstan-deadcode-baseline.neon` with a comment. |
 | `composer test:deps`      | A Composer package nothing requires.              | Remove it, or add it to `composer-unused.php` with the reason it is loaded at runtime.                  |
 | `composer test:knip`      | An unused frontend file, export or dependency.    | Delete it, or add it to `knip.json`'s `ignore` with a comment.                                          |
+| `composer test:js`        | A failing frontend unit test under `resources/js`.| Fix the code or the test; run one file with `bun run test:js <path>`.                                   |
 | `composer test:audit`     | A dependency has a known vulnerability.           | Update it. If no fix exists, pin and record it — do not skip the job.                                   |
 | gitleaks                  | Something that looks like a credential is staged. | Rotate the key first, then remove it. A rotated key is the only safe fix.                               |
 

@@ -11,6 +11,8 @@ code_refs:
     - app/Actions/RenderMarkdown.php
     - resources/js/components/seo.tsx
     - config/site.php
+    - config/inertia.php
+    - app/Http/Middleware/HandleInertiaRequests.php
     - resources/js/pages/welcome.tsx
     - resources/js/app.tsx
     - vite.config.ts
@@ -19,7 +21,7 @@ code_refs:
     - resources/js/components/activity-chart.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Pages
@@ -44,9 +46,11 @@ What ships rendered, and nothing more:
   canonical URL, Open Graph and Twitter tags through Inertia's `Head` on the
   welcome, blog and changelog pages. The canonical URL is the shared `appUrl`
   plus the path without its query string. The tags reach the first HTML response
-  only while SSR is running (the Vite dev server in development, or a bundle
-  built by `bun run build:ssr`, which `vendor/inertiajs/inertia-laravel` looks
-  for under `bootstrap/ssr/`); otherwise the client adds them on render.
+  only when SSR is switched on (`INERTIA_SSR_ENABLED=true` in `config/inertia.php`,
+  guests only per `app/Http/Middleware/HandleInertiaRequests.php`) and a render
+  service is running, from a bundle built by `bun run build:ssr` that
+  `vendor/inertiajs/inertia-laravel` looks for under `bootstrap/ssr/`.
+  Otherwise the client adds them on render.
   There is no separate server entry: `resources/js/app.tsx` is the only one, and
   `@inertiajs/vite` in `vite.config.ts` supplies the SSR bootstrap.
 - `/dashboard` — behind `auth`, `verified`, `organization`, `two-factor` and `onboarded`

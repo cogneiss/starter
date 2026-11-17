@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Tooling
@@ -56,7 +56,7 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
   included. `ai-layer` and `attack-review` sit in that list next to `org-access`,
   `platform-ops`, `resource-spine`, `testing-gates` and `ux-kit`. The list tracks the installed packages: `pest-testing`
   is gone, `testing-best-practices` replaced the Pest pack, and
-  `echo-development` is published because `laravel-echo` is a dependency. `php artisan boost:install --guidelines --skills`
+  `echo-development` and `echo-react-development` are published because `laravel-echo` and `@laravel/echo-react` are dependencies, and `mcp-development` because `laravel/mcp` is. `php artisan boost:install --guidelines --skills`
   regenerates all of them ([[operations/documentation]]).
 - `.ai/rules/` holds the committed, path-scoped project rules, mapped by
   `.ai/rules/index.md`. Boost's `record-rule` tool adds to it, so a decision

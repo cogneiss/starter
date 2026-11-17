@@ -1,7 +1,8 @@
 ---
 title: Authentication
 status: current
-supersedes: []
+supersedes:
+    - domains/auth-drivers
 code_refs:
     - app/Http/Controllers/SessionController.php
     - app/Http/Controllers/UserMagicLinkController.php
@@ -13,7 +14,9 @@ code_refs:
     - config/fortify.php
     - app/Actions/CreateSessionFromMagicLink.php
     - app/Actions/LinkSocialAccount.php
-updated: 2026-11-15
+    - app/Actions/EnabledSocialProviders.php
+    - app/Http/Requests/CreateSessionRequest.php
+updated: 2026-11-17
 ---
 
 # Authentication
@@ -46,8 +49,8 @@ the kit's own screens on top of it.
 
 ## The rules that cut across all of them
 
-- **Every path respects two-factor.** A magic link or a passkey hands a 2FA user
-  to the challenge screen; neither is a way around it. This is the kind of gap
+- **Every path respects two-factor.** A magic link, a passkey or a social
+  callback hands a 2FA user to the challenge screen; none is a way around it. This is the kind of gap
   that appears when each sign-in path is built separately, so it is worth
   re-checking when adding one.
 - **Magic link tokens last 15 minutes, work once, and never reveal whether an
@@ -68,6 +71,31 @@ the kit's own screens on top of it.
   ([[domains/http-layer]]).
 
 Social login is off behind a feature flag and needs credentials before a provider
-button appears at all ([[domains/feature-flags]], [[domains/auth-drivers]]).
+button appears at all. `app/Actions/EnabledSocialProviders.php` is the one place
+that decides which of `google`, `github` and `microsoft` are live: the
+`social-login-enabled` flag must be on and `services.<provider>.client_id` must be
+non-empty. `SessionController` passes that list to the login page and
+`SocialAuthController` returns a 404 for any provider outside it
+([[domains/feature-flags]]).
+
+## One login flow, no driver setting
+
+Login is always email and password plus whichever social providers are enabled.
+`SessionController` checks the credentials itself and dispatches
+`Illuminate\Auth\Events\Failed` on a miss, which `RecordFailedLogin` turns into
+a login-history row without the password. There is no `AUTH_DRIVER` setting any
+more: it only ever accepted `password`, and the pluggable driver seam it fronted
+was removed. The superseded page `wiki/domains/auth-drivers.md` keeps the reasoning.
+
+Anyone adding SAML or OIDC later must follow the rules that lived on the old
+interface, which are now a docblock on `SocialAuthController`:
+
+- Check the assertion against the request host before trusting it. An assertion
+  minted for one host and replayed at another signs the attacker into a different
+  organization.
+- Deny by default. Do not provision an account for an unknown identity unless the
+  organization has explicitly opted in.
+- Fail closed when the configured flow is unknown or cannot decide.
+
 Sign-in attempts are recorded by listeners
 ([[domains/events-and-notifications]]).

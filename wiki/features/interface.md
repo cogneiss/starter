@@ -9,7 +9,10 @@ code_refs:
     - resources/js/components/value/relative-time.tsx
     - components.json
     - vite.config.ts
-updated: 2026-11-15
+    - config/inertia.php
+    - app/Http/Middleware/HandleInertiaRequests.php
+    - tests/Unit/Middleware/HandleInertiaRequestsTest.php
+updated: 2026-11-17
 ---
 
 # Interface
@@ -20,9 +23,13 @@ is the only entry point. It renders in the browser and, through the
 the pages under `resources/js/pages` and wraps the same `createInertiaApp()` call
 in the SSR bootstrap, so the provider tree cannot drift between the two. Browser
 only setup (theme, error toasts, analytics) sits behind a `typeof window` check.
-`bun run build:ssr` writes the server bundle to `bootstrap/ssr/app.js`, and in
-development the plugin serves SSR from the Vite dev server with no separate
-process.
+Server rendering is off by default. `config/inertia.php` reads
+`INERTIA_SSR_ENABLED` (false in `.env.example`), and with it on,
+`HandleInertiaRequests::handle()` still renders only requests with no signed-in
+user, so a guest page gets server HTML and the app behind a sign-in never does
+(`tests/Unit/Middleware/HandleInertiaRequestsTest.php` covers both). Turning it
+on needs `bun run build:ssr`, which writes the server bundle to
+`bootstrap/ssr/app.js`, and a running `php artisan inertia:start-ssr`.
 
 ## Layouts and components
 

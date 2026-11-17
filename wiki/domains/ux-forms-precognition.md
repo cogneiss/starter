@@ -12,7 +12,7 @@ code_refs:
     - tests/Unit/PrecognitionAllowlistTest.php
     - tests/Mutations/phase11-parity.patch
     - tests/Mutations/phase11-allowlist.patch
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Forms and live validation
@@ -31,8 +31,9 @@ live validation usually rots: the rule changes on the server and the browser
 keeps cheerfully accepting the old shape.
 
 `resources/js/pages/user-profile/edit.tsx` shows the pattern — `useForm` from
-`laravel-precognition-react-inertia` pointed at the Wayfinder URL, with
-`<InputError>` rendering whatever came back.
+`@inertiajs/react`, which has Precognition built in, pointed at the Wayfinder
+URL, with `<InputError>` rendering whatever came back. No separate
+Precognition package is installed.
 
 ## The parity gate
 

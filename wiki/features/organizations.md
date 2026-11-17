@@ -17,9 +17,14 @@ code_refs:
     - app/Actions/StartImpersonation.php
     - app/Actions/StopImpersonation.php
     - app/Support/Impersonation.php
+    - app/Http/Middleware/ReadOnlyWhileImpersonating.php
+    - app/Support/ResourceQuery.php
+    - app/Http/Middleware/EnsureTwoFactorEnabled.php
+    - app/Listeners/RecordModelActivity.php
+    - app/Listeners/RecordSuccessfulLogin.php
     - app/Actions/SummarizeAiUsage.php
     - app/Ai/Agents/InvitationDrafter.php
-updated: 2026-10-28
+updated: 2026-11-18
 ---
 
 # Organizations
@@ -99,18 +104,49 @@ into an organization on its own is an agent that can add a member nobody chose.
 
 ## Impersonation
 
-A super admin can sign in as a user to reproduce a support issue
-(`UserImpersonationController`, `StartImpersonation`, `StopImpersonation`).
-
-Three things bound it:
+A platform super admin can sign in as a user to reproduce a support issue
+(`UserImpersonationController`, `StartImpersonation`, `StopImpersonation`). The
+session is read-only and every step is audited.
 
 - It is behind the `impersonation-enabled` flag, off by default
   ([[domains/feature-flags]]).
-- Every session is written to `ImpersonationLog`.
-- Destructive routes are blocked while impersonating, by the
-  `not-impersonating` middleware.
+- Starting is `user-impersonation.store`, inside the `EnsurePlatformAdmin`
+  group in `routes/web.php`, so anyone who is not platform staff gets a 404.
+  Stopping, `user-impersonation.destroy`, stays outside that group because the
+  signed-in user during impersonation is the target, who is not staff.
+- `app/Http/Middleware/ReadOnlyWhileImpersonating.php` runs for every web request
+  after `EnsureUserIsActive`. It refuses (403) any non-GET request except
+  stopping, logging out, the `broadcasting/auth` handshake and a precognitive
+  request on a route that carries `HandlePrecognitiveRequests`. It also refuses
+  the reads that expose the target's credentials, second factors or exports:
+  `user/two-factor-*`, `user/passkeys*`, `user/confirm-password*`, the
+  `two-factor.*` and `passkey.*` routes, `browser-session.show`,
+  `import.download` and `gdpr-export.download`, plus any request that accepts
+  `text/csv` (`ResourceQuery::wantsCsv()` in `app/Support/ResourceQuery.php`),
+  so a list export is refused too. The nine `not-impersonating`
+  route guards remain and also guard GET pages.
+- Both ends clear `auth.password_confirmed_at`, so neither identity inherits the
+  other's password confirmation. If the impersonator cannot be loaded when
+  stopping, the session is signed out and redirected to login. The log is closed
+  either way.
+- Every session is written to `ImpersonationLog`. `RecordModelActivity` bridges
+  its creation and the change of `ended_at` into the activity log, and every
+  activity row written during impersonation carries `properties.impersonator_id`
+  (the causer stays the target).
+- Starting and stopping write no `LoginHistory` row: `RecordSuccessfulLogin`
+  skips while `Impersonation::active()`, and the keys are remembered before and
+  forgotten after the sign-in.
+- `EnsureTwoFactorEnabled` does not hold an impersonated member at the setup
+  screen, so a forced-2FA organization cannot trap the admin.
+- The banner strings live in `ui.impersonation.*` in `lang/en/ui.php` and
+  `lang/nl/ui.php`.
 
-`app/Support/Impersonation.php` owns the two session keys involved —
+`app/Support/Impersonation.php` owns the two session keys involved,
 `impersonator_user_id` and `impersonation_log_id`. Read them through it rather
 than touching the session directly, so the audit row and the session cannot drift
 apart.
+
+Known gaps, tracked in `todo/org-access.status.json`: a session that expires or
+is torn down by `EnsureUserIsActive` leaves `ended_at` empty, the target is not
+checked for being active, and a target with no organization gets no activity
+row.

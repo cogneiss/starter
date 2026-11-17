@@ -5,13 +5,16 @@ supersedes: []
 code_refs:
     - app/Http/Controllers/HealthController.php
     - app/Support/Health/HealthReport.php
-    - app/Support/Health/Check.php
     - app/Support/Health/Checks/DatabaseCheck.php
+    - app/Support/Health/Checks/DebugModeCheck.php
+    - app/Support/Health/Checks/DiskCheck.php
     - app/Support/Health/Checks/QueueCheck.php
     - app/Support/Health/Checks/ScheduleCheck.php
+    - app/Providers/AppServiceProvider.php
+    - config/health.php
     - bootstrap/app.php
     - tests/Feature/HealthTest.php
-updated: 2026-10-28
+updated: 2026-11-17
 ---
 
 # The health endpoint
@@ -27,20 +30,39 @@ and its response is not defined in this repository.
 
 ## The checks
 
-Each check is a small class implementing `Check` under
-`app/Support/Health/Checks`: database connectivity, queue depth, cache
-round-trip, disk, debug mode (on in production is a failure, not a warning),
-and the scheduler. The scheduler check reads the `health-heartbeat` task's
-last-run timestamp from `routes/console.php` — a scheduler that silently
-stopped fails the endpoint honestly instead of everything looking green while
-nothing runs.
+The checks run on `spatie/laravel-health`. `AppServiceProvider::boot()`
+registers them on the package's `Health` registry, and `HealthReport` runs each
+one, times it and folds the results into the overall status. A check that
+throws, or returns anything but ok or warning, counts as failed, and the
+exception message is dropped because the endpoint is public.
+
+The cache round-trip is the package's own check, named `cache`. The other five
+are kit classes under `app/Support/Health/Checks` that extend the package's
+`Check`, each because the package's version answers a different question. Each
+class docblock says why. `DatabaseCheck` runs `select 1` where the package's
+check only opens a connection, because behind a pooler or in a long-lived
+worker an open connection proves nothing. Its failure message is fixed text,
+never the driver error.
+`QueueCheck` dispatches a real heartbeat job and waits for a worker to mark it
+processed. `DiskCheck` warns on a path it cannot measure instead of reading it
+as empty. `DebugModeCheck` warns, rather than fails, when `APP_DEBUG` is on in
+production, because the package's check would fail every local machine.
+`ScheduleCheck` reads the cache key the `health-heartbeat` task in
+`routes/console.php` stamps every minute, so a scheduler that silently stopped
+shows up instead of everything looking green while nothing runs. A stale
+heartbeat is a warning, so a fresh clone still answers 200. Thresholds live in
+`config/health.php`.
+
+Results are held in memory only. `config/health.php` sets the in-memory result
+store and turns package notifications off, so there is no health table.
+`tests/Feature/HealthTest.php` asserts both.
 
 ## The admin panel
 
 Super admins see the same report rendered at `/admin` through
 `AdminHealthController` — same checks, same truth, no separate probe
-([[operations/ops-admin-area]]). When a check fails in production it also
-reaches the error reporter — [[operations/ops-error-reporting]].
+([[operations/ops-admin-area]]).
 
-Adding a check is one class and one line in the report; the endpoint and the
-panel pick it up together.
+Adding a check is one class extending the package's `Check` and one line in the
+`Health::checks()` list in `AppServiceProvider`; the endpoint and the panel pick
+it up together.

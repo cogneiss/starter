@@ -13,7 +13,7 @@ code_refs:
     - config/boost.php
     - config/ai.php
     - vet.json
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Packages
@@ -35,7 +35,7 @@ role model. `config/activitylog.php` swaps the activity model.
 default provider and embedding caching and adds the app's tiers, quotas and
 guardrails, while the provider list itself comes from laravel/ai. Each file
 says so in its docblock. A package with nothing to change has no file at all, so
-`config/inertia.php`, `config/reverb.php`, `config/data.php`, `config/sentry.php`
+`config/reverb.php`, `config/data.php`, `config/sentry.php`
 and their kind are not here. The package merges its defaults underneath the
 app's file one level deep, so a key that is overridden replaces the whole
 default array of that name.
@@ -50,18 +50,20 @@ boots the app with the keys empty and fails a change that makes one required.
 | Package | What it does here | Configured in | Read more |
 | --- | --- | --- | --- |
 | `laravel/framework` | The framework. | `config/app.php` and the other framework files | [[operations/runtime]] |
-| `inertiajs/inertia-laravel` | Server half of the Inertia React app. | package defaults | [[features/interface]] |
+| `inertiajs/inertia-laravel` | Server half of the Inertia React app. | `config/inertia.php` | [[features/interface]] |
 | `laravel/ai` | Agents, tools, embeddings and the MCP server. | `config/ai.php` | [[domains/ai-layer-overview]] |
 | `laravel/fortify` | Login, two-factor and passkeys. The kit owns registration, password reset and profile routes. | `config/fortify.php` | [[features/authentication]] |
+| `laravel/mcp` | The MCP server in `app/Mcp` builds on it. Required directly, since otherwise only the dev-only `laravel/boost` would pull it in. | package defaults | [[domains/ai-layer-overview]] |
 | `laravel/pennant` | Feature flags, resolved from the `feature_overrides` table. | `config/pennant.php` | [[domains/feature-flags]] |
 | `laravel/reverb` | WebSocket server for organization channels. | package defaults | [[domains/ux-realtime-notifications]] |
 | `laravel/sanctum` | API tokens scoped to one organization. | package defaults | [[operations/ops-api-tokens]] |
-| `laravel/socialite` | Google and GitHub sign-in. A button shows only when its keys are set. | `config/services.php` | [[domains/auth-drivers]] |
+| `laravel/socialite` | Google and GitHub sign-in. A button shows only when its keys are set. | `config/services.php` | [[features/authentication]] |
 | `laravel/wayfinder` | Typed TypeScript functions for every route and controller action. | `vite.config.ts` | [[architecture/type-safety]] |
 | `sentry/sentry-laravel` | Error reporting when `SENTRY_DSN` is set. | `config/services.php` | [[operations/ops-error-reporting]] |
 | `nunomaduro/essentials` | Stricter framework defaults such as strict models, immutable dates and a forced URL scheme. The app's file only adds `Unguard`. | `config/essentials.php` | [[architecture/better-defaults]] |
 | `spatie/laravel-activitylog` | Storage for the audit log. | `config/activitylog.php`, `config/audit.php` | [[operations/ops-audit-log]] |
 | `spatie/laravel-data` | Typed data objects for requests and Inertia props. | package defaults | [[domains/data-objects]] |
+| `spatie/laravel-health` | The check registry behind `GET /health`. Cache uses the package's own check; the database, queue, schedule, disk and debug-mode checks are kit classes that extend its `Check`. Results stay in memory. | `config/health.php` | [[operations/ops-health]] |
 | `spatie/laravel-permission` | Roles and permissions, one set per organization (teams mode). | `config/permission.php` | [[domains/authorization]] |
 | `spatie/laravel-typescript-transformer` | Writes `resources/js/types/generated.d.ts` from PHP data objects and enums. | `app/Providers/TypeScriptTransformerServiceProvider.php` | [[architecture/type-safety]] |
 
@@ -103,7 +105,7 @@ boots the app with the keys empty and fails a change that makes one required.
 | --- | --- | --- | --- |
 | `react` | UI library. | package defaults | [[features/interface]] |
 | `react-dom` | Renders React in the browser and for SSR. | package defaults | [[features/interface]] |
-| `@inertiajs/react` | Client half of Inertia. | `resources/js/app.tsx` | [[features/interface]] |
+| `@inertiajs/react` | Client half of Inertia. Its `useForm` does live validation against the form request, so no Precognition package is installed. | `resources/js/app.tsx` | [[features/interface]], [[domains/ux-forms-precognition]] |
 | `@inertiajs/vite` | Resolves pages and turns `app.tsx` into the SSR entry, so there is no separate `ssr.tsx`. | `vite.config.ts` | [[features/interface]] |
 | `laravel-vite-plugin` | Vite entry points, the hot file and the Bunny font. | `vite.config.ts` | [[operations/tooling]] |
 | `@vitejs/plugin-react` | React support for Vite, and the React Compiler preset. | `vite.config.ts` | [[operations/tooling]] |
@@ -112,13 +114,12 @@ boots the app with the keys empty and fails a change that makes one required.
 | `@tailwindcss/vite` | Tailwind's Vite plugin. | `vite.config.ts` | [[domains/ux-branding]] |
 | `@base-ui/react` | Headless primitives under the shadcn components. | package defaults | [[domains/ux-primitives]] |
 | `class-variance-authority` | Variant props on UI components. | package defaults | [[domains/ux-primitives]] |
-| `clsx` | Class name joining in `cn()`. | `resources/js/lib/utils.ts` | [[domains/ux-primitives]] |
-| `tailwind-merge` | Resolves conflicting Tailwind classes in `cn()`. | `resources/js/lib/utils.ts` | [[domains/ux-primitives]] |
+| `cn` | Joins class names and resolves conflicting Tailwind classes. `cn()` is re-exported from it. | `resources/js/lib/utils.ts` | [[domains/ux-primitives]] |
 | `lucide-react` | Icons. | package defaults | [[domains/ux-primitives]] |
 | `@tanstack/react-table` | Table rendering for the list kit. Search, sort and paging stay on the server. | `resources/js/components/data-table.tsx` | [[domains/ux-list-kit]] |
-| `laravel-precognition-react-inertia` | Live form validation against the form request. | package defaults | [[domains/ux-forms-precognition]] |
-| `laravel-echo` | Subscribes to organization channels. | `resources/js/hooks/use-organization-channel.ts` | [[domains/ux-realtime-notifications]] |
-| `pusher-js` | The WebSocket client Echo uses to talk to Reverb. | `resources/js/hooks/use-organization-channel.ts` | [[domains/ux-realtime-notifications]] |
+| `@laravel/echo-react` | Configures the shared Echo instance that subscribes to organization channels. | `resources/js/hooks/use-organization-channel.ts` | [[domains/ux-realtime-notifications]] |
+| `laravel-echo` | Supplies the `Echo` type. `@laravel/echo-react` ships type declarations that import it without installing it, so the hook's connection is untyped when it is missing. | `resources/js/hooks/use-organization-channel.ts` | [[domains/ux-realtime-notifications]] |
+| `pusher-js` | The WebSocket client `@laravel/echo-react` imports to talk to Reverb. | package defaults | [[domains/ux-realtime-notifications]] |
 | `@laravel/passkeys` | Passkey registration and sign-in in the browser. | package defaults | [[features/authentication]] |
 | `input-otp` | The six-digit two-factor code field. | package defaults | [[features/authentication]] |
 | `recharts` | Dashboard charts. | `resources/js/components/ui/chart.tsx` | [[features/pages]] |

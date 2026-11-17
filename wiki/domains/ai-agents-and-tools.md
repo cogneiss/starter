@@ -18,7 +18,7 @@ code_refs:
     - app/Ai/Actions/RememberAssistantFact.php
     - app/Ai/ConfirmableActions.php
     - tests/Unit/ArchTest.php
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # AI agents and tools
@@ -76,6 +76,11 @@ boundary is the point where a persuaded model stops being dangerous.
 fails when a class under `app/Ai/Tools` is added without the call — remove the
 `authorizeFor()` line from a tool and the suite reddens rather than passing with
 a hole in it.
+
+The same file, `tests/Unit/ArchTest.php`, bans outbound channels from the tool
+namespaces: the HTTP client, mail, notifications and processes. A tool reads
+private records and can be fed untrusted text, and a way to send data out is
+the third piece an injected prompt needs to leak them.
 
 ## Writes are proposed, never performed
 

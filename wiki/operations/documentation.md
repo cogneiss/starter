@@ -11,10 +11,11 @@ code_refs:
     - tests/Feature/Docs/GuidelinesAreCurrentTest.php
     - .ai/rules/index.md
     - config/boost.php
+    - boost.json
     - app/Console/Commands/AgentsContextCommand.php
     - tests/Feature/Docs/NestedAgentContextTest.php
     - .claude/hooks/guard-generated.sh
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Documentation
@@ -24,7 +25,7 @@ Three layers, each with a different job.
 | Layer            | Holds                                                      | Read by                        |
 | ---------------- | ---------------------------------------------------------- | ------------------------------ |
 | `.ai/rules/*.md` | Path-scoped constraints — short, imperative, always loaded | every agent, on every edit     |
-| `wiki/**`        | Explanations — why the code is shaped this way, with proof | on demand, when a page matches |
+| `wiki/**`        | Explanations — why the code is shaped this way, with proof | on demand, by `code_refs`      |
 | `.ai/skills/*/`  | Decision procedures for one domain                         | when the domain is entered     |
 
 Rules say what you may not do. The wiki says why. Skills say how to work through
@@ -34,10 +35,10 @@ a specific kind of change. A fact belongs in exactly one of them
 Skills are authored in `.ai/skills/<name>/SKILL.md` and published into
 `.claude/skills/*/` alongside the vendor packs by
 `php artisan boost:install --skills`. Edit the source, not the published copy.
-Five are first-party: `resource-spine`, `org-access`, `testing-gates`,
-`ai-layer` and `ux-kit`. Publishing writes a symlink per agent directory — `.claude`,
-`.agents`, `.cursor`, `.github`, `.junie` — and all five are committed, so a
-clone gets the pack without running Boost first.
+Seven are first-party (the directories in `.ai/skills`): `resource-spine`, `org-access`, `testing-gates`,
+`ai-layer`, `ux-kit`, `attack-review` and `platform-ops`. Publishing writes a symlink per agent directory, `.claude` and
+`.agents`, and both are committed, so a clone gets the pack without running
+Boost first.
 
 `.ai/rules/index.md` maps globs to rule files, and its row is what makes a rule
 load at all. A rule file with no row is a file nobody reads: `app/Ai/**`,
@@ -55,11 +56,12 @@ routes, webhooks, admin area and provider seams span `routes/`, `app/` and
 
 ## Generated files
 
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules/laravel-boost.mdc` and
-`.junie/guidelines.md` are all outputs of
+`AGENTS.md` is the output of
 `php artisan boost:install --guidelines --skills`, which is wired into
-`post-update-cmd` so a Composer update regenerates them. `GEMINI.md` is a copy of
-`AGENTS.md`, made in the same hook, because Boost no longer emits it.
+`post-update-cmd` so a Composer update regenerates it. `CLAUDE.md` is the one
+line `@AGENTS.md`. `agents.claude_code.guidelines_path` in `config/boost.php`
+keeps it that way: without it Boost renders the block into `CLAUDE.md` whenever
+that file exists.
 
 `config/boost.php` pins `enforce_tests` to `true`. Left unset, Boost decides
 whether to emit its test-enforcement guideline by running
@@ -69,7 +71,8 @@ drift gate below then fails on a diff that touched none of this. A blocking gate
 that goes red for unrelated reasons is a gate that gets switched off, so the
 value is pinned rather than detected.
 
-`tests/Feature/Docs/GuidelinesAreCurrentTest.php` fails when they drift. It proves
+`tests/Feature/Docs/GuidelinesAreCurrentTest.php` fails when it drifts, or when
+`CLAUDE.md` stops being the one-line import. It proves
 drift _inside_ the `<laravel-boost-guidelines>` block; a check over the whole file
 would pass on a stale block and be a false negative. It runs Boost in a real
 subprocess with `APP_ENV=local`, because Boost disables itself under
@@ -94,8 +97,8 @@ the files cannot drift from the index.
 
 Only `AGENTS.md` is nested. Claude Code already scopes `.claude/rules`, which is
 a symlink to `.ai/rules`, by each rule's `paths:` frontmatter, so a nested
-`CLAUDE.md` would load the same text twice. Codex, Copilot, Cursor, Gemini and
-Amp read nested `AGENTS.md` and have no such scoping. `app` and `wiki` get no
+`CLAUDE.md` would load the same text twice. `boost.json` configures Claude Code, Amp, Codex and
+OpenCode; which of them read nested `AGENTS.md` is not documented here. `app` and `wiki` get no
 file: `app.md` would repeat over every child, and the wiki lint reads every
 markdown file under `wiki`. A nested file without the generated marker is
 hand-written and left alone.
@@ -123,6 +126,12 @@ pages, application files no page lists in `code_refs`, and pages whose refs have
 all been deleted. `.githooks/post-commit` refreshes it after every commit and
 `app:doctor` prints the counts, so the work surfaces without being looked for.
 The file is generated and git-ignored — regenerate it, never edit it.
+
+Agents do not load the wiki by default. A page is opened when the task touches a
+file in its `code_refs`. After a change, only the pages whose `code_refs` include
+a changed file are reread. No command lists those pages for uncommitted edits;
+`rg -l '<path>' wiki` finds them. After a commit, the `stale` entries in
+`wiki/_meta/audit.json` are exactly that list, and `wiki:lint` blocks on them.
 
 `/document` (`.claude/commands/document.md`) is the other half: it reads the
 worklist, rereads the code, and rewrites the pages. No language model runs in

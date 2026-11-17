@@ -11,7 +11,6 @@ code_refs:
     - app/Console/Commands/ResourceClearCommand.php
     - app/Console/Commands/WikiLintCommand.php
     - app/Console/Commands/WikiAuditCommand.php
-    - app/Console/Commands/WikiLlmsCommand.php
     - app/Console/Commands/AiInstallCommand.php
     - app/Console/Commands/AiUsageCommand.php
     - app/Console/Commands/AgentsContextCommand.php
@@ -19,12 +18,12 @@ code_refs:
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
-updated: 2026-11-15
+updated: 2026-11-17
 ---
 
 # Console commands
 
-Twenty-one first-party commands. Each one either answers a question a newcomer
+Twenty first-party commands. Each one either answers a question a newcomer
 would otherwise ask a human, or maintains something that would otherwise drift.
 
 | Command                                    | Class                           | Does                                           |
@@ -37,7 +36,6 @@ would otherwise ask a human, or maintains something that would otherwise drift.
 | `php artisan resource:clear`               | `ResourceClearCommand`          | undo the cache                                 |
 | `php artisan wiki:lint`                    | `WikiLintCommand`               | fail the build when a wiki page has rotted     |
 | `php artisan wiki:audit`                   | `WikiAuditCommand`              | write the `/document` worklist, never blocks   |
-| `php artisan wiki:llms`                    | `WikiLlmsCommand`               | write `llms.txt` from the wiki, `--check` gates |
 | `php artisan ai:install`                   | `AiInstallCommand`              | prepare the database for the AI layer          |
 | `php artisan ai:usage`                     | `AiUsageCommand`                | report AI runs, tokens and spend               |
 | `php artisan app:make-onboarding-step`     | `MakeOnboardingStepCommand`     | scaffold an onboarding step and its test       |
@@ -82,7 +80,9 @@ newcomer who cannot tell a missing extension from a broken checkout.
 
 Third-party credentials are listed separately, under `optional` in the JSON and
 as `off — …` lines in the table: social login, the mail transport, the s3 disk
-and the Slack token. None of them move the exit code. A blank
+and the Slack token. Two PHP runtime warnings sit there too: a patch older than
+8.5.12 (the patch current on 2026-10-21) and `session.upload_progress.enabled`
+being on. None of them move the exit code. A blank
 `GOOGLE_CLIENT_ID` means social login is off, not that the machine is broken,
 and printing it as FAIL next to a missing `APP_KEY` is how people learn to skim
 past this command. `tests/Feature/ZeroKeyBootTest.php` is the other half of that
@@ -125,18 +125,6 @@ numbers.
 Five rules over `wiki/**`, all blocking, backed by `app/Support/WikiPage.php` for
 parsing. `wiki/_meta/lint.md` documents the rules; the loop around them is
 [[operations/documentation]].
-
-## wiki:llms
-
-Writes `llms.txt` at the repo root in the llmstxt.org shape: an H1, a blockquote
-summary, then one H2 per wiki folder listing `- [title](wiki/<slug>.md):
-description`. Links are repo-relative because the file orients coding agents in
-the repository, not visitors to a site. Pages carry no summary field, so the
-description is the first sentence of the first prose paragraph, with wikilinks
-flattened to their text. `--check` writes nothing and exits 1 when the committed
-file differs; `tests/Feature/Console/WikiLlmsTxtCommandTest.php` runs it, so
-editing a wiki page without regenerating `llms.txt` fails the suite. No
-`llms-full.txt`: the pages are one link away.
 
 ## agents:context
 

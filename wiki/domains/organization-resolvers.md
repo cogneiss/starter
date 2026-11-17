@@ -10,7 +10,7 @@ code_refs:
     - app/Http/Middleware/ResolveOrganization.php
     - app/Providers/AppServiceProvider.php
     - config/organizations.php
-updated: 2026-10-28
+updated: 2026-11-17
 ---
 
 # Organization resolvers
@@ -44,8 +44,9 @@ out precisely because it only makes sense once subdomains are on
 ([[decisions/not-included]]).
 
 Ordering matters: the middleware runs before route model binding, for the reason
-in [[architecture/resolve-before-routing]]. The sign-in side of `app/Auth` is
-[[domains/auth-drivers]].
+in [[architecture/resolve-before-routing]]. Sign-in is a separate mechanism, in
+[[features/authentication]]; the former `AuthDriver` seam that shared this
+directory is gone ([[domains/auth-drivers]], superseded).
 
 ## What else the provider binds
 
