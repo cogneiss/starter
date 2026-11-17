@@ -15,7 +15,7 @@ Not `--exactly=100.0`, not `--min=100`, not the mutation `--min=80`. A red gate 
 
 Everything else goes on a schedule and reports. That is why the Postgres run, the mutation score and the SBOM are scheduled, not blocking. A gate people cannot predict gets routed around: branch protection gets loosened, or the team learns which rerun makes red go away. Do not promote a scheduled job to a required check without making it deterministic first.
 
-## The fork guard in `lint-autofix.yml` is a security control
+## The fork guard on the `autofix` job in `ci.yml` is a security control
 
 The autofix job checks that the head repository is this repository before it runs. Removing or weakening that lets a pull request from a fork run repo-controlled workflow steps against a branch we do not own. Do not touch it.
 

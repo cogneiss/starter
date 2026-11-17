@@ -25,7 +25,7 @@ and it never touches `DB`, `ConsumeConfirmToken` or `CreateOrganizationInvitatio
 `tests/Unit/ArchTest.php` enforces all of that, so a forgotten interface is a red
 build rather than a leak.
 
-Pick a tier, never a model name. `config/ai.php` maps `cheap` and `smart` onto a
+Pick a tier, never a model name. `config/ai.php` maps `cheap`, `standard` and `smart` onto a
 provider and a model; a literal in a class survives a model rename until
 production finds it.
 

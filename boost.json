@@ -1,12 +1,8 @@
 {
     "agents": [
         "claude_code",
-        "cursor",
-        "junie",
         "amp",
         "codex",
-        "gemini",
-        "copilot",
         "opencode"
     ],
     "cloud": false,
@@ -25,10 +21,12 @@
         "fortify-development",
         "laravel-best-practices",
         "testing-best-practices",
+        "mcp-development",
         "pennant-development",
         "socialite-development",
         "wayfinder-development",
         "inertia-react-development",
+        "echo-react-development",
         "echo-development",
         "tailwindcss-development",
         "activitylog-development",

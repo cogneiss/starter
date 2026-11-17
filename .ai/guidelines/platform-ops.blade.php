@@ -1,4 +1,4 @@
-- The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing any of it.
+- The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing.
 - Never log a token, a webhook secret, a signature or a provider key. Scope at the query level: a foreign id is a 404.
 
 @scoped(['routes/api.php', 'app/Http/Controllers/Api/**', 'app/Http/Middleware/**', 'app/Webhooks/**', 'app/Admin/**', 'app/Support/Analytics/**', 'app/Support/Reporting/**', 'app/Support/Health/**', 'config/api.php', 'config/webhooks.php', 'config/audit.php'])

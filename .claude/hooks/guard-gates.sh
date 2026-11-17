@@ -26,6 +26,8 @@ if [ "$tool" = "Bash" ]; then
         *--get*core.hooksPath*) ;;
         *--no-verify*|*core.hooksPath*)
             decide deny "Git hooks are the local quality gate. Fix what they report instead of skipping them." ;;
+        *composer\ require*|*composer\ remove*|*composer\ update*|*bun\ add*|*bun\ remove*|*bun\ update*|*npm\ install*|*pnpm\ add*|*yarn\ add*)
+            decide ask "This changes the dependency set. A human approves every dependency change." ;;
     esac
     exit 0
 fi
@@ -36,6 +38,8 @@ path="${path#"$CLAUDE_PROJECT_DIR"/}"
 case "$path" in
     phpstan*.neon|rector.php|pint.json|knip.json|.sloppy-baseline.json|vite.config.ts|tests/Unit/ArchTest.php|tests/Mutations/*|.github/workflows/*|.githooks/*|.claude/settings.json|.claude/hooks/*|bin/worktree-setup)
         decide ask "$path is part of the quality gate. A human approves every change to it." ;;
+    composer.json|package.json|vet.json)
+        decide ask "$path holds the gate thresholds and the dependency set. A human approves every change to it." ;;
 esac
 
 # Once /contract freezes its criteria (feature_list.json exists), the contract

@@ -15,6 +15,12 @@ calls `App\Actions\ConsumeConfirmToken` — `tests/Unit/ArchTest.php` fails the
 build when one does. `App\Ai\Tools\ProposeAction` is the single named exemption,
 and the only thing it writes is the proposal itself.
 
+A tool never uses an outbound channel either: no HTTP client, mail,
+notification or process. A tool already reads private data and may read
+untrusted content, so an outbound channel would complete the exfiltration
+path. `tests/Unit/ArchTest.php` fails the build for both `App\Ai\Tools` and
+`App\Mcp\Tools`.
+
 To make a model able to change something, register the action in
 `app/Ai/ConfirmableActions.php` and let the agent propose it. The proposal mints
 a single-use token; a human with the permission spends it at
@@ -43,8 +49,8 @@ permits.
 
 ## Model names are literals, tiers are config
 
-Never write a model-name literal in an agent. `config/ai.php` maps the two tiers
-— `cheap` and `smart` — onto provider and model, and an agent picks a tier. A
+Never write a model-name literal in an agent. `config/ai.php` maps three tiers,
+`cheap`, `standard` and `smart`, onto provider and model, and an agent picks a tier. A
 literal in a class is a model rename away from a production failure that no test
 sees.
 
@@ -63,11 +69,12 @@ and `Laravel\Ai\Contracts\HasMiddleware`, and never touches `DB` or the write
 actions. That is an architecture test, so a new agent that forgets fails the
 build rather than leaking across organizations.
 
-## `laravel/mcp` is transitive, not required
+## `laravel/mcp` is a direct requirement
 
-It arrives through `laravel/ai` and `laravel/boost`. Do not add it to
-`composer.json`; it moves with `laravel/ai`. `composer.lock` has the version. The server in `app/Mcp` ships
-disabled.
+`app/Mcp` builds on it, so `composer.json` requires it. Without that line only
+`laravel/boost` pulls it in, and Boost is a dev dependency, so a `--no-dev`
+install would lose the package. `composer.lock` has the version. The server in
+`app/Mcp` ships disabled.
 
 ## Map a block enum to its class with a const array
 

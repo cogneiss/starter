@@ -1,14 +1,12 @@
 <laravel-boost-guidelines>
 === .ai/ai rules ===
 
-- The AI layer is `app/Ai`, `app/Mcp`, `config/ai.php` and `tests/Evals`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing any of it. Tools read, writes are proposed and a human confirms them.
+- The AI layer is `app/Ai`, `app/Mcp`, `config/ai.php` and `tests/Evals`. Read `.ai/rules/ai.md` and load the `ai-layer` skill before editing. Tools read; writes are proposed and a human confirms.
 - Never print, log or commit a provider key. `.env.example` keeps them blank.
 
 === .ai/app.actions rules ===
 
-- This application uses the Action pattern and prefers for much logic to live in reusable and composable Action classes.
-- Actions live in `app/Actions`, they are named based on what they do, with no suffix.
-- Create new actions with `php artisan make:action "{name}" --no-interaction`
+- Logic lives in composable Action classes in `app/Actions`, named for what they do, no suffix. Create with `php artisan make:action "{name}" --no-interaction`.
 
 === .ai/general rules ===
 
@@ -16,13 +14,13 @@
 
 === .ai/platform-ops rules ===
 
-- The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing any of it.
+- The platform ops layer is `routes/api.php`, `app/Http/Controllers/Api`, `app/Webhooks`, `app/Admin`, `app/Support/Analytics`, `app/Support/Reporting`, `app/Support/Health` and their middleware. Read `.ai/rules/platform-ops.md` and load the `platform-ops` skill before editing.
 - Never log a token, a webhook secret, a signature or a provider key. Scope at the query level: a foreign id is a 404.
 
 === .ai/ux rules ===
 
-- The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it. Lists are server-driven; never filter a collection in React.
-- User-facing strings live in `lang/<locale>/` and reach the browser through `resources/js/lib/i18n.ts`. Colours come from the brand tokens and durations from `resources/js/lib/motion.ts`; no hex literals, no hard-coded durations.
+- The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing. Lists are server-driven; never filter a collection in React.
+- User-facing strings live in `lang/<locale>/` and reach React through `resources/js/lib/i18n.ts`. Colours come from brand tokens, durations from `resources/js/lib/motion.ts`; no hex literals or hard-coded durations.
 
 === foundation rules ===
 

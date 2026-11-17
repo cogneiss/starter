@@ -1,5 +1,5 @@
-- The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing any of it. Lists are server-driven; never filter a collection in React.
-- User-facing strings live in `lang/<locale>/` and reach the browser through `resources/js/lib/i18n.ts`. Colours come from the brand tokens and durations from `resources/js/lib/motion.ts`; no hex literals, no hard-coded durations.
+- The UX layer is `app/Support/ResourceQuery.php`, `app/Http/Controllers/Concerns/ListsResources.php`, `app/Onboarding`, `app/Imports`, `resources/js/components/data-table*.tsx` and `resources/js/lib`. Read `.ai/rules/ux.md` and load the `ux-kit` skill before editing. Lists are server-driven; never filter a collection in React.
+- User-facing strings live in `lang/<locale>/` and reach React through `resources/js/lib/i18n.ts`. Colours come from brand tokens, durations from `resources/js/lib/motion.ts`; no hex literals or hard-coded durations.
 
 @scoped(['app/Support/ResourceQuery.php', 'app/Http/Controllers/Concerns/**', 'app/Onboarding/**', 'app/Imports/**', 'resources/js/components/data-table*.tsx', 'resources/js/lib/**', 'app/Actions/ApplyBulkAction.php'])
 - Scoping is query-level. `findListed()` resolves a record inside the organization's own query, so a foreign id is a 404. A post-fetch `if ($record->organization_id !== ...)` is not a control.

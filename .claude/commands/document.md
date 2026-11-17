@@ -5,8 +5,9 @@ allowed-tools: Bash(php artisan wiki:audit), Bash(php artisan wiki:lint), Bash(g
 
 # /document
 
-`wiki/` is the knowledge base an agent reads before it changes anything here, so
-a page that reads confidently and is wrong is worse than no page. This command
+`wiki/` is the knowledge base an agent opens when a task touches a file a page
+lists in `code_refs`, so a page that reads confidently and is wrong is worse
+than no page. This command
 brings the wiki back in line with the code, and nothing else.
 
 The worklist is produced by `php artisan wiki:audit`, which is deterministic and
@@ -41,7 +42,7 @@ prose. Run `php artisan wiki:audit` first if `wiki/_meta/audit.json` looks old.
 - **Never bump `updated:` on its own.** It clears the stale gate and leaves the
   page wrong, which is the one outcome worse than the page being flagged. Reread
   the code first, always.
-- **Never edit generated files:** `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
+- **Never edit generated files:** `AGENTS.md`,
   `resources/js/types/generated.d.ts`, `CHANGELOG.md`,
   `wiki/_meta/audit.json`. Change the source and regenerate.
 - **Never touch a `status: current` page that the audit did not list.** The

@@ -1,6 +1,4 @@
-- This application uses the Action pattern and prefers for much logic to live in reusable and composable Action classes.
-- Actions live in `app/Actions`, they are named based on what they do, with no suffix.
-- Create new actions with `php artisan make:action "{name}" --no-interaction`
+- Logic lives in composable Action classes in `app/Actions`, named for what they do, no suffix. Create with `php artisan make:action "{name}" --no-interaction`.
 
 @scoped(['app/Actions/**'])
 - Inject dependencies via constructor using private properties.

@@ -21,7 +21,6 @@ reviews:
     - "!resources/js/components/ui/**"
     - "!AGENTS.md"
     - "!CLAUDE.md"
-    - "!GEMINI.md"
     - "!CHANGELOG.md"
     - "!bun.lock"
     - "!composer.lock"
