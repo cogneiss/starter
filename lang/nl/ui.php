@@ -15,6 +15,13 @@ return [
         'nl' => 'Nederlands',
     ],
 
+    'impersonation' => [
+        'banner' => 'Je bekijkt dit account als :name.',
+        'banner_unknown' => 'Je bekijkt dit account.',
+        'region' => 'Meekijken',
+        'stop' => 'Stop met meekijken',
+    ],
+
     'announcements' => [
         'region' => 'Mededelingen',
         'dismiss' => 'Mededeling sluiten',
@@ -64,6 +71,7 @@ return [
         'sending' => 'Aan het nadenken…',
         'you' => 'Jij',
         'assistant' => 'Assistent',
+        'ai_label' => 'Door AI gegenereerd',
         'intro' => 'Stel een vraag om te beginnen. De assistent wijzigt nooit iets zonder jouw bevestiging.',
         'failed' => 'De assistent kon niet antwoorden. Je bericht is niet kwijt, probeer het opnieuw.',
         'quota' => 'Je organisatie heeft de AI-ruimte voor nu opgebruikt. Die wordt zo weer aangevuld.',

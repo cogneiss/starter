@@ -4,28 +4,26 @@ declare(strict_types=1);
 
 namespace App\Support\Health\Checks;
 
-use App\Enums\HealthStatus;
 use App\Jobs\QueueHeartbeat;
-use App\Support\Health\Check;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
+use Spatie\Health\Checks\Check;
+use Spatie\Health\Checks\Result;
 
-final class QueueCheck implements Check
+final class QueueCheck extends Check
 {
-    public function name(): string
-    {
-        return 'queue';
-    }
+    protected ?string $name = 'queue';
 
     /**
      * A real job round-trip: dispatch a heartbeat and wait for a worker to
-     * mark it processed. A connection-string ping would pass with every
-     * worker dead, which is exactly the outage this check exists to see.
+     * mark it processed. The package's check reads a heartbeat a scheduled
+     * command dispatched earlier, which answers a different question and
+     * cannot answer inside one request.
      */
-    public function run(): HealthStatus
+    public function run(): Result
     {
-        return rescue(static function (): HealthStatus {
+        return rescue(static function (): Result {
             $token = 'health:queue:'.Str::random(16);
 
             dispatch(new QueueHeartbeat($token));
@@ -34,13 +32,13 @@ final class QueueCheck implements Check
 
             do {
                 if (Cache::pull($token) === true) {
-                    return HealthStatus::Ok;
+                    return Result::make()->ok();
                 }
 
                 Sleep::usleep(50_000);
             } while (microtime(true) < $deadline);
 
-            return HealthStatus::Failed;
-        }, HealthStatus::Failed, report: false);
+            return Result::make()->failed('The heartbeat job was not processed in time.');
+        }, static fn (): Result => Result::make()->failed('The queue could not be reached.'), report: false);
     }
 }

@@ -21,13 +21,11 @@ use App\Models\User;
 use App\Resources\ResourceRegistry;
 use App\Support\Analytics\NullAnalyticsReporter;
 use App\Support\Analytics\PostHogReporter;
-use App\Support\Health\Checks\CacheCheck;
 use App\Support\Health\Checks\DatabaseCheck;
 use App\Support\Health\Checks\DebugModeCheck;
 use App\Support\Health\Checks\DiskCheck;
 use App\Support\Health\Checks\QueueCheck;
 use App\Support\Health\Checks\ScheduleCheck;
-use App\Support\Health\HealthReport;
 use App\Support\OrganizationContext;
 use App\Support\OrganizationDatabaseChannel;
 use App\Support\Reporting\NullErrorReporter;
@@ -42,6 +40,8 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Health\Checks\Checks\CacheCheck;
+use Spatie\Health\Facades\Health;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -81,19 +81,19 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AnalyticsReporter::class, fn (): AnalyticsReporter => config('services.posthog.key') === null
             ? new NullAnalyticsReporter()
             : new PostHogReporter());
-
-        $this->app->bind(HealthReport::class, fn (): HealthReport => new HealthReport([
-            new DatabaseCheck(),
-            new CacheCheck(),
-            new QueueCheck(),
-            new ScheduleCheck(),
-            new DiskCheck(),
-            new DebugModeCheck(),
-        ]));
     }
 
     public function boot(): void
     {
+        Health::checks([
+            DatabaseCheck::new(),
+            CacheCheck::new()->name('cache'),
+            QueueCheck::new(),
+            ScheduleCheck::new(),
+            DiskCheck::new(),
+            DebugModeCheck::new(),
+        ]);
+
         Sanctum::usePersonalAccessTokenModel(ApiToken::class);
 
         // Platform staff only. A flag on the user record rather than a

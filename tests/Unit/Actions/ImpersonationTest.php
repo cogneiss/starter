@@ -35,7 +35,13 @@ it('refuses to nest impersonations', function (): void {
 });
 
 it('leaves a session with nothing to restore alone', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
     expect(resolve(StopImpersonation::class)->handle())->toBeNull();
+
+    $this->assertAuthenticatedAs($user);
 });
 
 it('does not stamp an audit row that is already closed', function (): void {
@@ -58,4 +64,13 @@ it('reports no impersonator or log for a clean session', function (): void {
     expect($impersonation->active())->toBeFalse()
         ->and($impersonation->impersonator())->toBeNull()
         ->and($impersonation->log())->toBeNull();
+});
+
+it('ignores an impersonator id that is not a string', function (): void {
+    session()->put(Impersonation::USER_KEY, 42);
+
+    $impersonation = resolve(Impersonation::class);
+
+    expect($impersonation->impersonatorId())->toBeNull()
+        ->and($impersonation->impersonator())->toBeNull();
 });

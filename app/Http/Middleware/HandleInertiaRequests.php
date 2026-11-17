@@ -17,12 +17,15 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Support\Impersonation;
 use App\Support\OrganizationContext;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Lang;
+use Inertia\Inertia;
 use Inertia\Middleware;
+use Symfony\Component\HttpFoundation\Response;
 
 final class HandleInertiaRequests extends Middleware
 {
@@ -37,6 +40,19 @@ final class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
+
+    /**
+     * Server rendering is opt-in and only for guests: the package treats a
+     * disable condition as the whole answer, so the flag is read here too.
+     *
+     * @see https://inertiajs.com/server-side-rendering
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        Inertia::disableSsr(fn (): bool => ! config()->boolean('inertia.ssr.enabled') || $request->user() !== null);
+
+        return parent::handle($request, $next);
+    }
 
     /**
      * @see https://inertiajs.com/asset-versioning
@@ -56,8 +72,6 @@ final class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         $organization = resolve(OrganizationContext::class)->get();
-        $impersonator = resolve(Impersonation::class)->impersonator();
-
         $unread = $user instanceof User && $organization instanceof Organization
             ? $this->unreadForOrganization($user, $organization)
             : null;
@@ -71,7 +85,7 @@ final class HandleInertiaRequests extends Middleware
             ],
             'organization' => $organization instanceof Organization ? OrganizationData::fromModel($organization) : null,
             'organizations' => $user instanceof User ? $this->organizationsFor($user) : [],
-            'impersonating' => $impersonator instanceof User ? ImpersonatorData::fromModel($impersonator) : null,
+            'impersonating' => $this->impersonating(),
             'announcements' => $user instanceof User && $organization instanceof Organization
                 ? $this->announcementsFor($user, $organization)
                 : [],
@@ -157,6 +171,25 @@ final class HandleInertiaRequests extends Middleware
         $flattened = Arr::dot($messages);
 
         return $flattened;
+    }
+
+    /**
+     * Shared whenever the session is impersonating, so the Stop button survives
+     * an impersonator who can no longer be loaded; the name is null then.
+     */
+    private function impersonating(): ?ImpersonatorData
+    {
+        $impersonation = resolve(Impersonation::class);
+
+        if (! $impersonation->active()) {
+            return null;
+        }
+
+        $impersonator = $impersonation->impersonator();
+
+        return $impersonator instanceof User
+            ? ImpersonatorData::fromModel($impersonator)
+            : new ImpersonatorData(id: (string) $impersonation->impersonatorId(), name: null);
     }
 
     /**

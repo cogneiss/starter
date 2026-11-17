@@ -11,8 +11,7 @@
         "resources/js/components/app-header.tsx",
         "resources/js/layouts/app/app-header-layout.tsx",
         "resources/js/layouts/auth/auth-card-layout.tsx",
-        "resources/js/layouts/auth/auth-split-layout.tsx",
-        "resources/js/hooks/use-mobile.tsx"
+        "resources/js/layouts/auth/auth-split-layout.tsx"
     ],
     "ignoreDependencies": [
         "concurrently",

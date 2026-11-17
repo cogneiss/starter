@@ -13,7 +13,7 @@ final class ImpersonatorData extends Data
 {
     public function __construct(
         public string $id,
-        public string $name,
+        public ?string $name,
     ) {}
 
     public static function fromModel(User $user): self

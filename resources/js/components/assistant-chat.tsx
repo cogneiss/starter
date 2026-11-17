@@ -3,6 +3,7 @@ import { SendHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AiBlocks } from '@/components/ai/blocks/AiBlocks';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { postJson } from '@/lib/ai-blocks';
@@ -93,7 +94,10 @@ export function AssistantChat({ conversationId, initialMessages }: Props) {
 
     return (
         <div className="flex h-full flex-col gap-4" data-test="assistant-chat">
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
+            <div
+                role="log"
+                className="flex flex-1 flex-col gap-4 overflow-y-auto"
+            >
                 {messages.length === 0 && !sending && (
                     <p
                         className="py-10 text-center text-sm text-muted-foreground"
@@ -114,10 +118,20 @@ export function AssistantChat({ conversationId, initialMessages }: Props) {
                         style={transitionStyle('rise')}
                         data-test={`assistant-message-${message.role}`}
                     >
-                        <p className="mb-1 text-xs opacity-70">
-                            {message.role === 'user'
-                                ? t('assistant.you')
-                                : t('assistant.assistant')}
+                        <p className="mb-1 flex items-center gap-2 text-xs">
+                            <span className="opacity-70">
+                                {message.role === 'user'
+                                    ? t('assistant.you')
+                                    : t('assistant.assistant')}
+                            </span>
+                            {message.role === 'assistant' && (
+                                <Badge
+                                    variant="outline"
+                                    data-test="ai-generated-label"
+                                >
+                                    {t('assistant.ai_label')}
+                                </Badge>
+                            )}
                         </p>
                         <p className="whitespace-pre-wrap">{message.text}</p>
                         {message.blocks.length > 0 && (

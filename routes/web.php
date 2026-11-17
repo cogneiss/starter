@@ -281,9 +281,6 @@ Route::middleware(['auth', 'two-factor', HandlePrecognitiveRequests::class])->gr
         ->name('passkey.show');
 
     // User Impersonation...
-    Route::post('users/{user}/impersonation', [UserImpersonationController::class, 'store'])
-        ->middleware('not-impersonating')
-        ->name('user-impersonation.store');
     Route::delete('impersonation', [UserImpersonationController::class, 'destroy'])
         ->name('user-impersonation.destroy');
 
@@ -354,6 +351,8 @@ Route::middleware(['guest', HandlePrecognitiveRequests::class])->group(function 
 // The gate denies with a 404: to anyone without the platform ability, these
 // routes do not exist.
 Route::middleware(['auth', 'two-factor', EnsurePlatformAdmin::class])->group(function (): void {
+    Route::post('users/{user}/impersonation', [UserImpersonationController::class, 'store'])
+        ->name('user-impersonation.store');
     Route::get('admin', AdminHealthController::class)
         ->name('admin.index');
     Route::get('admin/{page}', [AdminResourceController::class, 'index'])

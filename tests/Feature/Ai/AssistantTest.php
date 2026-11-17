@@ -15,8 +15,10 @@ use App\Models\User;
 use App\Support\OrganizationContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Str;
+use Laravel\Ai\Gateway\TextGenerationOptions;
 use Laravel\Ai\Models\Conversation;
 use Laravel\Ai\Models\ConversationMessage;
+use Laravel\Ai\Prompts\AgentPrompt;
 
 /**
  * A member of an organization with the assistant switched on.
@@ -197,4 +199,26 @@ it('lifts only confirm blocks out of tool results', function (): void {
 
     expect($blocks)->toHaveCount(1)
         ->and($blocks[0]['summary'])->toBe('Invite a@example.com.');
+});
+
+it('answers on the standard tier', function (): void {
+    [$user, $organization] = assistantMember();
+    config()->set('ai.providers.anthropic.key', 'test-only');
+    config()->set('ai.providers.openai.key', 'test-only');
+
+    Assistant::fake(['Done.'])->preventStrayPrompts();
+
+    new Assistant($user, $organization)->continue(assistantConversation($user, $organization)->id, as: $user)->reply('Hi');
+
+    Assistant::assertPrompted(fn (AgentPrompt $prompt): bool => $prompt->provider->name() === 'anthropic'
+        && $prompt->model === 'claude-sonnet-5-5');
+});
+
+it('asks the provider to cache the assistant instructions and tool definitions', function (): void {
+    [$user, $organization] = assistantMember();
+
+    $options = TextGenerationOptions::forAgent(new Assistant($user, $organization));
+
+    expect($options->cacheInstructions)->not->toBeNull()
+        ->and($options->cacheToolDefinitions)->not->toBeNull();
 });

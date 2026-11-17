@@ -34,4 +34,13 @@ return [
     'guidelines' => [
         'exclude' => ['deployments', 'wayfinder/core', 'spatie/laravel-activitylog/core'],
     ],
+
+    /**
+     * Boost renders the guideline block into CLAUDE.md whenever that file
+     * exists. Pointing Claude Code at AGENTS.md keeps one rendered copy and
+     * leaves CLAUDE.md as the one-line `@AGENTS.md` import.
+     */
+    'agents' => [
+        'claude_code' => ['guidelines_path' => 'AGENTS.md'],
+    ],
 ];

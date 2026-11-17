@@ -54,6 +54,35 @@ it('signs a new user in from the provider callback', function (): void {
         ->and(SocialAccount::query()->count())->toBe(1);
 });
 
+it('sends a user with two-factor enabled to the challenge instead of signing them in', function (): void {
+    $user = User::factory()->create([
+        'email' => 'ada@example.com',
+        'two_factor_secret' => encrypt('secret'),
+        'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
+        'two_factor_confirmed_at' => now(),
+    ]);
+
+    fakeSocialite();
+
+    $this->get(route('social-auth.update', 'github'))
+        ->assertRedirectToRoute('two-factor.login')
+        ->assertSessionHas('login.id', $user->getKey());
+
+    $this->assertGuest();
+});
+
+it('signs a user without two-factor straight in', function (): void {
+    $user = User::factory()->withoutTwoFactor()->create(['email' => 'ada@example.com']);
+
+    fakeSocialite();
+
+    $this->get(route('social-auth.update', 'github'))
+        ->assertRedirect(route('dashboard', absolute: false))
+        ->assertSessionMissing('login.id');
+
+    $this->assertAuthenticatedAs($user);
+});
+
 it('refuses the callback when the local account is unverified', function (): void {
     User::factory()->unverified()->create(['email' => 'ada@example.com']);
 

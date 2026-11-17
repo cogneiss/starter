@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Contracts\FileScanner;
 use App\Enums\HealthStatus;
 use App\Support\AiAvailability;
+use App\Support\AiPricing;
 use App\Support\AiRetrieval;
 use App\Support\Health\HealthReport;
 use App\Support\Scanners\NullScanner;
@@ -30,6 +31,13 @@ use Laravel\Ai\Enums\Lab;
 final class DoctorCommand extends Command
 {
     private const array REQUIRED_EXTENSIONS = ['pdo_sqlite', 'mbstring', 'openssl', 'intl'];
+
+    /**
+     * The newest PHP patch release as of 2026-10-21. Older patches still boot,
+     * so falling below it warns and never fails; raise it when a newer patch
+     * ships.
+     */
+    private const string PHP_PATCH_FLOOR = '8.5.12';
 
     private const string GENERATED_TYPES = 'resources/js/types/generated.d.ts';
 
@@ -348,6 +356,8 @@ final class DoctorCommand extends Command
                 'set' => $this->hasVectorExtension(),
                 'disables' => 'vector search is unavailable',
             ],
+            $this->phpPatchLevel(),
+            $this->sessionUploadProgress(),
             $this->retrieval(),
             $this->aiProviders(),
             $this->aiGateway(),
@@ -358,6 +368,46 @@ final class DoctorCommand extends Command
             $this->credential('Slack notifications', 'Slack notifications are dropped', [
                 'services.slack.notifications.bot_user_oauth_token',
             ]),
+        ];
+    }
+
+    /**
+     * Reported rather than checked: an older patch still boots. The version is
+     * read through `doctor.php_version`, so a test can stand in for the runtime.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function phpPatchLevel(): array
+    {
+        $version = config()->string('doctor.php_version', PHP_VERSION);
+
+        return [
+            'name' => 'PHP patch level',
+            'set' => version_compare($version, self::PHP_PATCH_FLOOR, '>='),
+            'disables' => sprintf(
+                'PHP %s is older than %s, the patch release current on 2026-10-21. Update PHP 8.5 in Herd',
+                $version,
+                self::PHP_PATCH_FLOOR,
+            ),
+        ];
+    }
+
+    /**
+     * The application never uses upload progress, and with it on a request can
+     * write attacker-chosen data into a session file, which has been used as a
+     * file-inclusion gadget. The ini value is read through
+     * `doctor.session_upload_progress`, so a test can stand in for the runtime.
+     *
+     * @return array{name: string, set: bool, disables: string}
+     */
+    private function sessionUploadProgress(): array
+    {
+        $value = config()->string('doctor.session_upload_progress', (string) ini_get('session.upload_progress.enabled'));
+
+        return [
+            'name' => 'Session upload progress off',
+            'set' => ! filter_var($value, FILTER_VALIDATE_BOOLEAN),
+            'disables' => 'session.upload_progress.enabled is on, so a request can write attacker-chosen data into a session file. Set session.upload_progress.enabled = Off in php.ini',
         ];
     }
 
@@ -433,9 +483,9 @@ final class DoctorCommand extends Command
 
     /**
      * Whether every model this application can actually reach has a price. A
-     * configured model with no entry in `ai.pricing` bills as zero forever, and
-     * silent zero-cost accounting is worse than an unpriced model: the budget
-     * quota never trips, so nothing ever tells anyone.
+     * configured model with no entry in `ai.pricing` bills at the
+     * `ai.pricing_fallback` ceiling, so its spend is overstated until someone
+     * adds the row.
      *
      * @return array{name: string, set: bool, disables: string}
      */
@@ -454,7 +504,7 @@ final class DoctorCommand extends Command
                 continue;
             }
 
-            if (! is_array(config(sprintf('ai.pricing.%s.%s', $provider->value, $model)))) {
+            if (AiPricing::listed($provider->value, $model) === null) {
                 $unpriced[] = sprintf('%s (%s)', $model, $tier);
             }
         }
@@ -464,7 +514,7 @@ final class DoctorCommand extends Command
                 ? 'AI pricing'
                 : sprintf('AI pricing: no price for %s', implode(', ', $unpriced)),
             'set' => $unpriced === [],
-            'disables' => 'those runs are recorded as costing nothing, so the budget quota never trips',
+            'disables' => 'those runs bill at the pricing_fallback ceiling, so spend is overstated',
         ];
     }
 

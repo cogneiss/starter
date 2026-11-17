@@ -8,6 +8,7 @@ use App\Enums\MembershipStatus;
 use App\Models\Activity;
 use App\Models\ImpersonationLog;
 use App\Models\LoginHistory;
+use App\Support\Impersonation;
 use App\Support\OrganizationContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
  * config('audit.models') and config('audit.extra') are audited on create,
  * update and delete;
  * ImpersonationLog and LoginHistory keep their own tables and bridge one
- * activity entry on create. Created and deleted entries store no attribute
+ * activity entry on create, and ImpersonationLog one more when it ends. Created and deleted entries store no attribute
  * values — only updates store a redacted before/after of what changed —
  * so a secret written at creation never reaches the audit table.
  */
@@ -40,8 +41,8 @@ final class RecordModelActivity
         $action = str($event)->between('eloquent.', ':')->value();
 
         if (in_array($model::class, self::BRIDGED, true)) {
-            if ($action === 'created') {
-                $this->recordBridge($model);
+            if ($action === 'created' || $this->endedImpersonation($model, $action)) {
+                $this->recordBridge($model, $action);
             }
 
             return;
@@ -56,7 +57,12 @@ final class RecordModelActivity
         $this->write($model, $action, $action === 'updated' ? $this->changes($model) : null);
     }
 
-    private function recordBridge(Model $model): void
+    private function endedImpersonation(Model $model, string $action): bool
+    {
+        return $model instanceof ImpersonationLog && $action === 'updated' && $model->wasChanged('ended_at');
+    }
+
+    private function recordBridge(Model $model, string $action): void
     {
         $organizationId = $model->getAttribute('organization_id')
             ?? resolve(OrganizationContext::class)->id();
@@ -72,7 +78,7 @@ final class RecordModelActivity
             return;
         }
 
-        $this->write($model, 'created', null, $organizationId);
+        $this->write($model, $action, null, $organizationId);
     }
 
     /**
@@ -96,8 +102,22 @@ final class RecordModelActivity
             'event' => $action,
             'causer_type' => Auth::user()?->getMorphClass(),
             'causer_id' => Auth::id(),
-            'properties' => $changes,
+            'properties' => $this->withImpersonator($changes),
         ]);
+    }
+
+    /**
+     * Stamps the impersonating admin on the row. The causer stays the person
+     * being impersonated, the principal every tenant scope reads.
+     *
+     * @param  array{before: array<string, mixed>, after: array<string, mixed>}|null  $changes
+     * @return array<string, mixed>|null
+     */
+    private function withImpersonator(?array $changes): ?array
+    {
+        $impersonatorId = resolve(Impersonation::class)->impersonatorId();
+
+        return $impersonatorId === null ? $changes : [...$changes ?? [], 'impersonator_id' => $impersonatorId];
     }
 
     /**

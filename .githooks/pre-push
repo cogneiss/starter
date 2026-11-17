@@ -4,7 +4,7 @@
 # so nothing has to be remembered and CI is a second opinion rather than the
 # first. It covers lint, Larastan + tsc, strict PHPStan, 100% type coverage, the
 # suite at 100% coverage (Xdebug must be loadable; see wiki/operations/setup.md),
-# dead code, unused packages, the wiki, llms.txt, the audit and duplication. A
+# dead code, unused packages, the wiki, the audit and duplication. A
 # sloppy report follows that never blocks. Mutation testing stays on demand:
 # composer test:mutate. Takes a few minutes.
 

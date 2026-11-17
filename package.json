@@ -10,6 +10,7 @@
         "test:dupes": "bunx jscpd@5.4.2 resources/js --min-tokens 50 --min-lines 6 --threshold 3 --ignore \"**/components/ui/**,**/actions/**,**/routes/**,**/wayfinder/**,**/generated.d.ts\" --reporters console --silent",
         "knip": "knip",
         "knip:fix": "knip --fix",
+        "test:js": "vp test run --dir resources/js",
         "test:types": "tsc --noEmit",
         "types": "tsc --noEmit"
     },
@@ -31,6 +32,7 @@
         "@base-ui/react": "^1.9.0",
         "@inertiajs/react": "^3.11.0",
         "@inertiajs/vite": "^3.11.0",
+        "@laravel/echo-react": "^2.6.3",
         "@laravel/passkeys": "^0.4.1",
         "@tailwindcss/vite": "^4.3.5",
         "@tanstack/react-table": "^9.3.1",
@@ -39,11 +41,10 @@
         "@vitejs/plugin-react": "^6.3.0",
         "babel-plugin-react-compiler": "^1.0.0",
         "class-variance-authority": "^0.7.1",
-        "clsx": "^2.1.1",
+        "cn": "^0.5.2",
         "concurrently": "^10.0.7",
         "input-otp": "^1.5.0",
         "laravel-echo": "^2.6.3",
-        "laravel-precognition-react-inertia": "^0.8.0",
         "laravel-vite-plugin": "^3.2.1",
         "lucide-react": "^1.73.0",
         "pusher-js": "^8.6.0",
@@ -51,17 +52,17 @@
         "react-dom": "^19.3.1",
         "recharts": "^3.10.1",
         "sonner": "^2.0.8",
-        "tailwind-merge": "^3.7.0",
         "tailwindcss": "^4.3.5",
         "typescript": "^7.0.2"
     },
+    "trustedDependencies": [],
     "overrides": {
         "postcss": "^8.5.26",
         "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0"
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.5",
-        "@rollup/rollup-linux-x64-gnu": "4.68.3",
+        "@rollup/rollup-linux-x64-gnu": "4.68.4",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.3.5",
         "lightningcss-linux-x64-gnu": "^1.33.0"
     },

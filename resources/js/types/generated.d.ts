@@ -125,7 +125,7 @@ export type FilterType = 'select' | 'multi-select' | 'boolean' | 'range' | 'date
 export type HealthStatus = 'ok' | 'degraded' | 'failed';
 export type Impersonator = {
 id: string,
-name: string,
+name: string | null,
 };
 export type InviteMember = {
 email: string,

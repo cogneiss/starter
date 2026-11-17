@@ -1,5 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
-import { useForm } from 'laravel-precognition-react-inertia';
+import { Head, Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import UserProfileController from '@/actions/App/Http/Controllers/UserProfileController';
 import DeleteUser from '@/components/delete-user';

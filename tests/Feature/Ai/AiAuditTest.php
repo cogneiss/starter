@@ -36,10 +36,10 @@ function auditMember(): array
     return [$membership->user, $membership->organization];
 }
 
-function auditStep(Agent $agent, ?string $invocationId = null): PendingStep
+function auditStep(Agent $agent, ?string $invocationId = null, int $number = 0): PendingStep
 {
     return new PendingStep(
-        number: 0,
+        number: $number,
         isFinalStep: false,
         provider: 'anthropic',
         model: 'claude-haiku-5-5',
@@ -85,7 +85,7 @@ it('bills an unpriced model at the fallback ceiling rather than at zero', functi
     $log = AiAuditLog::query()->sole();
 
     expect($log->cost_micros)->toBe(
-        intdiv($log->prompt_tokens * 4_000_000, 1_000_000) + intdiv($log->completion_tokens * 20_000_000, 1_000_000),
+        intdiv($log->prompt_tokens * 10_000_000, 1_000_000) + intdiv($log->completion_tokens * 50_000_000, 1_000_000),
     );
 });
 
@@ -112,7 +112,7 @@ it('charges the fallback ceiling for a model, or a provider, that has no configu
 
     $usage = new Usage(inputTokens: 2_000_000, outputTokens: 1_000_000);
 
-    $ceiling = 2 * 4_000_000 + 20_000_000;
+    $ceiling = 2 * 10_000_000 + 50_000_000;
 
     expect(AiPricing::costMicros('anthropic', 'some-unknown-model', $usage))->toBe($ceiling)
         ->and(AiPricing::costMicros('unknown-provider', 'claude-haiku-5-5', $usage))->toBe($ceiling)
@@ -241,7 +241,7 @@ it('groups every step of one invocation under the SDK invocation id', function (
     $response = new StepResponse('Done.', [], FinishReason::Stop, new TextUsage(1, 1), new Meta('anthropic', 'claude-haiku-5-5'));
 
     foreach ([0, 1] as $number) {
-        resolve(RecordAudit::class)->handle(auditStep($agent, 'run-1'), fn (): StepResult => new StepResult($response))->response();
+        resolve(RecordAudit::class)->handle(auditStep($agent, 'run-1', $number), fn (): StepResult => new StepResult($response))->response();
     }
 
     resolve(OrganizationContext::class)->set($organization);
@@ -319,4 +319,59 @@ it('rethrows the provider failure when the error row cannot be written either', 
         ->toThrow(RuntimeException::class, 'Provider down.');
 
     $this->assertDatabaseCount('ai_audit_logs', 0);
+});
+
+it('records a dated snapshot model id at the base model price', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+
+    $response = new StepResponse(
+        'Answered.',
+        [],
+        FinishReason::Stop,
+        new TextUsage(inputTokens: 1_000_000, outputTokens: 1_000_000),
+        new Meta('anthropic', 'claude-opus-5-5-20261001'),
+    );
+
+    resolve(RecordAudit::class)->handle(auditStep($agent), fn (): StepResult => new StepResult($response))->response();
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    expect(AiAuditLog::query()->sole()->cost_micros)->toBe(24_000_000);
+});
+
+it('meters a retried run once', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+    $response = new StepResponse('Done.', [], FinishReason::Stop, new TextUsage(1_000_000, 0), new Meta('anthropic', 'claude-sonnet-5-5'));
+
+    foreach ([1, 2] as $attempt) {
+        resolve(RecordAudit::class)->handle(auditStep($agent, 'run-replayed'), fn (): StepResult => new StepResult($response))->response();
+    }
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    expect(AiAuditLog::query()->count())->toBe(1)
+        ->and(AiCreditLedgerEntry::query()->count())->toBe(1)
+        ->and(AiCreditLedgerEntry::query()->sole()->delta_micros)->toBe(-2_000_000);
+});
+
+it('records the cache tokens of a step and bills them at the cache rates', function (): void {
+    [$user, $organization] = auditMember();
+
+    $agent = new KernelFixtureAgent($user, $organization);
+    $response = new StepResponse('Done.', [], FinishReason::Stop, new TextUsage(1_000_000, 0, 600_000, 200_000), new Meta('anthropic', 'claude-sonnet-5-5'));
+
+    resolve(RecordAudit::class)->handle(auditStep($agent, 'run-cache'), fn (): StepResult => new StepResult($response))->response();
+
+    resolve(OrganizationContext::class)->set($organization);
+
+    $log = AiAuditLog::query()->sole();
+
+    expect($log->cache_read_tokens)->toBe(600_000)
+        ->and($log->cache_write_tokens)->toBe(200_000)
+        ->and($log->prompt_tokens)->toBe(1_000_000)
+        ->and($log->cost_micros)->toBe(400_000 + 60_000 + 500_000);
 });

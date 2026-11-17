@@ -51,6 +51,29 @@ it('shares the impersonation banner state while impersonating', function (): voi
             ->where('impersonating.name', $admin->name));
 });
 
+it('still shares the banner state when the impersonator no longer exists', function (): void {
+    $organization = Organization::factory()->create();
+    $target = User::factory()->forOrganization($organization)->create();
+    $admin = User::factory()->superAdmin()->create();
+    $log = ImpersonationLog::factory()->create([
+        'impersonator_user_id' => $admin->id,
+        'impersonated_user_id' => $target->id,
+    ]);
+    $adminId = $admin->id;
+    $admin->forceDelete();
+
+    $this->actingAs($target)
+        ->withSession([
+            Impersonation::USER_KEY => $adminId,
+            Impersonation::LOG_KEY => $log->id,
+        ])
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('impersonating.id', $adminId)
+            ->where('impersonating.name', null));
+});
+
 it('still forbids sensitive routes during an impersonation', function (): void {
     $organization = Organization::factory()->create();
     $target = User::factory()->forOrganization($organization)->create();

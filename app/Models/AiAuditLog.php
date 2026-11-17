@@ -23,12 +23,15 @@ use LogicException;
  * @property-read string $organization_id
  * @property-read string|null $user_id
  * @property-read string|null $run_id
+ * @property-read int|null $step_number
  * @property-read string $agent
  * @property-read string|null $provider
  * @property-read string|null $model
  * @property-read string|null $tier
  * @property-read int $prompt_tokens
  * @property-read int $completion_tokens
+ * @property-read int $cache_read_tokens
+ * @property-read int $cache_write_tokens
  * @property-read int $total_tokens
  * @property-read int $cost_micros
  * @property-read int $duration_ms
@@ -88,6 +91,9 @@ final class AiAuditLog extends Model
             'user_id' => 'string',
             'prompt_tokens' => 'integer',
             'completion_tokens' => 'integer',
+            'cache_read_tokens' => 'integer',
+            'cache_write_tokens' => 'integer',
+            'step_number' => 'integer',
             'total_tokens' => 'integer',
             'cost_micros' => 'integer',
             'duration_ms' => 'integer',

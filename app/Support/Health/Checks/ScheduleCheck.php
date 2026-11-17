@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Health\Checks;
 
-use App\Enums\HealthStatus;
-use App\Support\Health\Check;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Health\Checks\Check;
+use Spatie\Health\Checks\Result;
 
-final class ScheduleCheck implements Check
+final class ScheduleCheck extends Check
 {
     /**
      * The cache key the scheduled heartbeat in routes/console.php stamps
@@ -16,21 +16,22 @@ final class ScheduleCheck implements Check
      */
     public const string KEY = 'health:schedule';
 
-    public function name(): string
-    {
-        return 'schedule';
-    }
+    protected ?string $name = 'schedule';
 
-    public function run(): HealthStatus
+    /**
+     * Stale is a warning, not the package's failure, so a fresh clone that
+     * has not run its scheduler yet still answers 200.
+     */
+    public function run(): Result
     {
         $last = Cache::get(self::KEY);
 
         if (! is_int($last)) {
-            return HealthStatus::Degraded;
+            return Result::make()->warning('The schedule has not run yet.');
         }
 
         return now()->getTimestamp() - $last <= config()->integer('health.schedule_max_age_minutes') * 60
-            ? HealthStatus::Ok
-            : HealthStatus::Degraded;
+            ? Result::make()->ok()
+            : Result::make()->warning('The schedule heartbeat is stale.');
     }
 }

@@ -321,8 +321,8 @@ it('reports the quotas an AI request is measured against', function (): void {
 });
 
 /**
- * A configured model nobody has priced bills as zero forever, so the budget
- * quota never trips and nothing ever says why. Doctor says it out loud.
+ * A configured model nobody has priced bills at the fallback ceiling, so spend
+ * is overstated and nothing ever says why. Doctor says it out loud.
  */
 it('warns about a configured model with no pricing', function (): void {
     config()->set('ai.tiers.smart.model', 'claude-opus-nobody-priced');
@@ -336,7 +336,7 @@ it('warns about a configured model with no pricing', function (): void {
 
     expect($pricing['set'])->toBeFalse()
         ->and($pricing['name'])->toContain('claude-opus-nobody-priced (smart)')
-        ->and($pricing['disables'])->toContain('costing nothing');
+        ->and($pricing['disables'])->toContain('pricing_fallback');
 });
 
 it('says nothing about pricing when every configured model has a price', function (): void {
@@ -379,4 +379,61 @@ it('reports the AI providers by name and the gateway, never a key value', functi
         ->and($output)->toContain('AI live gateway (default tier: cheap)')
         ->and($output)->not->toContain($key)
         ->and($output)->not->toContain(mb_substr($key, 0, 6));
+});
+
+/**
+ * An older patch still boots, so it is reported as off and never moves the exit code.
+ */
+it('warns about a PHP patch older than the floor without failing', function (string $version, bool $set): void {
+    config()->set('doctor.php_version', $version);
+
+    $exitCode = Artisan::call('app:doctor', ['--json' => true]);
+
+    $report = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+    $patch = collect($report['optional'])->firstWhere('name', 'PHP patch level');
+
+    expect($patch['set'])->toBe($set)
+        ->and($report['ok'])->toBe($exitCode === 0);
+
+    if (! $set) {
+        expect($patch['disables'])->toContain('8.5.12')->toContain('2026-10-21');
+    }
+})->with([
+    'older patch' => ['8.5.11', false],
+    'the floor' => ['8.5.12', true],
+    'a newer minor' => ['8.6.0', true],
+]);
+
+it('does not let an old PHP patch fail the doctor', function (): void {
+    $baseline = Artisan::call('app:doctor', ['--json' => true]);
+
+    config()->set('doctor.php_version', '8.5.0');
+
+    expect(Artisan::call('app:doctor', ['--json' => true]))->toBe($baseline);
+});
+
+it('warns when session upload progress is enabled and tells the operator to turn it off', function (string $value, bool $set): void {
+    config()->set('doctor.session_upload_progress', $value);
+
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $entry = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'])
+        ->firstWhere('name', 'Session upload progress off');
+
+    expect($entry['set'])->toBe($set)
+        ->and($entry['disables'])->toContain('session.upload_progress.enabled = Off')->toContain('php.ini');
+})->with([
+    'on' => ['On', false],
+    'one' => ['1', false],
+    'off' => ['Off', true],
+    'empty' => ['', true],
+]);
+
+it('reads the real runtime when nothing stands in for it', function (): void {
+    Artisan::call('app:doctor', ['--json' => true]);
+
+    $names = array_column(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['optional'], 'name');
+
+    expect($names)->toContain('PHP patch level')->toContain('Session upload progress off');
 });

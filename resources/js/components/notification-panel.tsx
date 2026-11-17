@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import NotificationBulkController from '@/actions/App/Http/Controllers/NotificationBulkController';
 import NotificationController from '@/actions/App/Http/Controllers/NotificationController';
 
@@ -52,16 +52,36 @@ export function NotificationPanel() {
                                 ).toLocaleString()}
                             </time>
 
-                            <Link
-                                href={NotificationController.update({
-                                    notification: notification.id,
-                                })}
-                                as="button"
-                                preserveScroll
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.patch(
+                                        NotificationController.update({
+                                            notification: notification.id,
+                                        }),
+                                        {},
+                                        {
+                                            preserveScroll: true,
+                                            optimistic: (props) => ({
+                                                recentNotifications:
+                                                    props.recentNotifications.filter(
+                                                        ({ id }) =>
+                                                            id !==
+                                                            notification.id,
+                                                    ),
+                                                unreadNotifications: Math.max(
+                                                    0,
+                                                    props.unreadNotifications -
+                                                        1,
+                                                ),
+                                            }),
+                                        },
+                                    )
+                                }
                                 className="text-xs text-muted-foreground hover:text-foreground"
                             >
                                 Mark read
-                            </Link>
+                            </button>
                         </div>
                     </li>
                 ))}

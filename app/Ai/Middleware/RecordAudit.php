@@ -11,6 +11,7 @@ use App\Models\AiAuditLog;
 use App\Support\AiPricing;
 use App\Support\OrganizationContext;
 use Closure;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Ai\Gateway\StepResponse;
@@ -70,8 +71,8 @@ final readonly class RecordAudit
             return $result;
         }
 
-        return $result->then(function (StepResponse $response) use ($agent, $runId, $startedAt): void {
-            $this->record($agent, $response, $runId, $startedAt);
+        return $result->then(function (StepResponse $response) use ($agent, $runId, $step, $startedAt): void {
+            $this->record($agent, $response, $runId, $step->number, $startedAt);
         });
     }
 
@@ -122,32 +123,46 @@ final readonly class RecordAudit
         return $recorded;
     }
 
-    private function record(OrganizationScoped $agent, StepResponse $response, string $runId, int $startedAt): void
+    /**
+     * A step is metered once. `step_number` is set only here, and
+     * `(run_id, step_number)` is unique, so a replayed step collides on insert
+     * and the transaction rolls back the log and the debit together. A retry
+     * that reaches the provider again is a new invocation with a new run id and
+     * is billed, because the provider billed it.
+     */
+    private function record(OrganizationScoped $agent, StepResponse $response, string $runId, int $stepNumber, int $startedAt): void
     {
         $usage = $response->usage;
         $costMicros = AiPricing::costMicros($response->meta->provider, $response->meta->model, $usage);
 
-        DB::transaction(function () use ($agent, $response, $usage, $costMicros, $runId, $startedAt): void {
-            $log = $this->context->runAs($agent->organization, fn (): AiAuditLog => AiAuditLog::query()->create([
-                'user_id' => $agent->user->id,
-                'run_id' => $runId,
-                'agent' => $agent::class,
-                'provider' => $response->meta->provider,
-                'model' => $response->meta->model,
-                'prompt_tokens' => $usage->inputTokens,
-                'completion_tokens' => $usage->outputTokens,
-                'total_tokens' => $usage->totalTokens(),
-                'cost_micros' => $costMicros,
-                'duration_ms' => intdiv(hrtime(true) - $startedAt, 1_000_000),
-                'status' => AiAuditStatus::Ok,
-                'tool_calls' => array_map(fn (ToolCall $call): string => $call->name, $response->toolCalls),
-                'tool_arguments' => $this->toolArguments($response->toolCalls),
-            ]));
+        try {
+            DB::transaction(function () use ($agent, $response, $usage, $costMicros, $runId, $stepNumber, $startedAt): void {
+                $log = $this->context->runAs($agent->organization, fn (): AiAuditLog => AiAuditLog::query()->create([
+                    'user_id' => $agent->user->id,
+                    'run_id' => $runId,
+                    'step_number' => $stepNumber,
+                    'agent' => $agent::class,
+                    'provider' => $response->meta->provider,
+                    'model' => $response->meta->model,
+                    'prompt_tokens' => $usage->inputTokens,
+                    'completion_tokens' => $usage->outputTokens,
+                    'cache_read_tokens' => $usage->cacheReadInputTokens ?? 0,
+                    'cache_write_tokens' => $usage->cacheWriteInputTokens ?? 0,
+                    'total_tokens' => $usage->totalTokens(),
+                    'cost_micros' => $costMicros,
+                    'duration_ms' => intdiv(hrtime(true) - $startedAt, 1_000_000),
+                    'status' => AiAuditStatus::Ok,
+                    'tool_calls' => array_map(fn (ToolCall $call): string => $call->name, $response->toolCalls),
+                    'tool_arguments' => $this->toolArguments($response->toolCalls),
+                ]));
 
-            if ($costMicros > 0) {
-                $this->debits->handle($agent->organization, $costMicros, 'AI usage', $log);
-            }
-        });
+                if ($costMicros > 0) {
+                    $this->debits->handle($agent->organization, $costMicros, 'AI usage', $log);
+                }
+            });
+        } catch (UniqueConstraintViolationException) {
+            // This step was already metered; the rolled-back transaction wrote nothing the second time.
+        }
     }
 
     /**

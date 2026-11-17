@@ -15,6 +15,8 @@ use App\Ai\Tools\SearchKnowledge;
 use App\Ai\Tools\ShowResourceRecord;
 use App\Support\AiTier;
 use App\Support\UntrustedContent;
+use Laravel\Ai\Attributes\CacheInstructions;
+use Laravel\Ai\Attributes\CacheToolDefinitions;
 use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
@@ -32,7 +34,15 @@ use Laravel\Ai\Responses\AgentResponse;
  * which only files a request for a person to confirm, and `RememberFact`, which
  * is held to the same rule. What the member told it earlier comes back in the
  * instructions, fenced as data, never as orders.
+ *
+ * Both cache attributes are Anthropic and Bedrock only, and each stamps one
+ * breakpoint at the end of its block. The tool list is the same for every
+ * member, so its breakpoint is shared. The instructions end in that member's
+ * recalled facts, so their breakpoint is per member and pays off on the
+ * later steps of a tool loop and on the next turn within the cache TTL.
  */
+#[CacheToolDefinitions]
+#[CacheInstructions]
 final class Assistant implements Agent, Conversational, HasMiddleware, HasTools, OrganizationScoped
 {
     use HasDefaultMiddleware;
@@ -68,7 +78,7 @@ final class Assistant implements Agent, Conversational, HasMiddleware, HasTools,
 
     public function reply(string $message): AgentResponse
     {
-        $tier = AiTier::for('smart');
+        $tier = AiTier::for('standard');
 
         return $this->prompt($message, provider: $tier['provider'], model: $tier['model']);
     }

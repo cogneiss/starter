@@ -42,11 +42,12 @@ final readonly class StartImpersonation
             'user_agent' => $this->request->userAgent(),
         ]);
 
+        $this->impersonation->remember($impersonator, $log);
+
         Auth::guard('web')->login($target);
 
+        $this->session->forget('auth.password_confirmed_at');
         $this->session->regenerate();
-
-        $this->impersonation->remember($impersonator, $log);
 
         return $log;
     }

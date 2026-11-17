@@ -8,6 +8,10 @@ use App\Ai\Contracts\OrganizationScoped;
 use App\Ai\Tools\ProposeAction;
 use App\Mcp\Tools\ProposeChange;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Process;
 use Laravel\Ai\Contracts\HasMiddleware;
 
 arch()->preset()->php();
@@ -33,6 +37,22 @@ foreach (['App\Ai\Tools', 'App\Mcp\Tools'] as $toolNamespace) {
             'App\Ai\Memory',
         ])
         ->ignoring([ProposeAction::class, ProposeChange::class]);
+
+    /**
+     * The lethal trifecta: a tool already reads private data and sees untrusted
+     * content, so it must never also hold a channel that sends data out.
+     */
+    arch("{$toolNamespace} never use an outbound channel")
+        ->expect($toolNamespace)
+        ->not->toUse([
+            Http::class,
+            'Illuminate\Http\Client',
+            Mail::class,
+            Notification::class,
+            Process::class,
+            'GuzzleHttp',
+            'Symfony\Component\Process',
+        ]);
 }
 
 // A class-level rule cannot see an Eloquent call, so the source of every tool is

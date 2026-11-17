@@ -17,6 +17,13 @@ return [
         'nl' => 'Nederlands',
     ],
 
+    'impersonation' => [
+        'banner' => 'You are impersonating this account as :name.',
+        'banner_unknown' => 'You are impersonating this account.',
+        'region' => 'Impersonation',
+        'stop' => 'Stop impersonating',
+    ],
+
     'announcements' => [
         'region' => 'Announcements',
         'dismiss' => 'Dismiss announcement',
@@ -66,6 +73,7 @@ return [
         'sending' => 'Thinking…',
         'you' => 'You',
         'assistant' => 'Assistant',
+        'ai_label' => 'AI-generated',
         'intro' => 'Ask a question to start. The assistant never changes anything without your confirmation.',
         'failed' => 'The assistant could not answer. Your message was not lost, try sending it again.',
         'quota' => 'Your organization has used its AI allowance for now. It resets shortly.',

@@ -9,7 +9,10 @@ use App\Resources\Definitions\OrganizationInvitationResource;
 use App\Resources\Definitions\OrganizationMemberResource;
 use App\Support\OrganizationContext;
 use App\Support\ResourceQuery;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * A list request with the given query string, as the framework would hand it to
@@ -109,28 +112,107 @@ it('orders through a relation without multiplying rows', function (): void {
     expect($names)->toBe(['Ada', 'Zoe']);
 });
 
-it('orders by a plain column and matches a term literally', function (): void {
-    $organization = Organization::factory()->create();
-    $owner = User::factory()->forOrganization($organization)->create();
-
-    foreach (['b100%@example.com', 'a_b@example.com', 'axb@example.com'] as $email) {
-        OrganizationInvitation::factory()->create([
-            'organization_id' => $organization->id,
-            'email' => $email,
-        ]);
+/**
+ * The invitation emails a term finds in one organization, in address order.
+ *
+ * @param  list<string>  $emails
+ * @return list<string>
+ */
+function searchInvitations(Organization $organization, array $emails, string $term): array
+{
+    foreach ($emails as $email) {
+        OrganizationInvitation::factory()->create(['organization_id' => $organization->id, 'email' => $email]);
     }
 
     $resource = new OrganizationInvitationResource;
 
-    $emails = resolve(OrganizationContext::class)->runAs($organization, function () use ($resource): array {
-        $query = ResourceQuery::fromRequest(listRequest(['sort' => 'email', 'q' => 'a_b']), $resource);
+    return resolve(OrganizationContext::class)->runAs($organization, function () use ($resource, $term): array {
+        $query = ResourceQuery::fromRequest(listRequest(['sort' => 'email', 'q' => $term]), $resource);
 
-        return $query->applyTo($resource->scopedQuery(), $resource)
-            ->pluck('email')
-            ->all();
+        return $query->applyTo($resource->scopedQuery(), $resource)->pluck('email')->all();
+    });
+}
+
+it('orders by a plain column', function (): void {
+    $organization = Organization::factory()->create();
+
+    $found = searchInvitations($organization, ['b@example.com', 'a@example.com'], '');
+
+    expect($found)->toBe(['a@example.com', 'b@example.com']);
+});
+
+it('matches the start of every word of the term, in any column order', function (string $term, array $expected): void {
+    $organization = Organization::factory()->create();
+
+    $emails = ['user@gmail.com', 'anne-smith@example.org', 'John@acme.test', 'José.Núñez@example.org', 'Müller@corp.test'];
+
+    expect(searchInvitations($organization, $emails, $term))->toBe($expected);
+})->with([
+    'a part of an email address' => ['gmail', ['user@gmail.com']],
+    'a part of a hyphenated value' => ['smith', ['anne-smith@example.org']],
+    'a word prefix' => ['joh', ['John@acme.test']],
+    'a mid-word substring is not a match' => ['ohn', []],
+    'an accented name' => ['josé', ['José.Núñez@example.org']],
+    'an accented name in capitals' => ['JOSÉ', ['José.Núñez@example.org']],
+    'a later accented word' => ['núñ', ['José.Núñez@example.org']],
+    'a umlaut' => ['Müller', ['Müller@corp.test']],
+    'every word must match' => ['anne smith', ['anne-smith@example.org']],
+    'words that never meet match nothing' => ['anne gmail', []],
+    'words in any order' => ['acme john', ['John@acme.test']],
+    'tsquery operators are only separators' => ['john:*|(', ['John@acme.test']],
+    'quotes and statements are only text' => ["'; drop table x; --", []],
+])->skip(fn (): bool => DB::getDriverName() !== 'pgsql', 'Full-text search is Postgres only.');
+
+it('matches a term with no letters or digits as literal text on every engine', function (): void {
+    $organization = Organization::factory()->create();
+
+    $emails = ['a@example.com', 'b@example.com'];
+
+    expect(searchInvitations($organization, $emails, '@@ --'))->toBe([])
+        ->and(searchInvitations($organization, [], '@'))->toBe($emails)
+        ->and(searchInvitations($organization, [], '%'))->toBe([]);
+});
+
+it('never returns a row of another organization that matches the term', function (): void {
+    $organization = Organization::factory()->create();
+    $other = Organization::factory()->create();
+
+    OrganizationInvitation::factory()->create(['organization_id' => $other->id, 'email' => 'shared@elsewhere.test']);
+
+    $found = searchInvitations($organization, ['shared@ours.test'], 'shared');
+
+    expect($found)->toBe(['shared@ours.test']);
+});
+
+it('keeps the substring match on an engine without full-text search', function (): void {
+    DB::connectUsing('lite', ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => ''], true);
+
+    Schema::connection('lite')->create('organization_invitations', function (Blueprint $table): void {
+        $table->id();
+        $table->string('email');
+        $table->string('role');
     });
 
-    // The underscore is a wildcard in LIKE; a person typing it means the character.
-    expect($emails)->toBe(['a_b@example.com'])
-        ->and($owner->email)->not->toBeEmpty();
+    DB::connection('lite')->table('organization_invitations')->insert([
+        ['email' => 'a_b@example.com', 'role' => 'Member'],
+        ['email' => 'axb@example.com', 'role' => 'Member'],
+        ['email' => 'John@example.com', 'role' => 'Member'],
+    ]);
+
+    $resource = new OrganizationInvitationResource;
+
+    $search = fn (string $term): array => ResourceQuery::fromRequest(listRequest(['q' => $term]), $resource)
+        ->applyTo(OrganizationInvitation::on('lite')->withoutGlobalScopes(), $resource)
+        ->orderBy('email')
+        ->pluck('email')
+        ->all();
+
+    // Mid-word, case-insensitive, and the underscore is the character itself.
+    try {
+        expect($search('ohn'))->toBe(['John@example.com'])
+            ->and($search('a_b'))->toBe(['a_b@example.com'])
+            ->and($search('@@'))->toBe([]);
+    } finally {
+        DB::purge('lite');
+    }
 });

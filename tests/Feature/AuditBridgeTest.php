@@ -8,6 +8,7 @@ use App\Models\ImpersonationLog;
 use App\Models\LoginHistory;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\Impersonation;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\Schema;
 
@@ -39,6 +40,41 @@ it('bridges an impersonation to exactly one activity entry, keeping its own row'
     expect($entries)->toHaveCount(1)
         ->and($entries->sole()->organization_id)->toBe($this->organization->id)
         ->and($entries->sole()->event)->toBe('created');
+});
+
+it('bridges the end of an impersonation, stamped with the impersonator', function (): void {
+    $admin = User::factory()->superAdmin()->create();
+    $log = ImpersonationLog::factory()->create([
+        'organization_id' => $this->organization->id,
+        'impersonator_user_id' => $admin->id,
+    ]);
+
+    session()->put(Impersonation::USER_KEY, $admin->id);
+    $log->forceFill(['ended_at' => now()])->save();
+
+    $entry = Activity::withoutOrganizationScope()
+        ->where('subject_id', $log->id)
+        ->where('event', 'updated')
+        ->sole();
+
+    expect($entry->organization_id)->toBe($this->organization->id)
+        ->and($entry->properties->get('impersonator_id'))->toBe($admin->id);
+});
+
+it('does not bridge an update of an impersonation that leaves ended_at alone', function (): void {
+    $log = ImpersonationLog::factory()->create(['organization_id' => $this->organization->id]);
+
+    $log->forceFill(['ip_address' => '203.0.113.9'])->save();
+
+    expect(Activity::withoutOrganizationScope()->where('subject_id', $log->id)->where('event', 'updated')->exists())->toBeFalse();
+});
+
+it('adds no impersonator to an entry written outside an impersonation', function (): void {
+    $log = ImpersonationLog::factory()->create(['organization_id' => $this->organization->id]);
+
+    $entry = Activity::withoutOrganizationScope()->where('subject_id', $log->id)->sole();
+
+    expect($entry->getRawOriginal('properties'))->toBeNull();
 });
 
 it('bridges a login to exactly one activity entry in the user’s organization', function (): void {

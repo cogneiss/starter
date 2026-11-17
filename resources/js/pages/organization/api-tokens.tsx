@@ -1,5 +1,4 @@
-import { Head, router } from '@inertiajs/react';
-import { useForm } from 'laravel-precognition-react-inertia';
+import { Head, router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import OrganizationApiTokenController from '@/actions/App/Http/Controllers/OrganizationApiTokenController';

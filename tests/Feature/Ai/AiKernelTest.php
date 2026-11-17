@@ -87,20 +87,23 @@ it('resolves a tier to a provider and model from configuration', function (): vo
 });
 
 it('leaves the model null when a tier defers to the provider default', function (): void {
-    config()->set('ai.tiers.smart.model');
+    config()->set('ai.tiers.standard.model');
 
-    expect(AiTier::for('smart')['model'])->toBeNull();
+    expect(AiTier::for('standard')['model'])->toBeNull();
 });
 
 it('fails over to the second provider only when both carry a key', function (): void {
     config()->set('ai.providers.anthropic.key', 'test-only');
 
-    expect(AiTier::for('smart')['provider'])->toBe(Lab::Anthropic);
+    expect(AiTier::for('standard')['provider'])->toBe(Lab::Anthropic);
 
     config()->set('ai.providers.openai.key', 'test-only');
 
-    expect(AiTier::for('smart'))->toBe([
-        'provider' => ['anthropic' => 'claude-sonnet-5-5', 'openai' => 'gpt-6-astra'],
+    expect(AiTier::for('standard'))->toBe([
+        'provider' => ['anthropic' => 'claude-sonnet-5-5', 'openai' => 'gpt-6.1-terra'],
+        'model' => null,
+    ])->and(AiTier::for('smart'))->toBe([
+        'provider' => ['anthropic' => 'claude-opus-5-5', 'openai' => 'gpt-6-astra'],
         'model' => null,
     ]);
 });

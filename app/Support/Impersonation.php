@@ -25,11 +25,18 @@ final readonly class Impersonation
         return $this->session->has(self::USER_KEY);
     }
 
-    public function impersonator(): ?User
+    public function impersonatorId(): ?string
     {
         $id = $this->session->get(self::USER_KEY);
 
-        return is_string($id) ? User::query()->find($id) : null;
+        return is_string($id) ? $id : null;
+    }
+
+    public function impersonator(): ?User
+    {
+        $id = $this->impersonatorId();
+
+        return $id === null ? null : User::query()->find($id);
     }
 
     public function log(): ?ImpersonationLog

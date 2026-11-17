@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Models\LoginHistory;
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
@@ -208,4 +210,53 @@ it('dispatches lockout event when rate limit is reached', function (): void {
     }
 
     Event::assertDispatched(Lockout::class);
+});
+
+it('dispatches the failed event once for a wrong password', function (): void {
+    Event::fake([Failed::class]);
+
+    $user = User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+
+    $this->fromRoute('login')
+        ->post(route('login.store'), [
+            'email' => 'test@example.com',
+            'password' => 'wrong-password',
+        ]);
+
+    Event::assertDispatchedTimes(Failed::class, 1);
+    Event::assertDispatched(Failed::class, fn (Failed $event): bool => $event->guard === 'web'
+        && $event->user?->is($user) === true);
+});
+
+it('dispatches the failed event with no user for an unknown email', function (): void {
+    Event::fake([Failed::class]);
+
+    $this->fromRoute('login')
+        ->post(route('login.store'), [
+            'email' => 'nobody@example.com',
+            'password' => 'wrong-password',
+        ]);
+
+    Event::assertDispatched(Failed::class, fn (Failed $event): bool => $event->user === null);
+});
+
+it('never persists the attempted password in the login history', function (): void {
+    User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+
+    $this->fromRoute('login')
+        ->post(route('login.store'), [
+            'email' => 'test@example.com',
+            'password' => 'attempted-secret-value',
+        ]);
+
+    $row = LoginHistory::query()->sole();
+
+    expect($row->successful)->toBeFalse()
+        ->and(json_encode($row->getAttributes()))->not->toContain('attempted-secret-value');
 });

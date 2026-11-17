@@ -74,18 +74,26 @@ return [
     'tiers' => [
         'cheap' => [
             'provider' => Lab::Anthropic,
-            'model' => env('AI_MODEL_CHEAP', 'claude-haiku-5-5'),
+            'model' => is_string($cheap = env('AI_MODEL_CHEAP')) && $cheap !== '' ? $cheap : 'claude-haiku-5-5',
             'failover' => [
                 'provider' => Lab::OpenAI,
-                'model' => env('AI_MODEL_CHEAP_FAILOVER', 'gpt-6-luna'),
+                'model' => is_string($cheapFailover = env('AI_MODEL_CHEAP_FAILOVER')) && $cheapFailover !== '' ? $cheapFailover : 'gpt-6-luna',
+            ],
+        ],
+        'standard' => [
+            'provider' => Lab::Anthropic,
+            'model' => is_string($standard = env('AI_MODEL_STANDARD')) && $standard !== '' ? $standard : 'claude-sonnet-5-5',
+            'failover' => [
+                'provider' => Lab::OpenAI,
+                'model' => is_string($standardFailover = env('AI_MODEL_STANDARD_FAILOVER')) && $standardFailover !== '' ? $standardFailover : 'gpt-6.1-terra',
             ],
         ],
         'smart' => [
             'provider' => Lab::Anthropic,
-            'model' => env('AI_MODEL_SMART', 'claude-sonnet-5-5'),
+            'model' => is_string($smart = env('AI_MODEL_SMART')) && $smart !== '' ? $smart : 'claude-opus-5-5',
             'failover' => [
                 'provider' => Lab::OpenAI,
-                'model' => env('AI_MODEL_SMART_FAILOVER', 'gpt-6-astra'),
+                'model' => is_string($smartFailover = env('AI_MODEL_SMART_FAILOVER')) && $smartFailover !== '' ? $smartFailover : 'gpt-6-astra',
             ],
         ],
     ],
@@ -195,30 +203,52 @@ return [
     |--------------------------------------------------------------------------
     |
     | Micros per million tokens, per provider and model, where 1_000_000 is one
-    | dollar per million. The Anthropic rows are the published Claude 5.5
-    | prices. The OpenAI rows are set at the fallback ceiling because no
-    | published price has been checked for them, so failover over-charges
-    | rather than under-charges until someone confirms the real rate.
+    | dollar per million. Short-context list prices as of 2026-11-17. The
+    | Anthropic rows come from the Claude API pricing reference. The OpenAI rows
+    | are unconfirmed: check them against the vendor pricing page before you
+    | bill on them.
+    | A row may also carry `cache_read` and `cache_write` (5-minute write)
+    | prices. Only the Anthropic rows have them, from the same reference; a row
+    | without them bills cached tokens at `input`, which overstates and never
+    | understates. A row may carry `long_context` => above, input, output: a
+    | prompt over `above` tokens bills entirely at the tier rates. Only
+    | claude-haiku-5-5 (over 100k prompts is 0.50 in and 2.50 out) has one;
+    | gpt-6-astra's long-context price is unconfirmed, so it has none.
+    | Cache tokens in a long-context request bill at the tier's own
+    | `cache_read` / `cache_write`, else at the tier's `input`.
     |
     | A model that is not listed is billed at `pricing_fallback`, a deliberate
-    | ceiling, so spend is never metered as zero. Overriding a tier model with
-    | an env var is safe for the same reason.
+    | ceiling at gpt-6-astra's short-context price, so spend is never metered
+    | as zero. Overriding a tier model with an env var is safe for the same
+    | reason.
+    |
+    | A provider-returned snapshot id with one trailing date suffix
+    | (`-20261001` or `-2026-10-01`) bills the listed model's price. Any other
+    | suffix is unlisted. A row without integer `input` and `output` is
+    | treated as unlisted.
     |
     */
 
     'pricing' => [
         'anthropic' => [
-            'claude-haiku-5-5' => ['input' => 100_000, 'output' => 500_000],
-            'claude-sonnet-5-5' => ['input' => 2_000_000, 'output' => 10_000_000],
-            'claude-opus-5-5' => ['input' => 4_000_000, 'output' => 20_000_000],
+            'claude-haiku-5-5' => [
+                'input' => 100_000,
+                'output' => 500_000,
+                'cache_read' => 10_000,
+                'cache_write' => 125_000,
+                'long_context' => ['above' => 100_000, 'input' => 500_000, 'output' => 2_500_000],
+            ],
+            'claude-sonnet-5-5' => ['input' => 2_000_000, 'output' => 10_000_000, 'cache_read' => 100_000, 'cache_write' => 2_500_000],
+            'claude-opus-5-5' => ['input' => 4_000_000, 'output' => 20_000_000, 'cache_read' => 200_000, 'cache_write' => 5_000_000],
         ],
         'openai' => [
-            'gpt-6-luna' => ['input' => 4_000_000, 'output' => 20_000_000],
-            'gpt-6-astra' => ['input' => 4_000_000, 'output' => 20_000_000],
+            'gpt-6-luna' => ['input' => 100_000, 'output' => 500_000],
+            'gpt-6.1-terra' => ['input' => 1_000_000, 'output' => 5_000_000],
+            'gpt-6-astra' => ['input' => 10_000_000, 'output' => 50_000_000],
         ],
     ],
 
-    'pricing_fallback' => ['input' => 4_000_000, 'output' => 20_000_000],
+    'pricing_fallback' => ['input' => 10_000_000, 'output' => 50_000_000],
 
     /*
     |--------------------------------------------------------------------------

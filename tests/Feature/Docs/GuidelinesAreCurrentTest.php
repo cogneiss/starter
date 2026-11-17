@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Symfony\Component\Process\Process;
 
 /**
- * `.ai/guidelines/*.blade.php` is the source; these paths are outputs.
+ * `.ai/guidelines/*.blade.php` is the source and `AGENTS.md` is the output.
+ * `CLAUDE.md` is a one-line import of it. It sits in the snapshot so a render
+ * that writes the block into it again counts as drift.
  *
  * The render happens in a subprocess for two reasons: Boost disables itself
  * while the test suite is running, so `boost:install` is not registered in
@@ -17,8 +19,6 @@ use Symfony\Component\Process\Process;
 $generated = [
     'AGENTS.md',
     'CLAUDE.md',
-    '.cursor/rules/laravel-boost.mdc',
-    '.junie/guidelines.md',
 ];
 
 it('has the generated agent guideline files in sync with their source', function () use ($generated): void {
@@ -58,12 +58,9 @@ it('has the generated agent guideline files in sync with their source', function
     ));
 });
 
-it('keeps GEMINI.md a copy of AGENTS.md', function (): void {
-    expect(base_path('GEMINI.md'))->toBeFile();
+it('keeps CLAUDE.md a one-line import of AGENTS.md', function (): void {
+    expect(base_path('CLAUDE.md'))->toBeFile();
 
-    expect((string) file_get_contents(base_path('GEMINI.md')))
-        ->toBe(
-            (string) file_get_contents(base_path('AGENTS.md')),
-            'GEMINI.md has drifted from AGENTS.md. Run: php -r "copy(\'AGENTS.md\', \'GEMINI.md\');"',
-        );
+    expect((string) file_get_contents(base_path('CLAUDE.md')))
+        ->toBe("@AGENTS.md\n", 'CLAUDE.md holds only the line @AGENTS.md. The guidelines live in AGENTS.md.');
 });

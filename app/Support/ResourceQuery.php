@@ -49,10 +49,20 @@ final class ResourceQuery extends Data
     public const array PARAMETERS = ['q', 'sort', 'dir', 'page', 'per', 'f'];
 
     /**
-     * Long enough for a name or an address, short enough that the LIKE stays
+     * Long enough for a name or an address, short enough that the match stays
      * cheap. Matches the search endpoint's own limit.
      */
     private const int MAX_TERM = 255;
+
+    /**
+     * What separates words in a searched column on Postgres, as a POSIX
+     * bracket expression. It names the punctuation and space classes instead
+     * of "not alphanumeric" because `[:alnum:]` is ASCII-only in a database
+     * with a C locale: an accented letter would be cut out of the column
+     * while the term still carried it. The ASCII symbols are listed because
+     * some locale providers class them as symbols, not punctuation.
+     */
+    private const string WORD_BREAKS = '[[:punct:][:space:]$+<=>^`|~]+';
 
     /**
      * @param  'asc'|'desc'  $dir
@@ -68,6 +78,14 @@ final class ResourceQuery extends Data
         #[LiteralTypeScriptType('Record<string, string | boolean | Record<string, string | number> | Array<string>>')]
         public array $filters = [],
     ) {}
+
+    /**
+     * Whether the request asked for a list as a CSV export.
+     */
+    public static function wantsCsv(Request $request): bool
+    {
+        return in_array('text/csv', $request->getAcceptableContentTypes(), true);
+    }
 
     public static function fromRequest(Request $request, ResourceContract $resource): self
     {
@@ -311,6 +329,21 @@ final class ResourceQuery extends Data
     }
 
     /**
+     * Narrows the list to rows where every word of the term matches the start
+     * of a word in one of the searchable columns.
+     *
+     * The whole clause stays inside one grouped `where`, so its `or`s can never
+     * escape the scope the query already carries.
+     *
+     * Postgres matches whole words by prefix with full-text search, so `joh`
+     * finds John and `ohn` does not. Every other engine, and a term with no
+     * letter or digit on Postgres, keeps the substring LIKE. The term reaches
+     * SQL only as a bound parameter on both paths.
+     *
+     * ponytail: unindexed, so Postgres scans the table. Add a GIN expression
+     * index per resource over the same `to_tsvector` expression when a table
+     * grows.
+     *
      * @param  Builder<covariant Model>  $query
      * @param  list<string>  $columns
      */
@@ -320,18 +353,19 @@ final class ResourceQuery extends Data
             return;
         }
 
-        // The wildcards are ours; the ones the person typed are literal. The
-        // escape character is a tilde rather than a backslash because a
-        // backslash is itself escaped inside a string literal on some engines
-        // and not on others, and this clause has to read the same on all of
-        // them.
-        $like = mb_strtolower('%'.str_replace(['~', '%', '_'], ['~~', '~%', '~_'], $this->q).'%');
+        $words = $this->tsQuery();
 
-        $query->where(function (Builder $inner) use ($columns, $like): void {
+        // Full-text search needs a word. A term with no letter or digit has
+        // none, so it takes the literal substring match on every engine.
+        $postgres = $words !== '' && $query->getModel()->getConnection()->getDriverName() === 'pgsql';
+
+        $bound = $postgres ? $words : $this->likePattern();
+
+        $query->where(function (Builder $inner) use ($columns, $bound, $postgres): void {
             foreach ($columns as $column) {
                 if (! str_contains($column, '.')) {
-                    $inner->orWhere(function (Builder $one) use ($column, $like): void {
-                        $one->getQuery()->whereRaw($this->likeClause($one, $column), [$like]);
+                    $inner->orWhere(function (Builder $one) use ($column, $bound, $postgres): void {
+                        $one->getQuery()->whereRaw($this->termClause($one, $column, $postgres), [$bound]);
                     });
 
                     continue;
@@ -339,30 +373,68 @@ final class ResourceQuery extends Data
 
                 [$name, $field] = explode('.', $column, 2);
 
-                $inner->orWhereHas($name, function (Builder $related) use ($field, $like): void {
-                    $related->getQuery()->whereRaw($this->likeClause($related, $field), [$like]);
+                $inner->orWhereHas($name, function (Builder $related) use ($field, $bound, $postgres): void {
+                    $related->getQuery()->whereRaw($this->termClause($related, $field, $postgres), [$bound]);
                 });
             }
         });
     }
 
     /**
-     * A case-insensitive LIKE that means the characters the person typed.
+     * The term as a tsquery: each word a prefix, all of them required.
      *
-     * `whereLike` sends no ESCAPE clause, and SQLite gives a backslash no
-     * meaning without one, so an escaped underscore would be searched for as a
-     * backslash. Lowering both sides is what makes it case-insensitive
-     * everywhere, including Postgres, where plain LIKE is not.
+     * A word is a run of Unicode letters and decimal digits, lowercased.
+     * Everything else, punctuation and combining marks included, separates
+     * words, so no token can carry a tsquery operator (`& | ! : * ( ) < >`, a
+     * quote or a backslash). The column side is cut at `WORD_BREAKS` first,
+     * which is what keeps the two in step. Empty when the term has no word.
+     */
+    private function tsQuery(): string
+    {
+        preg_match_all('/[\p{L}\p{Nd}]+/u', mb_strtolower($this->q), $words);
+
+        return implode(' & ', array_map(fn (string $word): string => $word.':*', $words[0]));
+    }
+
+    /**
+     * The term as a LIKE pattern.
+     *
+     * The wildcards are ours; the ones the person typed are literal. The escape
+     * character is a tilde rather than a backslash because a backslash is
+     * itself escaped inside a string literal on some engines and not on others,
+     * and this clause has to read the same on all of them.
+     */
+    private function likePattern(): string
+    {
+        return mb_strtolower('%'.str_replace(['~', '%', '_'], ['~~', '~%', '~_'], $this->q).'%');
+    }
+
+    /**
+     * One column's match against the bound term.
+     *
+     * On Postgres the column text is cut at every punctuation mark and space
+     * before it is tokenised. The default parser would
+     * otherwise keep `user@gmail.com` as one email token and `a.b.c` as a host,
+     * and neither could be found by its parts.
+     *
+     * Elsewhere it is a case-insensitive LIKE. `whereLike` sends no ESCAPE
+     * clause, and SQLite gives a backslash no meaning without one, so an escaped
+     * underscore would be searched for as a backslash. Lowering both sides is
+     * what makes it case-insensitive everywhere LIKE is not.
      *
      * @param  Builder<covariant Model>  $query
      */
-    private function likeClause(Builder $query, string $column): ExpressionContract
+    private function termClause(Builder $query, string $column, bool $postgres): ExpressionContract
     {
         // The column is wrapped by the connection's own grammar and never comes
         // from the request — a list only searches the columns its resource
         // named. It is still not a literal string to a static analyser, which is
         // why this is an expression object rather than a raw string.
-        $sql = sprintf("lower(%s) like ? escape '~'", $query->getQuery()->getGrammar()->wrap($column));
+        $wrapped = $query->getQuery()->getGrammar()->wrap($column);
+
+        $sql = $postgres
+            ? sprintf("to_tsvector('simple', regexp_replace(coalesce(%s::text, ''), '%s', ' ', 'g')) @@ to_tsquery('simple', ?)", $wrapped, self::WORD_BREAKS)
+            : sprintf("lower(%s) like ? escape '~'", $wrapped);
 
         return new readonly class($sql) implements ExpressionContract
         {

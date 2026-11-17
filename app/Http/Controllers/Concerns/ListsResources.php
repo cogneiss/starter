@@ -87,7 +87,7 @@ trait ListsResources
      */
     protected function exportsCsv(Request $request): bool
     {
-        return in_array('text/csv', $request->getAcceptableContentTypes(), true);
+        return ResourceQuery::wantsCsv($request);
     }
 
     /**

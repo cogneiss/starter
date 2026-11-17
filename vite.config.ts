@@ -91,7 +91,7 @@ export default defineConfig({
             },
         ],
         sortTailwindcss: {
-            functions: ['clsx', 'cn'],
+            functions: ['cn'],
             stylesheet: 'resources/css/app.css',
         },
         sortImports: {

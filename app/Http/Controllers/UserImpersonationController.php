@@ -8,6 +8,7 @@ use App\Actions\StartImpersonation;
 use App\Actions\StopImpersonation;
 use App\Enums\KnownFeatures;
 use App\Models\User;
+use App\Support\Impersonation;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -29,9 +30,20 @@ final readonly class UserImpersonationController
         return to_route('dashboard');
     }
 
-    public function destroy(StopImpersonation $action): RedirectResponse
+    public function destroy(StopImpersonation $action, Impersonation $impersonation): RedirectResponse
     {
-        $action->handle();
+        if (! $impersonation->active()) {
+            return to_route('dashboard');
+        }
+
+        if (! $action->handle() instanceof User) {
+            Inertia::flash('toast', [
+                'type' => 'success',
+                'message' => __('You have been signed out.'),
+            ]);
+
+            return to_route('login');
+        }
 
         Inertia::flash('toast', [
             'type' => 'success',

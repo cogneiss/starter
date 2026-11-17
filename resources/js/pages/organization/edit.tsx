@@ -1,5 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
-import { useForm } from 'laravel-precognition-react-inertia';
+import { Head, usePage, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import OrganizationController from '@/actions/App/Http/Controllers/OrganizationController';
 import Heading from '@/components/heading';

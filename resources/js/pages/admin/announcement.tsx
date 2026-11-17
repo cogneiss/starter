@@ -1,5 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { useForm } from 'laravel-precognition-react-inertia';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { AiDraftButton } from '@/components/ai/ai-draft-button';
 import Heading from '@/components/heading';

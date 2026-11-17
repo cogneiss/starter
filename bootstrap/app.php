@@ -12,6 +12,7 @@ use App\Http\Middleware\HandleBrand;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HonorDoNotTrack;
 use App\Http\Middleware\ProtectPublicForm;
+use App\Http\Middleware\ReadOnlyWhileImpersonating;
 use App\Http\Middleware\RedirectIfNotOnboarded;
 use App\Http\Middleware\RequireOrganization;
 use App\Http\Middleware\ResolveOrganization;
@@ -55,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetContentSecurityPolicy::class,
             AuthenticateSession::class,
             EnsureUserIsActive::class,
+            ReadOnlyWhileImpersonating::class,
             HandleAppearance::class,
             SetLocale::class,
             HonorDoNotTrack::class,

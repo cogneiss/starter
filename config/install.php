@@ -84,7 +84,6 @@ return [
                 'resources/js/types/assistant.ts',
                 '.github/workflows/evals.yml',
                 'resources/prompts',
-                'resources/views/mcp',
                 'resources/views/vendor/mcp',
                 'tests/Evals',
                 'tests/Feature/Ai',
@@ -181,7 +180,7 @@ return [
                     ["use App\\Support\\AiRetrieval;\n"],
                     ["use Laravel\\Ai\\Enums\\Lab;\n"],
                     ["            \$this->retrieval(),\n", "            \$this->aiPricing(),\n"],
-                    ["    /**\n     * Whether retrieval (RAG)", "            'disables' => 'those runs are recorded as costing nothing, so the budget quota never trips',\n        ];\n    }\n\n"],
+                    ["    /**\n     * Whether retrieval (RAG)", "            'disables' => 'those runs bill at the pricing_fallback ceiling, so spend is overstated',\n        ];\n    }\n\n"],
                 ],
                 'tests/Pest.php' => [
                     ["use App\\Support\\AiAvailability;\n"],

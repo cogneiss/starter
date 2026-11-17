@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Models\LoginHistory;
 use App\Models\User;
+use App\Support\Impersonation;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Http\Request;
 
@@ -17,13 +18,16 @@ use Illuminate\Http\Request;
  */
 final readonly class RecordSuccessfulLogin
 {
-    public function __construct(private Request $request) {}
+    public function __construct(
+        private Request $request,
+        private Impersonation $impersonation,
+    ) {}
 
     public function handle(Login $event): void
     {
         $user = $event->user;
 
-        if (! $user instanceof User) {
+        if (! $user instanceof User || $this->impersonation->active()) {
             return;
         }
 

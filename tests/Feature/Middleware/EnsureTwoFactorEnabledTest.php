@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Models\ImpersonationLog;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\Impersonation;
 use Inertia\Support\SessionKey;
 
 function memberOfRequiringOrganization(bool $withTwoFactor = false): User
@@ -58,5 +60,19 @@ it('does nothing when the organization does not require two-factor authenticatio
 it('does nothing when no organization is resolved', function (): void {
     $this->actingAs(User::factory()->withoutTwoFactor()->create())
         ->get(route('user-profile.edit'))
+        ->assertOk();
+});
+
+it('does not hold an impersonated member at the setup screen', function (): void {
+    $target = memberOfRequiringOrganization();
+    $admin = User::factory()->superAdmin()->create();
+    $log = ImpersonationLog::factory()->create([
+        'impersonator_user_id' => $admin->id,
+        'impersonated_user_id' => $target->id,
+    ]);
+
+    $this->actingAs($target)
+        ->withSession([Impersonation::USER_KEY => $admin->id, Impersonation::LOG_KEY => $log->id])
+        ->get(route('dashboard'))
         ->assertOk();
 });

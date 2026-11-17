@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\Impersonation;
 use App\Support\OrganizationContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -21,7 +22,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class EnsureTwoFactorEnabled
 {
-    public function __construct(private OrganizationContext $context) {}
+    public function __construct(
+        private OrganizationContext $context,
+        private Impersonation $impersonation,
+    ) {}
 
     /**
      * @param  Closure(Request): (Response)  $next
@@ -48,6 +52,7 @@ final readonly class EnsureTwoFactorEnabled
         return $organization instanceof Organization
             && $organization->require_two_factor
             && $user instanceof User
+            && ! $this->impersonation->active()
             && ! $user->hasEnabledTwoFactorAuthentication();
     }
 

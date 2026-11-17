@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 it('shares app name from config', function (): void {
     $middleware = new HandleInertiaRequests();
@@ -90,4 +91,25 @@ it('includes parent shared data', function (): void {
 
     // Parent Inertia middleware shares 'errors' by default
     expect($shared)->toHaveKey('errors');
+});
+
+it('renders guests on the server only when the flag is on', function (bool $enabled, int $sent): void {
+    config(['inertia.ssr.enabled' => $enabled, 'inertia.ssr.ensure_bundle_exists' => false]);
+    Http::fake(['*' => Http::response(['head' => [], 'body' => '<div></div>'])]);
+
+    $this->get(route('home'))->assertOk();
+
+    Http::assertSentCount($sent);
+})->with([
+    'flag on' => [true, 1],
+    'flag off' => [false, 0],
+]);
+
+it('never renders a signed-in request on the server', function (): void {
+    config(['inertia.ssr.enabled' => true, 'inertia.ssr.ensure_bundle_exists' => false]);
+    Http::fake(['*' => Http::response(['head' => [], 'body' => '<div></div>'])]);
+
+    $this->actingAs(User::factory()->create())->get(route('home'))->assertOk();
+
+    Http::assertNothingSent();
 });
