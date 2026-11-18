@@ -134,12 +134,16 @@ final class OrganizationMemberResource implements ResourceContract
      * memberships across organizations. Search reaches them through the bound
      * organization's relation instead.
      *
+     * The row reads each member's role through getRoleNames(), which calls
+     * loadMissing('roles') one user at a time; automatic eager loading does
+     * not batch that, so the roles load here, once per page.
+     *
      * @return Builder<OrganizationMembership>
      */
     public function scopedQuery(): Builder
     {
         return $this->scopedToOrganization(
-            fn (Organization $organization): Builder => $organization->memberships()->getQuery(),
+            fn (Organization $organization): Builder => $organization->memberships()->getQuery()->with('user.roles'),
         );
     }
 }

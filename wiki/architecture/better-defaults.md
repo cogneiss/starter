@@ -6,7 +6,9 @@ code_refs:
     - config/essentials.php
     - tests/Pest.php
     - tests/Unit/Conventions/MassAssignmentBoundaryTest.php
-updated: 2026-11-15
+    - tests/Feature/ListQueryBudgetTest.php
+    - app/Resources/Definitions/OrganizationMemberResource.php
+updated: 2026-11-19
 ---
 
 # Better defaults from Essentials
@@ -37,6 +39,14 @@ becomes an exception in development instead of a slow page in production, a typo
 in an attribute name throws instead of being dropped, a `migrate:fresh` against
 production is refused. The cost of each is a stricter local loop, which is where
 you want the cost.
+
+Two kinds of per-row query get past both lazy-loading defaults. One is an explicit
+`loadMissing()` on a single model: Spatie's `getRoleNames()` is one, and it cost
+the members screen one roles query per row until
+`app/Resources/Definitions/OrganizationMemberResource.php` eager-loaded
+`user.roles`. The other is a per-row `count()` or `exists()`. Neither throws, so
+`tests/Feature/ListQueryBudgetTest.php` checks the outcome instead: a list
+screen must send as many queries for a full page as for one row.
 
 Two of them shape how tests are written: stray HTTP is blocked and sleep is
 faked. `tests/Pest.php` extends that with frozen time and blocked stray process
