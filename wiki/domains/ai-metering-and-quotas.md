@@ -21,6 +21,8 @@ code_refs:
     - tests/Feature/Console/AiUsageCommandTest.php
     - app/Actions/DebitAiCredits.php
     - app/Actions/GrantAiCredits.php
+    - app/Listeners/GrantStarterCredit.php
+    - tests/Feature/Ai/StarterCreditTest.php
     - app/Data/AiUsageData.php
     - app/Data/AiUsageRowData.php
     - app/Enums/AiAuditStatus.php
@@ -167,8 +169,15 @@ and no actor. A caller that does pass an actor has `create` on
 `app/Actions/GrantAiCredits.php` is the mirror image: a positive amount posts
 positive, with the same optional actor check. The seed and console paths pass no
 actor. Both throw `InvalidArgumentException` for an amount of zero or less.
-`tests/Feature/Ai/AiCreditTest.php` exercises them. No caller of `GrantAiCredits` was found in `app/`, so
-how credit gets granted outside tests is not documented.
+`tests/Feature/Ai/AiCreditTest.php` exercises them.
+
+`app/Listeners/GrantStarterCredit.php` listens for `OrganizationCreated` and
+calls `GrantAiCredits` with no actor and the `ui.credits.starter` string as the
+reason, when `ai.credits.starter_micros` is above zero. That key reads
+`AI_STARTER_CREDIT_MICROS`, blank by default, so a fresh clone grants nothing.
+`tests/Feature/Ai/StarterCreditTest.php` covers zero and a positive value. There
+is still no billing and `AiQuota` never reads the balance: the ledger records
+credit, and nothing blocks on a zero balance yet.
 
 ## Statuses and the quota error
 

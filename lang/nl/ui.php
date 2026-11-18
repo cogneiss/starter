@@ -43,6 +43,18 @@ return [
         'level_warning' => 'Waarschuwing',
     ],
 
+    'credits' => [
+        'starter' => 'Startkrediet',
+        'grant_title' => 'AI-krediet toekennen',
+        'grant_new' => 'AI-krediet toekennen',
+        'organization_field' => 'Organisatie',
+        'amount_field' => 'Bedrag (micro, 1.000.000 is één dollar)',
+        'reason_field' => 'Reden',
+        'grant_submit' => 'Krediet toekennen',
+        'cancel' => 'Annuleren',
+        'granted' => 'AI-krediet toegekend.',
+    ],
+
     'ai_draft' => [
         'button' => 'Opstellen met AI',
         'working' => 'Bezig met opstellen…',

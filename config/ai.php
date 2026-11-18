@@ -117,6 +117,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Credits
+    |--------------------------------------------------------------------------
+    |
+    | Integer micros posted to the ledger of every new organization, so 5_000_000
+    | is five dollars. Blank or zero grants nothing. Nothing blocks on a zero
+    | balance yet; the ledger only records it.
+    |
+    */
+
+    'credits' => [
+        'starter_micros' => (int) (env('AI_STARTER_CREDIT_MICROS') ?: 0),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Guardrails
     |--------------------------------------------------------------------------
     |

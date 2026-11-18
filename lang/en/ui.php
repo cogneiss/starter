@@ -45,6 +45,18 @@ return [
         'level_warning' => 'Warning',
     ],
 
+    'credits' => [
+        'starter' => 'Starter credit',
+        'grant_title' => 'Grant AI credit',
+        'grant_new' => 'Grant AI credit',
+        'organization_field' => 'Organization',
+        'amount_field' => 'Amount (micros, 1,000,000 is one dollar)',
+        'reason_field' => 'Reason',
+        'grant_submit' => 'Grant credit',
+        'cancel' => 'Cancel',
+        'granted' => 'AI credit granted.',
+    ],
+
     'ai_draft' => [
         'button' => 'Draft with AI',
         'working' => 'Drafting…',
