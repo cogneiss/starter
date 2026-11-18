@@ -14,7 +14,7 @@ code_refs:
     - config/ai.php
     - config/inertia.php
     - vet.json
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # Packages

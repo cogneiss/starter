@@ -16,7 +16,7 @@ code_refs:
     - tests/Feature/HealthTest.php
     - app/Enums/HealthStatus.php
     - app/Jobs/QueueHeartbeat.php
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # The health endpoint

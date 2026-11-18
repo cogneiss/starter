@@ -26,13 +26,14 @@ exceptions to Sentry with the release from `SENTRY_RELEASE`; with the key
 blank, `NullErrorReporter` is bound and every report is a no-op.
 
 When `SENTRY_RELEASE` is blank and a DSN is set, `config/services.php` falls
-back to the full SHA of the checked-out commit (`git rev-parse HEAD`), and
+back to the full SHA of the checked-out commit (`git rev-parse --verify HEAD`,
+null in a repository with no commit yet), and
 `AppServiceProvider` copies the resolved value into `sentry.release` so the
 SDK's own events carry it too. An event then names the commit that threw it,
 and triage can run `git log <release>..HEAD -- <file>` against it. Git runs
 only when the config file loads uncached, so once per `config:cache` in
 production. An image built without `.git` has nothing to read and must set
-`SENTRY_RELEASE` itself. Without a DSN git never runs. The four cases are in
+`SENTRY_RELEASE` itself. Without a DSN git never runs. The cases are in
 `tests/Feature/ErrorReporterTest.php` under "the release".
 
 ## The shared half

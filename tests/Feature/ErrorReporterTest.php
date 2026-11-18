@@ -8,6 +8,7 @@ use App\Providers\AppServiceProvider;
 use App\Resources\ResourceRegistry;
 use App\Support\Reporting\NullErrorReporter;
 use App\Support\Reporting\SentryErrorReporter;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Sentry\ClientBuilder;
@@ -33,31 +34,69 @@ describe('the binding', function (): void {
 
 describe('the release', function (): void {
     /**
-     * Load config/services.php fresh with the given Sentry variables, then put
-     * the environment back.
+     * Load config/services.php fresh with the given Sentry variables and base
+     * path, then put both back.
      *
      * @param  array<string, string>  $env
      * @return array{dsn: string|null, release: string|null}
      */
-    function sentryServices(array $env): array
+    function sentryServices(array $env, ?string $basePath = null): array
     {
+        $config = base_path('config/services.php');
+        $originalBasePath = app()->basePath();
         $original = array_intersect_key($_SERVER, $env);
         $_SERVER = [...$_SERVER, ...$env];
+        app()->setBasePath($basePath ?? $originalBasePath);
 
         try {
             /** @var array{sentry: array{dsn: string|null, release: string|null}} $services */
-            $services = require base_path('config/services.php');
+            $services = require $config;
 
             return $services['sentry'];
         } finally {
+            app()->setBasePath($originalBasePath);
             $_SERVER = [...array_diff_key($_SERVER, $env), ...$original];
         }
     }
 
-    it('names the checked-out commit when a DSN is set without a release', function (): void {
-        $sentry = sentryServices(['SENTRY_DSN' => 'https://examplePublicKey@o0.ingest.sentry.io/0', 'SENTRY_RELEASE' => '']);
+    /**
+     * The release resolved with a DSN and no SENTRY_RELEASE, from a throwaway
+     * repository outside this checkout, so the result does not depend on how
+     * the kit was installed.
+     *
+     * @return array{release: string|null, head: string}
+     */
+    function releaseInRepository(bool $withCommit): array
+    {
+        $path = sys_get_temp_dir().'/sentry-release-'.Str::random(8);
+        $git = 'git -C '.escapeshellarg($path).' -c user.name=test -c user.email=test@example.com -c core.hooksPath=/dev/null';
 
-        expect($sentry['release'])->toMatch('/^[0-9a-f]{40}$/');
+        File::ensureDirectoryExists($path);
+        exec("{$git} init -q");
+
+        if ($withCommit) {
+            exec("{$git} commit -q --allow-empty -m test");
+        }
+
+        try {
+            return [
+                'release' => sentryServices(['SENTRY_DSN' => 'https://examplePublicKey@o0.ingest.sentry.io/0', 'SENTRY_RELEASE' => ''], $path)['release'],
+                'head' => mb_trim((string) shell_exec("{$git} rev-parse --verify --quiet HEAD")),
+            ];
+        } finally {
+            File::deleteDirectory($path);
+        }
+    }
+
+    it('names the checked-out commit when a DSN is set without a release', function (): void {
+        ['release' => $release, 'head' => $head] = releaseInRepository(withCommit: true);
+
+        expect($head)->toMatch('/^[0-9a-f]{40}$/')
+            ->and($release)->toBe($head);
+    });
+
+    it('stays empty in a repository with no commit yet', function (): void {
+        expect(releaseInRepository(withCommit: false)['release'])->toBeNull();
     });
 
     it('prefers an explicit release over the commit', function (): void {

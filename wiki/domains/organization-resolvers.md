@@ -10,7 +10,7 @@ code_refs:
     - app/Http/Middleware/ResolveOrganization.php
     - app/Providers/AppServiceProvider.php
     - config/organizations.php
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # Organization resolvers

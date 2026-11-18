@@ -7,7 +7,7 @@ declare(strict_types=1);
 // ponytail: git runs whenever this file loads uncached (once at config:cache in
 // production); an image built without .git must set SENTRY_RELEASE itself.
 $checkedOutCommit = filled(env('SENTRY_DSN')) && blank(env('SENTRY_RELEASE'))
-    ? mb_trim((string) shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse HEAD 2>/dev/null'))
+    ? mb_trim((string) shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse --verify --quiet HEAD 2>/dev/null'))
     : '';
 
 return [

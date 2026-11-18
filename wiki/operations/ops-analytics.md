@@ -14,7 +14,7 @@ code_refs:
     - app/Contracts/AnalyticsReporter.php
     - app/Jobs/SendAnalyticsEvent.php
     - app/Listeners/RecordAnalyticsEvent.php
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # The analytics seam

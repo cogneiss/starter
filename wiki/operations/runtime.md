@@ -9,7 +9,7 @@ code_refs:
     - config/queue.php
     - config/mail.php
     - config/ai.php
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # Runtime
@@ -56,7 +56,8 @@ every social, mail and AI provider key blank ([[features/authentication]],
 [[domains/ai-layer-overview]]). The same holds for `SENTRY_DSN`/`SENTRY_RELEASE`
 and `POSTHOG_KEY`/`POSTHOG_HOST`: blank by default, and error reporting and
 analytics both stay local (`NullErrorReporter`, `NullAnalyticsReporter`) until a
-key is set. `SENTRY_TRACES_SAMPLE_RATE` is blank too; a value above 0 turns on
+key is set. With a DSN set, a blank `SENTRY_RELEASE` falls back to the checked-out
+commit ([[operations/ops-error-reporting]]). `SENTRY_TRACES_SAMPLE_RATE` is blank too; a value above 0 turns on
 tracing, including `gen_ai` spans for laravel/ai calls. The AI quota and budget ceilings are `.env`
 values too, and they apply whether or not a key is set
 ([[domains/ai-metering-and-quotas]]).
