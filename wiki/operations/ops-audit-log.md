@@ -10,6 +10,7 @@ code_refs:
     - config/audit.php
     - tests/Feature/AuditLogTest.php
     - tests/Feature/AuditRedactionTest.php
+    - app/Resources/Definitions/AuditLogResource.php
 updated: 2026-11-18
 ---
 
@@ -39,7 +40,13 @@ causer stays the person being impersonated.
 
 Organization members with the permission read their own organization's log
 through the audit page — built on the list kit, so search, filters and CSV
-export come for free and stay scoped. Super admins see across organizations
+export come for free and stay scoped. The page is `AuditLogController`, which authorizes `viewAny` on `Activity` and
+serves the list and the CSV export through the list kit. The kit's definition is
+`AuditLogResource` (key `audit-log`, `app/Resources/Definitions/AuditLogResource.php`):
+search on `description`; sort on `created_at`, `event` and `description`; filters
+for member, event (created, updated, deleted, role_changed, exported), record type
+(from `audit.models` and `audit.extra`) and a date range. Member options are the
+causer ids already present in the log. Super admins see across organizations
 in the admin area ([[operations/ops-admin-area]]), and those very views are
 themselves audited.
 

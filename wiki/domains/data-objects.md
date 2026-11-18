@@ -11,12 +11,13 @@ code_refs:
     - app/Data/LoginHistoryData.php
     - app/Data/PasskeyData.php
     - app/Data/ImpersonatorData.php
+    - app/Data/ActivityData.php
 updated: 2026-11-18
 ---
 
 # Data objects
 
-Eight `spatie/laravel-data` classes in `app/Data`. Every Inertia payload is one of
+`spatie/laravel-data` classes in `app/Data`, the account ones tabled below. Every Inertia payload is one of
 these; a raw array or an Eloquent model never goes to `Inertia::render`.
 
 | Class                        | Carries                                        |
@@ -29,6 +30,15 @@ these; a raw array or an Eloquent model never goes to `Inertia::render`.
 | `LoginHistoryData`           | one sign-in attempt                            |
 | `PasskeyData`                | one registered WebAuthn credential             |
 | `ImpersonatorData`           | who is impersonating, while impersonating      |
+| `ActivityData`               | one audit log entry                            |
+
+`ActivityData` (`app/Data/ActivityData.php`) carries the description, event,
+subject type as a class basename, subject id, the causer's name when the causer
+is a `User`, and `created_at`. `AuditLogResource` and `AuditLogController` build
+it with `fromModel()`. The list-kit Data classes are described on
+[[domains/ux-filters-and-saved-searches]] (`SavedSearchData`,
+`ResourceFilterOptionData`) and [[domains/ux-realtime-notifications]]
+(`NotificationData`).
 
 `ImpersonatorData` carries a nullable `name`, so an impersonator without a name still
 serializes.

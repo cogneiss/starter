@@ -11,6 +11,8 @@ code_refs:
     - app/Notifications/OrganizationInvitationNotification.php
     - app/Notifications/UserMagicLink.php
     - app/Actions/SeedOrganizationRoles.php
+    - app/Notifications/GdprExportReady.php
+    - app/Notifications/WebhookEndpointDeactivated.php
 updated: 2026-11-18
 ---
 
@@ -56,6 +58,13 @@ The invite also goes to the in-app inbox: it offers `mail` and `database`, and
 `User::channelsFor()` narrows that to what the person has kept turned on
 ([[domains/models]]). `UserMagicLink` offers no such choice — a sign-in link is
 not something anybody opts out of.
+
+Two more notifications are database-only and come from the platform ops layer.
+`app/Notifications/GdprExportReady.php` tells a user their data export is ready,
+with a signed link valid for a day ([[operations/ops-gdpr]]).
+`app/Notifications/WebhookEndpointDeactivated.php` goes to an organization's
+owners when an endpoint is switched off after repeated failures, linking to the
+webhook settings ([[operations/ops-webhooks]]).
 
 ## The database channel
 

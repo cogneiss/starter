@@ -9,7 +9,9 @@ code_refs:
     - app/Support/AiEgress.php
     - tests/Feature/Ai/InjectionTest.php
     - tests/Feature/Ai/EgressTest.php
-updated: 2026-10-28
+    - app/Exceptions/BlockedEgressException.php
+    - app/Exceptions/BlockedTopicException.php
+updated: 2026-11-18
 ---
 
 # AI injection defense
@@ -58,3 +60,16 @@ default and is a product decision, not a security control.
 pattern. It is empty by default, which means an agent reaches nothing at all —
 the fail-closed shape of [[architecture/fail-closed-scoping]] applied to the
 network. Adding a host is a deliberate edit someone can read in a diff.
+
+## The refusals
+
+`app/Exceptions/BlockedTopicException.php` is thrown for a denied topic before
+the prompt reaches a provider, so the refusal costs nothing. Its message is
+"This assistant does not answer questions about [topic]."
+
+`app/Exceptions/BlockedEgressException.php` has three named constructors:
+`host()` for a host not on the allowlist, `unreadable()` for a target that is
+neither a URL nor an email address, and `recipient()` for an address that belongs
+to nobody in the organization. The message carries the target, so the audit trail
+says what was attempted, never a key or a body. `app/Providers/AiServiceProvider.php`
+registers a friendly 502 message for it ("Nothing was sent").

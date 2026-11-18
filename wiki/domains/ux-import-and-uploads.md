@@ -26,7 +26,12 @@ code_refs:
     - tests/Feature/TempUploadNotDirectlyDownloadableTest.php
     - tests/Feature/PruneUploadsTest.php
     - tests/Mutations/phase13-policy.patch
-updated: 2026-10-28
+    - app/Contracts/FileScanner.php
+    - app/Http/Controllers/ImportController.php
+    - app/Http/Controllers/ImportDownloadController.php
+    - app/Http/Controllers/ImportRetryController.php
+    - app/Http/Controllers/ImportTemplateController.php
+updated: 2026-11-18
 ---
 
 # Bulk import and temporary uploads
@@ -62,6 +67,31 @@ bin/prove-control.sh phase13-policy ImportPerRecordPolicyMixedBatch
 The runner never rethrows. One bad row is a message on that row, not a dead
 batch and not a rollback of the rows that already worked. Failed rows are
 retryable once the file is fixed.
+
+## The four controllers
+
+`App\Http\Controllers\ImportController` has three actions. `create` and `store`
+both call `Gate::authorize('imports.run')`. `store` validates a `csv` or `txt`
+file of at most 10240 KB, writes it to the `temp-uploads` disk, records a
+`TempUpload` (expiry from `uploads.ttl_hours`) and an `ImportBatch`, then
+dispatches `ScanTempUpload` and `ParseImportBatch` and redirects to the batch.
+The request never opens the file. `show` finds the batch through
+`ImportBatch::ownedBy()` and lists the failed rows by line number with their
+errors.
+
+`ImportRetryController` finds the batch the same way and dispatches
+`ParseImportBatch` with `onlyFailures: true`, so only the failed lines run again
+against the rows already stored. A corrected file is a new upload instead.
+`ImportTemplateController` streams a one-line CSV header from the import's
+`columns()`, the same list the parser reads. `ImportDownloadController` returns
+the uploaded bytes, but its query adds `whereNotNull('promoted_at')`, so an
+upload still in quarantine is not found.
+
+`App\Contracts\FileScanner` is the scanner interface: `scan()` returns
+`FileScanner::CLEAN` or `FileScanner::INFECTED`, and `describe()` is what
+`app:doctor` prints. Its comment names `ScanTempUpload` as the only caller, so a
+scan never happens inside a request. `AppServiceProvider` binds it from
+`config/uploads.php`.
 
 ## Parsing happens on the queue
 

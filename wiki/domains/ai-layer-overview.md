@@ -9,6 +9,8 @@ code_refs:
     - app/Ai/Agents/Concerns/HasDefaultMiddleware.php
     - app/Ai/Concerns/OrganizationScopedAgent.php
     - app/Console/Commands/AiInstallCommand.php
+    - app/Ai/Contracts/OrganizationScoped.php
+    - app/Providers/AiServiceProvider.php
 updated: 2026-11-18
 ---
 
@@ -94,3 +96,18 @@ whether retrieval is available, and whether every configured model has a price.
 - [[domains/ai-memory]] — per-person, per-organization recall
 - [[domains/ai-mcp-server]] — the registry over MCP
 - [[domains/ai-evals]] — grading prompts against real providers
+
+## Scoped agents and the service provider
+
+`app/Ai/Contracts/OrganizationScoped.php` is the interface for an agent that runs
+for one member of one organization: it exposes `user` and `organization`. Per its
+docblock the metering and guardrail middleware only act on these, and an
+anonymous agent passes through untouched. `OrganizationScopedAgent` satisfies it.
+
+`app/Providers/AiServiceProvider.php` keeps a key-less checkout usable. When
+`AiAvailability::faked()` is true it fakes every agent with no canned responses,
+so the gateway echoes the prompt back for any number of prompts. The agents are
+the SDK's two anonymous agents plus every `*.php` directly in `app/Ai/Agents`.
+It also registers friendly messages for `AiQuotaExceededException` (429) and
+`BlockedEgressException` (502), kept here so the exception handler does not know
+about the AI layer.

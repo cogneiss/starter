@@ -10,7 +10,8 @@ code_refs:
     - app/Exceptions/OrganizationContextMissing.php
     - app/Http/Middleware/RequireOrganization.php
     - config/organizations.php
-updated: 2026-08-31
+    - app/Resources/ScopedToOrganization.php
+updated: 2026-11-18
 ---
 
 # Multi-tenancy
@@ -29,6 +30,7 @@ same model suits a B2C product.
 | `app/Contracts/OrganizationAware.php`              | marker for jobs that touch scoped models                                    |
 | `app/Queue/Middleware/WithOrganizationContext.php` | rebinds the organization around a queued job                                |
 | `app/Http/Middleware/RequireOrganization.php`      | the `organization` route alias: a request without one goes no further       |
+| `app/Resources/ScopedToOrganization.php`           | trait that scopes resource queries by where clause when the model has no global scope; unbound means `1 = 0` |
 
 Scoped models are filtered everywhere the scope applies, relations included.
 Escaping it is possible and deliberate: `withoutOrganizationScope()`, with a

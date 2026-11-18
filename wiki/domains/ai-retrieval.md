@@ -8,7 +8,8 @@ code_refs:
     - app/Support/AiRetrieval.php
     - app/Console/Commands/AiInstallCommand.php
     - tests/Feature/Ai/RetrievalTest.php
-updated: 2026-08-25
+    - app/Jobs/IndexAiDocument.php
+updated: 2026-11-18
 ---
 
 # AI retrieval
@@ -50,3 +51,16 @@ withheld rather than allowed to fail at call time.
 than PostgreSQL it is a deliberate no-op: everything except vector search works
 on SQLite, which is what `composer test:sqlite` proves. The database itself is
 [[operations/setup]].
+
+## Indexing
+
+`app/Jobs/IndexAiDocument.php` is a queued job that embeds one piece of
+organization content, so the embedding network call never happens in a request.
+It takes an organization id, a source type and id, a title and the content. It
+runs under `WithOrganizationContext`. The content is split into 1000-character
+chunks (`CHUNK`), because one embedding of a whole document averages everything
+into a single point that matches nothing well. Each run first deletes the rows
+for the same source type and id, so re-indexing replaces rather than stacks, then
+calls `Embeddings::for()` at 1536 dimensions and writes one `AiDocument` row per
+chunk. Nothing under `app/` dispatches it; `tests/Feature/Ai/RetrievalTest.php`
+is the only caller found, so wiring a source to it is not documented as done.

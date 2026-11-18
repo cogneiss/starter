@@ -19,6 +19,7 @@ code_refs:
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
+    - app/Support/Install/Pruner.php
 updated: 2026-11-18
 ---
 
@@ -109,6 +110,24 @@ model the application names has a price. A missing price is not a broken machine
 it is a model billed at the `pricing_fallback` ceiling, so spend is overstated until
 someone adds the row, which is worth reading before it surprises someone
 ([[domains/ai-metering-and-quotas]]).
+
+## starter:install
+
+Prunes a fresh checkout down to the layers the project keeps. It refuses to run
+unless the marker file named by `install.marker` in `config/install.php` exists,
+or `--force` is passed. `--dry-run` prints the steps and changes nothing.
+`--tenancy` takes `session`, `subdomain` or `single` and is written to
+`ORGANIZATIONS_RESOLVER`; non-interactive runs default to `session`. The `ai`
+layer runs only with `--no-ai` or when the prompt to keep it is declined, and the
+`self` layer always runs.
+
+`App\Support\Install\Pruner` does the work for one layer of that manifest:
+delete paths, cut text ranges out of files, drop env keys from `.env.example` and
+`.env`. `plan()` checks every path exists and every range start matches exactly
+once and its end is found, throwing otherwise. `apply()` calls `plan()` first, so
+a manifest that drifted from the source stops the run before anything is
+touched. Composer packages are only listed by the Pruner; the command runs
+`composer remove` itself unless `--skip-composer` is passed.
 
 ## ai:install and ai:usage
 

@@ -11,7 +11,10 @@ code_refs:
     - app/Http/Middleware/HonorDoNotTrack.php
     - config/services.php
     - tests/Feature/AnalyticsTest.php
-updated: 2026-10-28
+    - app/Contracts/AnalyticsReporter.php
+    - app/Jobs/SendAnalyticsEvent.php
+    - app/Listeners/RecordAnalyticsEvent.php
+updated: 2026-11-18
 ---
 
 # The analytics seam
@@ -24,18 +27,30 @@ from the suite.
 
 ## What gets tracked
 
-Events are declared, not sprayed: an action opts in with the `#[Track]`
-attribute, and `DispatchesAnalytics` sends the event after the action
-succeeds. `#[NoTrack]` exists to make an exclusion explicit on something a
-sweep might otherwise annotate. An event carries the event name, the
-organization and anonymised actor identifiers — never emails, names, record
-contents or anything a token could be reconstructed from.
+Tracking is automatic for organization-scoped models and opt-in beyond the
+default. `RecordAnalyticsEvent` (`app/Listeners/RecordAnalyticsEvent.php`) is a
+wildcard Eloquent listener registered in `AppServiceProvider`. For any model
+using `BelongsToOrganization` it tracks `created` and `deleted` with no
+per-model wiring. `#[Track(['updated'])]` on a model adds more events and
+`#[NoTrack]` on a model opts it out entirely. Both attributes target classes, not
+actions. An event is named `<snake_model>.<action>` and carries the model name,
+key and organization id; an `updated` event adds the changed attribute names,
+never a value (`AnalyticsReporter`'s docblock states the same rule:
+identifiers only, never an attribute value).
+
+`App\Contracts\AnalyticsReporter` is the provider contract: `identify`, `group`,
+`track` and `reset`. `PostHogReporter` turns each call into a queued
+`SendAnalyticsEvent`, the one HTTP POST to `{host}/capture/`, so a slow or down
+provider never blocks a response.
 
 ## Do Not Track
 
-`HonorDoNotTrack` reads the browser's DNT / Global Privacy Control signals
-and suppresses tracking for that request, whatever the server keys say. The
-user's choice wins over the operator's configuration.
+Server side, `DispatchesAnalytics` (used by the reporters) checks the request's
+`DNT` header and sends nothing when it is `1`, whatever driver is bound.
+Global Privacy Control is not read by either file. `HonorDoNotTrack`
+only shares the same `DNT: 1` signal with the front end as the Inertia prop
+`doNotTrack`; its docblock says the application ships the signal, not front-end
+analytics.
 
 Deleting an account ([[operations/ops-gdpr]]) leaves nothing to scrub here
 precisely because identifiers were anonymised on the way out.

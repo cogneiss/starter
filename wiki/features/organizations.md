@@ -26,6 +26,23 @@ code_refs:
     - app/Console/Commands/EndStaleImpersonationsCommand.php
     - app/Actions/SummarizeAiUsage.php
     - app/Ai/Agents/InvitationDrafter.php
+    - app/Actions/CreateOrganizationInvitation.php
+    - app/Actions/ResendOrganizationInvitation.php
+    - app/Actions/RevokeOrganizationInvitation.php
+    - app/Actions/RemoveOrganizationMembership.php
+    - app/Actions/UpdateOrganizationMembershipRole.php
+    - app/Actions/SwitchOrganization.php
+    - app/Actions/UpdateOrganization.php
+    - app/Data/InviteMemberData.php
+    - app/Enums/BulkMembershipAction.php
+    - app/Exceptions/LastActiveOwnerException.php
+    - app/Http/Controllers/OrganizationMemberBulkController.php
+    - app/Http/Requests/BulkOrganizationMembershipRequest.php
+    - app/Http/Requests/CreateOrganizationInvitationRequest.php
+    - app/Http/Requests/CreateOrganizationRequest.php
+    - app/Http/Requests/UpdateOrganizationMembershipRequest.php
+    - app/Http/Requests/UpdateOrganizationRequest.php
+    - app/Http/Requests/UpdateOrganizationSwitchRequest.php
 updated: 2026-11-18
 ---
 
@@ -70,6 +87,74 @@ instant the patch fails and a silent revert tells the person nothing.
   strand an organization — removing or demoting a member — so the last active
   owner cannot be removed or demoted. It is an action rather than a check inside
   each controller precisely because it has several callers.
+
+## Membership and invitation actions
+
+Each write is an action in `app/Actions`, called by the controller above it.
+
+- `app/Actions/CreateOrganizationInvitation.php` refuses an email that is
+  already a member (validation error on `email`). If that email already has an
+  unaccepted invitation it hands the existing one to
+  `app/Actions/ResendOrganizationInvitation.php` instead of creating a second.
+  Otherwise it stores a sha256 hash of a random 40 character token, sets expiry
+  seven days out and mails the plain token. Only the hash is kept.
+- `ResendOrganizationInvitation` rotates the token, pushes expiry seven days
+  out and mails again, so the old link stops working. It refuses an accepted
+  invitation. In the code read for this page its only caller is
+  `CreateOrganizationInvitation`; whether a resend route exists is not
+  documented here.
+- `app/Actions/RevokeOrganizationInvitation.php` deletes the invitation row.
+- `app/Actions/UpdateOrganizationMembershipRole.php` looks the role up by name
+  inside the membership's organization, and fails with a validation error on
+  `role` if it is not there. It calls `AssertNotLastActiveOwner` unless the
+  target role is protected, then replaces the user's roles under `runAs()`. It
+  writes its own `Activity` row (`role_changed`) because role changes land in
+  pivot tables the wildcard audit listener does not see.
+- `app/Actions/RemoveOrganizationMembership.php` asserts the last-owner rule,
+  then in one transaction clears the user's roles in that organization, nulls
+  `current_organization_id` if it pointed there, deletes the user's `AiMemory`
+  rows for the organization and deletes the membership.
+- `app/Exceptions/LastActiveOwnerException.php` is a `ValidationException`
+  subclass with no body. `AssertNotLastActiveOwner` throws it with a
+  `membership` message, so the refusal reaches the form as a validation error.
+- `app/Actions/SwitchOrganization.php` throws `AuthorizationException` unless
+  `belongsToOrganization()` is true, then sets `current_organization_id` and
+  regenerates the session.
+- `app/Actions/UpdateOrganization.php` updates the bound organization with the
+  validated attributes and nothing else.
+
+## Bulk membership actions
+
+`app/Http/Controllers/OrganizationMemberBulkController.php` applies one action to
+a selection of members through `ApplyBulkAction`. `app/Enums/BulkMembershipAction.php`
+has three cases. `Suspend` and `Reactivate` map to the `update` ability and
+`Remove` maps to `delete`, so the bulk path asks the same policy the single
+record routes do, per record. The controller's own gate is only
+`members.view`. It refuses to remove the acting user's own row with a validation
+error on `ids`, and reports row by row so the screen can name members that were
+left alone. `app/Http/Requests/BulkOrganizationMembershipRequest.php` validates
+`action` as that enum, `ids` as strings and `allMatching` as a boolean; absent
+`allMatching` means the visible page, true means every record the filters match.
+
+## Form requests
+
+| Request | Rules it holds |
+| --- | --- |
+| `app/Http/Requests/CreateOrganizationRequest.php` | `name`, required, max 255 |
+| `app/Http/Requests/UpdateOrganizationRequest.php` | `name`; `slug` lowercase, kebab-case regex, unique among organizations except the bound one; `require_two_factor` boolean |
+| `app/Http/Requests/UpdateOrganizationSwitchRequest.php` | `organization` must be a uuid that exists and is not soft-deleted; `bail` and `uuid` come first because PostgreSQL errors on a non-uuid compared to a uuid column |
+| `app/Http/Requests/CreateOrganizationInvitationRequest.php` | `email` lowercase, max 255, `ValidEmail`; `role` string, max 255 |
+| `app/Http/Requests/UpdateOrganizationMembershipRequest.php` | `role` and `status` (`MembershipStatus`), each `sometimes` and required when present |
+
+None of these checks that the role exists or that the user may do the thing.
+The action checks the role and the policy checks the person.
+
+## Invitation payload for the AI path
+
+`app/Data/InviteMemberData.php` is the typed payload of an `invite-member`
+proposal: `email` (required, valid email) and `role` (required, max 255). The
+model fills it in and validation rejects invented fields or shapes before
+`app/Ai/Actions/InviteMember.php` runs ([[domains/ai-confirm-tokens]]).
 
 ## Suspension, not deletion
 

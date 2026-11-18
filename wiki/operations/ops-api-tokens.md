@@ -11,7 +11,9 @@ code_refs:
     - app/Policies/ApiTokenPolicy.php
     - app/Console/Commands/PruneApiTokensCommand.php
     - tests/Feature/ApiTokenTest.php
-updated: 2026-09-01
+    - app/Data/ApiTokenData.php
+    - app/Support/ApiAbilities.php
+updated: 2026-11-18
 ---
 
 # Per-organization API tokens
@@ -33,8 +35,14 @@ it, revoke the old one through `App\Actions\RevokeApiToken`.
 ## Abilities and expiry
 
 A token carries a list of scoped abilities (`read:users` and friends) and an
-optional expiry. `StoreApiTokenRequest` validates both; `ApiTokenPolicy`
+optional expiry. `StoreApiTokenRequest` validates both, and abilities must be in `ApiAbilities::all()`, which derives one `read:<key>` per registered resource at call time (`app/Support/ApiAbilities.php`), so a new resource needs no change here; `ApiTokenPolicy`
 decides who in the organization may manage tokens at all.
+
+## What the list shows
+
+`ApiTokenData` is the settings row: id, name, abilities, last-used and expiry
+times, creation time. The plaintext is not a field and, per its docblock,
+exists only in the flash message of the creating request.
 
 ## Retention
 

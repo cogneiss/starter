@@ -18,6 +18,7 @@ code_refs:
     - tests/Feature/RealtimeNoKeyTest.php
     - tests/Mutations/phase10-channel.patch
     - tests/Mutations/phase10-unread-scope.patch
+    - app/Data/NotificationData.php
 updated: 2026-11-18
 ---
 
@@ -40,6 +41,11 @@ mark-as-read routes — starts from `(user, organization)`. Someone else's
 notification id is not found rather than refused, so it answers 404.
 `tests/Mutations/phase10-unread-scope.patch` removes the organization from the
 unread query and `tests/Feature/NotificationScopeTest.php` is what notices.
+
+`App\Data\NotificationData` is one row as the panel draws it: `id`, `title`,
+`url` and an ISO 8601 `created_at`. A title or url that is missing from the
+stored data becomes the translated word "Notification" and null. The shared
+props in `HandleInertiaRequests` build the recent list from it.
 
 ## The broadcast carries nothing
 

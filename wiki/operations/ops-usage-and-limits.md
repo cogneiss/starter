@@ -12,7 +12,9 @@ code_refs:
     - config/api.php
     - tests/Feature/ApiUsageTest.php
     - tests/Feature/RateTierTest.php
-updated: 2026-10-28
+    - app/Data/ApiUsageData.php
+    - app/Data/ApiUsageRowData.php
+updated: 2026-11-18
 ---
 
 # API usage logging and rate tiers
@@ -35,7 +37,10 @@ the standard rate-limit headers when either is exceeded.
 The usage page in organization settings reads the same log rows through
 `SummarizeApiUsage` — requests over time, top routes, and how close the
 organization is to its tier. There is no second bookkeeping to drift from the
-truth.
+truth. `ApiUsageData` is the shape it returns: the start of the window,
+total and throttled request counts, the tier name, its limit and what remains,
+and three breakdowns (`daily`, `endpoints`, `tokens`) of `ApiUsageRowData`
+rows, each a name and a request count.
 
 ## Retention
 

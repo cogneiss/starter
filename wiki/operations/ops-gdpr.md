@@ -11,7 +11,8 @@ code_refs:
     - tests/Feature/GdprExportTest.php
     - tests/Feature/GdprDeleteTest.php
     - tests/Feature/GdprPurgeTest.php
-updated: 2026-09-01
+    - app/Notifications/GdprExportReady.php
+updated: 2026-11-18
 ---
 
 # GDPR export and deletion
@@ -23,7 +24,7 @@ Two obligations, two mechanisms: access (export what we hold) and erasure
 
 A user requests their export from settings; `BuildGdprExport` runs on the
 queue and assembles a ZIP of their personal data across the models that hold
-any. The download link is signed and expires. `php artisan gdpr:export
+any. The download link is signed and expires. When the ZIP is built, `BuildGdprExport` notifies the user with `GdprExportReady`, an in-app (database) notification whose link is a temporary signed route to `gdpr-export.download`, valid for one day; per its docblock the file name alone is useless without the signature and the requester's own session. `php artisan gdpr:export
 <user>` queues the same job from the console for a request that arrives by
 email instead of by click.
 

@@ -16,6 +16,18 @@ code_refs:
     - app/Actions/LinkSocialAccount.php
     - app/Actions/EnabledSocialProviders.php
     - app/Http/Requests/CreateSessionRequest.php
+    - app/Actions/CreateUser.php
+    - app/Actions/CreateUserEmailResetNotification.php
+    - app/Actions/CreateUserEmailVerificationNotification.php
+    - app/Actions/CreateUserMagicLinkNotification.php
+    - app/Actions/CreateUserPassword.php
+    - app/Http/Controllers/UserEmailResetNotificationController.php
+    - app/Http/Controllers/UserEmailVerificationNotificationController.php
+    - app/Http/Requests/CreateUserEmailResetNotificationRequest.php
+    - app/Http/Requests/CreateUserMagicLinkRequest.php
+    - app/Http/Requests/CreateUserPasswordRequest.php
+    - app/Http/Requests/ShowUserTwoFactorAuthenticationRequest.php
+    - app/Http/Requests/UpdateEmailVerificationRequest.php
 updated: 2026-11-18
 ---
 
@@ -80,6 +92,45 @@ that decides which of `google` and `github` are live: the
 non-empty. `SessionController` passes that list to the login page and
 `SocialAuthController` returns a 404 for any provider outside it
 ([[domains/feature-flags]]).
+
+## Sign-up, reset, magic link and verification mechanics
+
+Each of these is a thin controller over an action in `app/Actions`.
+
+- **Sign-up.** `app/Actions/CreateUser.php` runs in one transaction: it creates
+  the user, creates a personal organization named after the user through
+  `CreateOrganization`, and fires `Registered`. `UserController::store` then logs
+  the user in and regenerates the session.
+- **Password reset request.** `UserEmailResetNotificationController::store`
+  passes only the email to `app/Actions/CreateUserEmailResetNotification.php`,
+  which calls `Password::sendResetLink`. The reply is the same sentence whether
+  or not the account exists. `CreateUserEmailResetNotificationRequest` checks
+  only `required` and `email`; it does not use `ValidEmail`.
+- **Password reset.** `app/Actions/CreateUserPassword.php` wraps
+  `Password::reset` in a transaction, sets the new password, rotates
+  `remember_token` and fires `PasswordReset`. `CreateUserPasswordRequest`
+  requires `token`, `email` and a confirmed password meeting `Password::defaults()`.
+  `UserPasswordController::store` turns any status other than a successful reset
+  into a validation error on `email`.
+- **Magic link.** `app/Actions/CreateUserMagicLinkNotification.php` returns
+  silently for an unknown email. Otherwise it stores a 40-character random token
+  in the cache under `magic-link:<token>` with the user id, for
+  `auth.magic_link.expire` minutes, and notifies the user. Tokens live in the
+  cache, so production needs a shared, persistent `CACHE_STORE`.
+  `CreateUserMagicLinkRequest` validates the email with `ValidEmail`. In
+  `routes/web.php` both the request and the link itself are `throttle:6,1`, and
+  the request also carries `friction`.
+- **Verification email.** `UserEmailVerificationNotificationController` redirects
+  an already verified user to the dashboard on both `create` and `store`;
+  otherwise `store` calls `app/Actions/CreateUserEmailVerificationNotification.php`
+  and flashes `verification-link-sent`. The route is `throttle:6,1`.
+- **Two-factor screen.** `ShowUserTwoFactorAuthenticationRequest` has no rules.
+  It exists to mix in Fortify's `InteractsWithTwoFactorState` for
+  `UserTwoFactorAuthenticationController::show`.
+
+`app/Http/Requests/UpdateEmailVerificationRequest.php` is an empty subclass of
+Laravel's `EmailVerificationRequest`, but nothing in `app` or `routes` references
+it: `UserEmailVerificationController::update` type-hints the framework class.
 
 ## One login flow, no driver setting
 

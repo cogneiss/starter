@@ -13,6 +13,7 @@ code_refs:
     - vendor/sentry/sentry-laravel/src/Sentry/Laravel/Features/Feature.php
     - app/Ai/Middleware/RecordAudit.php
     - tests/Feature/ErrorReporterTest.php
+    - app/Support/Reporting/ReportsErrors.php
 updated: 2026-11-18
 ---
 
@@ -22,6 +23,15 @@ The application reports through `App\Contracts\ErrorReporter`, an interface
 with two implementations. With `SENTRY_DSN` set, `SentryErrorReporter` sends
 exceptions to Sentry with the release from `SENTRY_RELEASE`; with the key
 blank, `NullErrorReporter` is bound and every report is a no-op.
+
+## The shared half
+
+`ReportsErrors` (`app/Support/Reporting/ReportsErrors.php`) is the trait both
+reporters use; only `send()` differs. `report()` mints one reference UUID per
+throwable, remembers it in a `WeakMap` so `reference()` can repeat it in the 500
+payload, and passes a context of identifiers only: organization id, user id, a
+per-request id shared by every error in that request, and the release. Request
+body, headers and tokens are left out on purpose.
 
 ## Why a seam and not the SDK
 

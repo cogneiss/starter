@@ -12,7 +12,15 @@ code_refs:
     - app/Models/LoginHistory.php
     - app/Http/Middleware/HandleAppearance.php
     - app/Models/AiMemory.php
-updated: 2026-10-28
+    - app/Actions/UpdateUser.php
+    - app/Actions/UpdateUserPassword.php
+    - app/Http/Requests/DeleteBrowserSessionRequest.php
+    - app/Http/Requests/DeleteUserRequest.php
+    - app/Http/Requests/UpdateUserLocaleRequest.php
+    - app/Http/Requests/UpdateUserNotificationPreferenceRequest.php
+    - app/Http/Requests/UpdateUserPasswordRequest.php
+    - app/Http/Requests/UpdateUserRequest.php
+updated: 2026-11-18
 ---
 
 # Account settings
@@ -59,6 +67,31 @@ privacy request finds later.
 
 Logging out the other browsers is `app/Actions/DeleteOtherBrowserSessions.php`,
 behind a password confirmation.
+
+## Writes and their requests
+
+- **Profile.** `app/Http/Requests/UpdateUserRequest.php` requires a name and a
+  lowercase, unique email (ignoring the user's own row). `app/Actions/UpdateUser.php`
+  clears `email_verified_at` and sends a new verification email only when the
+  email actually changed.
+- **Password.** `app/Http/Requests/UpdateUserPasswordRequest.php` requires the
+  current password and a confirmed new one meeting `Password::defaults()`.
+  `app/Actions/UpdateUserPassword.php` only sets the column; the route adds
+  `throttle:6,1`.
+- **Delete account and log out other browsers.** `DeleteUserRequest` and
+  `DeleteBrowserSessionRequest` each validate one field, `password`, with the
+  `current_password` rule. `UserController::destroy` logs out, runs `DeleteUser`,
+  then invalidates the session and regenerates the CSRF token.
+- **Language.** `app/Http/Requests/UpdateUserLocaleRequest.php` accepts only a
+  value in `app.supported_locales`. `UserLocaleController` saves it on the user
+  and in the session, so the redirect already renders in the new language
+  ([[domains/ux-i18n]]).
+- **Notification preferences.** `app/Http/Requests/UpdateUserNotificationPreferenceRequest.php`
+  builds one required boolean rule per notification and channel pair in
+  `User::NOTIFICATION_CHANNELS` (today only `organization_invitation_notification`
+  on `mail` and `database`), and `preferences()` returns the matrix in the shape
+  the `notification_preferences` column stores. The screen is
+  `settings/notifications` in `UserNotificationPreferenceController`.
 
 Login history rows are written by listeners rather than by these controllers
 ([[domains/events-and-notifications]]). `LoginHistory` has no resource adapter,

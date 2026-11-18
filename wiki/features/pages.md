@@ -21,6 +21,8 @@ code_refs:
     - resources/js/components/activity-chart.tsx
     - resources/js/pages/value-gallery.tsx
     - resources/js/pages/organization/ai-usage.tsx
+    - app/Support/Blog/BlogPost.php
+    - app/Http/Controllers/DashboardController.php
 updated: 2026-11-18
 ---
 
@@ -33,7 +35,8 @@ What ships rendered, and nothing more:
 - `/blog`, `/blog/{slug}` and `/changelog` — the public site beside the welcome
   page. A post is a Markdown file in `content/blog/` with `title`, `description`
   and `date` front matter (`author` and `draft` optional), read by
-  `App\Actions\LoadBlogPosts`; drafts show everywhere except production. The
+  `App\Actions\LoadBlogPosts`, which builds one `App\Support\Blog\BlogPost`
+  (slug, title, description, date, draft, author, body) per file; drafts show everywhere except production. The
   slug is matched against the loaded posts and constrained to `[a-z0-9-]+`, so
   it never becomes a path. `/changelog` renders the repository's `CHANGELOG.md`.
   Both go through `App\Actions\RenderMarkdown`, which escapes raw HTML and drops
@@ -54,11 +57,16 @@ What ships rendered, and nothing more:
   There is no separate server entry: `resources/js/app.tsx` is the only one, and
   `@inertiajs/vite` in `vite.config.ts` supplies the SSR bootstrap.
 - `/dashboard` — behind `auth`, `verified`, `organization`, `two-factor` and `onboarded`
-  (`resources/js/pages/dashboard.tsx`, which declares its `AppLayout` and
+  (`resources/js/pages/dashboard.tsx`, fed by `App\Http\Controllers\DashboardController`, which declares its `AppLayout` and
   breadcrumbs through `Dashboard.layout` rather than wrapping its markup). It renders server-supplied count widgets,
   a deferred API-requests-per-day chart (`resources/js/components/activity-chart.tsx`,
   a skeleton until the data arrives; the page reads the `activity` prop through `Deferred`, drawn with recharts) and, until it is finished or dismissed, the activation checklist
-  ([[domains/ux-onboarding]]).
+  ([[domains/ux-onboarding]]). The controller keeps a map of widgets to the
+  ability each needs (`members.view` for members, `members.invite` for pending
+  invitations) and gathers a widget's count only when the user holds it, so a
+  widget they may not see is absent from the props. The chart data is
+  `SummarizeApiUsage` over the last 30 days, sent as a deferred prop. Outside an
+  organization context the controller throws.
 - `/csrf-token` and `/.well-known/passkey-endpoints` have no page: the first is an
   empty response, the second a JSON pointer to the passkey settings screen.
 - The auth and settings screens listed in [[features/authentication]] and

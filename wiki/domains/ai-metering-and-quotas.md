@@ -19,6 +19,13 @@ code_refs:
     - app/Console/Commands/AiUsageCommand.php
     - tests/Feature/Ai/AiQuotaTest.php
     - tests/Feature/Console/AiUsageCommandTest.php
+    - app/Actions/DebitAiCredits.php
+    - app/Actions/GrantAiCredits.php
+    - app/Data/AiUsageData.php
+    - app/Data/AiUsageRowData.php
+    - app/Enums/AiAuditStatus.php
+    - app/Exceptions/AiQuotaExceededException.php
+    - app/Http/Controllers/OrganizationAiUsageController.php
 updated: 2026-11-18
 ---
 
@@ -146,3 +153,41 @@ bound and naming one is what `--org` is for. The page always passes the bound
 organization, and `tests/Feature/Controllers/AiUsagePageTest.php` proves another
 organization's rows are never counted there. That is the sanctioned exception
 described in [[architecture/fail-closed-scoping]].
+
+## The credit ledger
+
+Credit is a ledger, not a column: `app/Models/AiCreditLedgerEntry.php` appends
+signed micro-amounts and the balance is their sum. Two actions are the only way
+in, per the model's own docblock.
+
+`app/Actions/DebitAiCredits.php` takes a positive amount and posts it negative.
+`RecordAudit` calls it once per invocation with the audit row as the reference
+and no actor. A caller that does pass an actor has `create` on
+`AiCreditLedgerEntry` authorized inside the organization's context.
+`app/Actions/GrantAiCredits.php` is the mirror image: a positive amount posts
+positive, with the same optional actor check. The seed and console paths pass no
+actor. Both throw `InvalidArgumentException` for an amount of zero or less.
+`tests/Feature/Ai/AiCreditTest.php` exercises them. No caller of `GrantAiCredits` was found in `app/`, so
+how credit gets granted outside tests is not documented.
+
+## Statuses and the quota error
+
+`app/Enums/AiAuditStatus.php` has three values: `ok`, `blocked` and `error`.
+`AiQuota` excludes `blocked` from its counts, and `SummarizeAiUsage` counts them
+into the `blocked` total.
+
+`app/Exceptions/AiQuotaExceededException.php` is thrown by `EnforceQuota` and
+renders a JSON 429 with `error: ai_quota_exceeded`, so the client can tell a
+quota refusal from a provider failure. `app/Providers/AiServiceProvider.php`
+also registers a friendly message for it as a 429.
+
+## The usage page and its Data
+
+`app/Http/Controllers/OrganizationAiUsageController.php` serves
+`settings/organization/ai-usage`. It takes the bound organization, authorizes
+`view` on it, and renders `organization/ai-usage` with `SummarizeAiUsage` over the
+last 30 days. `app/Data/AiUsageData.php` is the report shape (`since`, `runs`,
+`tokens`, `cost_micros`, `blocked`, plus `agents` and `tiers`), and
+`app/Data/AiUsageRowData.php` is one row of either breakdown (`name`, `runs`,
+`tokens`, `cost_micros`). The same `AiUsageData` answers `ai:usage --json`, per
+its docblock.

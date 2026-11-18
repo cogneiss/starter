@@ -14,7 +14,16 @@ code_refs:
     - app/Actions/SyncPermissions.php
     - app/Console/Commands/SyncPermissionsCommand.php
     - config/permission.php
-updated: 2026-11-15
+    - app/Policies/ActivityPolicy.php
+    - app/Policies/AiAuditLogPolicy.php
+    - app/Policies/AiConfirmTokenPolicy.php
+    - app/Policies/AiCreditLedgerEntryPolicy.php
+    - app/Policies/AiDocumentPolicy.php
+    - app/Policies/ApiRequestLogPolicy.php
+    - app/Policies/OnboardingProgressPolicy.php
+    - app/Policies/WebhookDeliveryPolicy.php
+    - app/Policies/WebhookEndpointPolicy.php
+updated: 2026-11-18
 ---
 
 # Roles, permissions and policies
@@ -29,7 +38,7 @@ member in another.
 
 ## Policies
 
-Four ship, one per authorizable resource:
+Four ship for the organization itself, one per authorizable resource, and nine more guard the AI, audit, API, webhook and onboarding records (next section):
 
 - `OrganizationPolicy`
 - `OrganizationMembershipPolicy`
@@ -51,6 +60,48 @@ owner role is a different act from handing them a role the organization invented
 Neither shape is an exemption. A list that passes `viewAny()` still returns rows
 from a query narrowed to the bound organization, so a foreign id is absent rather
 than forbidden ([[domains/multi-tenancy]]).
+## Policies for the platform and AI layers
+
+Nine more policies follow the same shape. Each takes `OrganizationContext`, and
+each method checks the bound organization and a named permission from
+`app/Support/PermissionCatalog.php`. `viewAny()` and `create()` use
+`$this->context->id() !== null`; the record methods use
+`$this->context->id() === $record->organization_id`.
+
+| Policy | Model | Methods and permission |
+| --- | --- | --- |
+| `app/Policies/ActivityPolicy.php` | `Activity` | `viewAny`, `view`: `audit.view` |
+| `app/Policies/AiAuditLogPolicy.php` | `AiAuditLog` | `viewAny`, `view`: `ai.view` |
+| `app/Policies/AiConfirmTokenPolicy.php` | `AiConfirmToken` | `viewAny`: `ai.view`; `view`: `ai.view` and the token's `user_id` must be the viewer |
+| `app/Policies/AiCreditLedgerEntryPolicy.php` | `AiCreditLedgerEntry` | `viewAny`, `view`: `ai.view`; `create`: `ai.grant` |
+| `app/Policies/AiDocumentPolicy.php` | `AiDocument` | `viewAny`, `view`: `ai.view` |
+| `app/Policies/ApiRequestLogPolicy.php` | `ApiRequestLog` | `viewAny`, `view`: `api.tokens.view` |
+| `app/Policies/WebhookEndpointPolicy.php` | `WebhookEndpoint` | `viewAny`: `webhooks.view`; `create`, `update`, `delete`: `webhooks.manage` |
+| `app/Policies/WebhookDeliveryPolicy.php` | `WebhookDelivery` | `viewAny`: `webhooks.view`; `replay`: `webhooks.manage` |
+| `app/Policies/OnboardingProgressPolicy.php` | `OnboardingProgress` | `manage`: no permission, the row's `user_id` must be the user |
+
+Notes from the files themselves:
+
+- The activity, AI audit and API request logs are append-only, so the policies
+  only cover reading. `ApiRequestLogPolicy` reuses `api.tokens.view` rather than
+  `api.usage.view`.
+- `AiCreditLedgerEntryPolicy` splits reading usage (`ai.view`) from adding
+  credit (`ai.grant`) on purpose: one is a usage question, the other money.
+- `AiConfirmTokenPolicy` does not gate running a confirmation. The doc comment
+  says `App\Actions\ConsumeConfirmToken` re-checks the proposed action's own
+  ability, which is stronger than a verb on the token row. That action was not
+  read for this page.
+- `AiDocumentPolicy` uses `ai.view` because an indexed document is organization
+  content a member already has, reached through an agent.
+- `WebhookEndpointPolicy` treats endpoints as the organization's, not the
+  creator's, so anyone with `webhooks.manage` may edit or delete a colleague's.
+  Replaying a delivery re-sends data to an external receiver, hence `manage`.
+- `OnboardingProgressPolicy` is one of the two exceptions in
+  `tests/Unit/AuthorizationConventionTest.php` and has no permission gate
+  ([[architecture/two-gate-authorization]]). It still compares the organization.
+  Its doc comment says the real gate is the where clauses in
+  `OnboardingProgress::ownedBy()`, so a foreign row is missing rather than
+  refused, and the policy repeats the pair as a second lock.
 
 ## The permission catalog
 

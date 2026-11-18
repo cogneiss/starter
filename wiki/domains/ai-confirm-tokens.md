@@ -10,7 +10,13 @@ code_refs:
     - app/Ai/Contracts/ConfirmableAction.php
     - tests/Feature/Ai/ConfirmTokenTest.php
     - tests/Feature/Ai/ConfirmTokenLockTest.php
-updated: 2026-11-15
+    - app/Http/Controllers/AiConfirmController.php
+    - app/Data/AiConfirmTokenData.php
+    - app/Resources/Definitions/AiConfirmTokenResource.php
+    - app/Exceptions/InvalidConfirmToken.php
+    - app/Ai/Actions/InviteMember.php
+    - app/Ai/Actions/RememberFactData.php
+updated: 2026-11-18
 ---
 
 # AI confirm tokens
@@ -66,3 +72,44 @@ rather than a cheaper way to ask for something else.
 
 The tokens are rendered by a confirm block — see [[domains/ai-blocks]] — and the
 tool that mints them is in [[domains/ai-agents-and-tools]]. `remember-fact` is a built-in action merged in by `app/Ai/ConfirmableActions.php`.
+
+## The confirm route
+
+`app/Http/Controllers/AiConfirmController.php` handles `POST ai/confirm/{token}`.
+It calls `ConsumeConfirmToken` for the signed-in user, flashes a success toast
+(`Done.`) and goes back. It does no checking of its own. The route sits inside a
+`throttle:30,1` group in `routes/web.php`.
+
+## What a refusal looks like
+
+`app/Exceptions/InvalidConfirmToken.php` has one named constructor per refusal in
+the table above, plus `unmappedAction()`. The messages are plain and never repeat
+the payload. The exception renders itself: it flashes an error toast and redirects
+back, because a replay or an expired token is an ordinary answer to someone who
+clicked a stale button, not a server fault.
+
+## What the client sees
+
+`app/Data/AiConfirmTokenData.php` is the shape sent to the browser: id, action,
+summary and `expires_at`. The payload is left out on purpose, so the browser
+cannot edit what will run.
+
+`app/Resources/Definitions/AiConfirmTokenResource.php` registers confirmations as
+the `ai-confirm-tokens` resource, so they can be listed and searched by
+`summary` and `action`. Its `scopedQuery()` adds `user_id = auth()->id()` on top
+of the organization scope, matching what `AiConfirmTokenPolicy::view` allows, and
+returns no rows when nobody is signed in. A record links back to the dashboard,
+where the assistant panel raised it.
+
+## Built-in and shipped actions
+
+`app/Ai/Actions/InviteMember.php` is the shipped example, registered as
+`invite-member` in `config/ai.php`. It adds no logic: `confirm()` calls
+`CreateOrganizationInvitation` for the bound organization, so an invitation an
+agent proposed and one a person typed run the same code under the same policy.
+Its ability is `members.invite`.
+
+`app/Ai/Actions/RememberFactData.php` is the payload of the `remember-fact`
+proposal: a `key` of at most 100 characters and a `value` of at most 500. The
+caps keep one confirmed fact short enough to sit in a prompt. What happens on
+confirmation is in [[domains/ai-memory]].

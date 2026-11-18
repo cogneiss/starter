@@ -21,6 +21,9 @@ code_refs:
     - tests/Feature/AnnouncementTest.php
     - tests/Feature/Controllers/AdminAccessTest.php
     - tests/Feature/Controllers/AdminPagesTest.php
+    - app/Data/AnnouncementData.php
+    - app/Enums/AnnouncementLevel.php
+    - app/Http/Requests/SaveAnnouncementRequest.php
 updated: 2026-11-18
 ---
 
@@ -57,7 +60,7 @@ The `announcements` page is the one admin page with write screens:
 `AdminAnnouncementController` creates, edits and deletes through
 `SaveAnnouncement` and a Precognition form against `SaveAnnouncementRequest`,
 which the page builds with the `useForm` that `@inertiajs/react` ships.
-The message field carries a draft-with-AI button (`announcement.body` in `DraftableFields`, gated by the `platform` ability) when the feature flag is on. An announcement has a level, a `starts_at`/`ends_at` window and an optional
+The message field carries a draft-with-AI button (`announcement.body` in `DraftableFields`, gated by the `platform` ability) when the feature flag is on. `SaveAnnouncementRequest` requires a title (255), a body (500), a level, a `starts_at`, an optional `ends_at` after it, and an optional existing organization id. `AnnouncementLevel` is `info` or `warning`. `AnnouncementData` (shared to the front end as `AnnouncementBanner`) is the id, title, body and level the banner needs. An announcement has a level, a `starts_at`/`ends_at` window and an optional
 organization (none means every organization). `VisibleAnnouncements` is
 the single visibility query: `HandleInertiaRequests` shares the result for the
 member's current organization, minus what `notDismissedBy()` filters out, and

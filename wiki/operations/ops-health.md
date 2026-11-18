@@ -14,6 +14,8 @@ code_refs:
     - config/health.php
     - bootstrap/app.php
     - tests/Feature/HealthTest.php
+    - app/Enums/HealthStatus.php
+    - app/Jobs/QueueHeartbeat.php
 updated: 2026-11-18
 ---
 
@@ -32,7 +34,10 @@ and its response is not defined in this repository.
 
 The checks run on `spatie/laravel-health`. `AppServiceProvider::boot()`
 registers them on the package's `Health` registry, and `HealthReport` runs each
-one, times it and folds the results into the overall status. A check that
+one, times it and folds the results into the overall status. `HealthStatus` is the three-value outcome: `ok`, `degraded` (the app can serve,
+somebody should look) and `failed`. The package's warning maps to `degraded`,
+and `HealthController` answers 503 only when the overall status is `failed`.
+A check that
 throws, or returns anything but ok or warning, counts as failed, and the
 exception message is dropped because the endpoint is public.
 
@@ -44,7 +49,8 @@ check only opens a connection, because behind a pooler or in a long-lived
 worker an open connection proves nothing. Its failure message is fixed text,
 never the driver error.
 `QueueCheck` dispatches a real heartbeat job and waits for a worker to mark it
-processed. `DiskCheck` warns on a path it cannot measure instead of reading it
+processed. The job is `QueueHeartbeat`: it writes the one-off token it was
+given into the cache for 60 seconds, which is the worker's proof of life. `DiskCheck` warns on a path it cannot measure instead of reading it
 as empty. `DebugModeCheck` warns, rather than fails, when `APP_DEBUG` is on in
 production, because the package's check would fail every local machine.
 `ScheduleCheck` reads the cache key the `health-heartbeat` task in

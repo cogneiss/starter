@@ -14,6 +14,17 @@ code_refs:
     - app/Http/Middleware/HandleAppearance.php
     - app/Http/Middleware/HonorDoNotTrack.php
     - app/Http/Controllers/OrganizationController.php
+    - app/Http/Requests/CreateUserEmailResetNotificationRequest.php
+    - app/Http/Requests/CreateUserMagicLinkRequest.php
+    - app/Http/Requests/CreateUserPasswordRequest.php
+    - app/Http/Requests/DeleteBrowserSessionRequest.php
+    - app/Http/Requests/DeleteUserRequest.php
+    - app/Http/Requests/ShowUserTwoFactorAuthenticationRequest.php
+    - app/Http/Requests/UpdateEmailVerificationRequest.php
+    - app/Http/Requests/UpdateUserLocaleRequest.php
+    - app/Http/Requests/UpdateUserNotificationPreferenceRequest.php
+    - app/Http/Requests/UpdateUserPasswordRequest.php
+    - app/Http/Requests/UpdateUserRequest.php
 updated: 2026-11-18
 ---
 
@@ -145,6 +156,17 @@ Every write goes through a form request in `app/Http/Requests`, named after the
 action it validates (`CreateUserRequest`, `UpdateOrganizationRequest`, and so on).
 Email fields use `app/Rules/ValidEmail.php` rather than each request inventing its
 own rule.
+
+The account and sign-in requests are explained where they are used:
+`CreateUserEmailResetNotificationRequest`, `CreateUserMagicLinkRequest`,
+`CreateUserPasswordRequest`, `ShowUserTwoFactorAuthenticationRequest` and
+`UpdateEmailVerificationRequest` in [[features/authentication]];
+`UpdateUserRequest`, `UpdateUserPasswordRequest`, `DeleteUserRequest`,
+`DeleteBrowserSessionRequest`, `UpdateUserLocaleRequest` and
+`UpdateUserNotificationPreferenceRequest` in [[features/account-settings]].
+The `ValidEmail` rule is not universal: `CreateUserEmailResetNotificationRequest`
+and `UpdateUserRequest` use the plain `email` rule, while
+`CreateUserMagicLinkRequest` uses `ValidEmail`.
 
 Authorization does not live here; it lives in the policies
 ([[architecture/two-gate-authorization]]).

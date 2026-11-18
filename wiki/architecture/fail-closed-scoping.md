@@ -8,7 +8,8 @@ code_refs:
     - app/Exceptions/OrganizationContextMissing.php
     - config/organizations.php
     - .ai/rules/app.md
-updated: 2026-08-31
+    - app/Resources/ScopedToOrganization.php
+updated: 2026-11-18
 ---
 
 # Why organization scoping is fail-closed
@@ -44,6 +45,18 @@ organization.
   container between jobs, so whatever the previous job bound is still bound when
   the next one starts; every job touching a scoped model rebinds through this
   rather than trusting what it inherited ([[operations/runtime]]).
+
+## Resources without the global scope
+
+`app/Resources/ScopedToOrganization.php` is a trait for resource definitions
+whose model does not use `BelongsToOrganization`. Its `scopedToOrganization()`
+takes a closure that builds the query from the bound `Organization`. With no
+organization bound it runs the closure against an unsaved `Organization` to keep
+the query's shape and adds `whereRaw('1 = 0')`, so the result is no rows, never
+every row. It narrows with a where clause on the query the caller receives, not
+by filtering afterwards. It does not throw, unlike the model scope; the file does
+not say why. The resources using it today are `OrganizationResource`,
+`OrganizationMemberResource` and `UserResource` in `app/Resources/Definitions`.
 
 ## The one switch, and its only use
 

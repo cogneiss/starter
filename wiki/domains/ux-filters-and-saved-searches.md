@@ -15,7 +15,10 @@ code_refs:
     - tests/Feature/Resources/SavedSearchScopeTest.php
     - tests/Mutations/phase4-serializer.patch
     - tests/Mutations/phase6-predicate.patch
-updated: 2026-10-28
+    - app/Data/ResourceFilterOptionData.php
+    - app/Data/SavedSearchData.php
+    - app/Http/Requests/SavedSearchRequest.php
+updated: 2026-11-18
 ---
 
 # Faceted filters, URL state and saved searches
@@ -50,6 +53,9 @@ produces an unfiltered list rather than a 500.
 
 ## Facets
 
+`App\Data\ResourceFilterOptionData` is one choice inside a facet: a `value`, a
+`label` and a `count`. `ResourceFilterData` builds the list of them.
+
 Facet counts are taken from the query **before** the filters narrow it, so an
 option can say how many rows it would leave rather than how many the current
 selection already left. A count is scoped like everything else; a facet that
@@ -76,6 +82,16 @@ every write starts: the organization arrives from the global scope, the person
 from the predicate. Someone else's saved search — in this organization or
 another — is **absent from the result set** rather than found and then refused,
 so the id of a search belonging to a colleague answers 404.
+
+`App\Http\Requests\SavedSearchRequest` validates the save. On create it needs
+a `resource` key the `ResourceRegistry` knows, a `name` of at most 60
+characters, an optional `query` array and `is_default`; on update only `name`
+and `is_default`, each optional. The stored query is checked for being an array
+and nothing more, because what a sort column or filter key means belongs to the
+resource. `ResourceQuery` decides again on every read.
+`App\Data\SavedSearchData` is what the menu draws: it passes the stored query
+back through `ResourceQuery::fromParameters()` first, so a view the resource no
+longer supports is not offered as it was written.
 
 One search per resource may be marked default. It applies only when the request
 says nothing about the list itself: if any of `ResourceQuery::PARAMETERS` is

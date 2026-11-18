@@ -12,6 +12,8 @@ code_refs:
     - resources/js/app.tsx
     - resources/css/app.css
     - vite.config.ts
+    - app/Support/FormFriction.php
+    - config/security.php
 updated: 2026-11-18
 ---
 
@@ -44,9 +46,22 @@ sonner out of pre-bundling so the strip also runs under the dev server.
 
 `ProtectPublicForm` slows abuse of the unauthenticated forms (registration,
 login, magic links): a honeypot field no human fills, a minimum time between
-render and submit no script waits for, and throttling on top. All friction is
-invisible to a person — no CAPTCHA — and a rejection is indistinguishable
-from a validation error, so a bot learns nothing about which trap it hit.
+render and submit no script waits for, and a maximum age on the form. The
+`friction` alias (`bootstrap/app.php`) is applied in `routes/web.php` to the
+registration, magic-link and invitation-acceptance submissions, the last two
+alongside `throttle:6,1`. All friction is
+invisible to a person, with no CAPTCHA. A tripped check does not show an error:
+the middleware answers as if the request succeeded (a status message for the
+magic link, a redirect for the others) and logs the route and the reason, never
+the input. A bot learns nothing about which trap it hit.
+
+`FormFriction` (`app/Support/FormFriction.php`) holds the checks. `props()` gives
+a form page the honeypot field name and an encrypted timestamp token. `tripped()`
+returns `honeypot` when the field is filled, `token` when the token will not
+decrypt, `dwell` when the form came back sooner than `min_seconds`, and `age`
+when it is older than `max_age_seconds`. Defaults in `config/security.php` are
+field `website`, 2 seconds and 3600 seconds. Precognitive requests skip the
+checks, since they only validate.
 
 Both are boot-time defaults, not opt-ins: removing either is an edit to the
 middleware stack you would have to make on purpose.
