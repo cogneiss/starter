@@ -9,18 +9,21 @@ code_refs:
     - app/Resources/Definitions/OrganizationResource.php
     - app/Resources/Definitions/OrganizationMemberResource.php
     - app/Resources/Definitions/OrganizationInvitationResource.php
+    - app/Resources/Definitions/AiConfirmTokenResource.php
+    - app/Resources/Definitions/AuditLogResource.php
     - app/Exceptions/UnknownResource.php
     - app/Console/Commands/MakeResourceCommand.php
     - app/Console/Commands/ResourceCacheCommand.php
     - app/Console/Commands/ResourceClearCommand.php
-updated: 2026-10-28
+updated: 2026-11-18
 ---
 
 # The resource spine
 
 One adapter per user-facing model in `app/Resources/Definitions`, auto-discovered
-by `app/Resources/ResourceRegistry.php`. Five ship: user, organization,
-organization member, organization invitation and AI confirm token. An unknown key
+by `app/Resources/ResourceRegistry.php`. Six ship: user, organization,
+organization member, organization invitation, AI confirm token and audit log
+([[operations/ops-audit-log]]). An unknown key
 throws `app/Exceptions/UnknownResource.php`.
 
 The thirteen methods, and why the contract grew from six, are in
