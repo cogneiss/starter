@@ -18,6 +18,12 @@ return [
         'clamav' => ClamAvScanner::class,
     ],
 
+    /** The disk an upload is stored on until it is scanned and promoted. */
+    'disk' => 'temp-uploads',
+
+    /** The largest file the import form accepts, in kilobytes. */
+    'max_kb' => 10240,
+
     /** How long an unpromoted upload survives before `uploads:prune` removes it. */
     'ttl_hours' => ($ttlHours = (int) env('UPLOAD_TTL_HOURS')) > 0 ? $ttlHours : 24,
 ];

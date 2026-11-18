@@ -23,7 +23,7 @@ final class TempUploadFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
-            'disk' => 'temp-uploads',
+            'disk' => config()->string('uploads.disk'),
             'path' => 'temp/'.fake()->uuid().'.csv',
             'original_name' => 'members.csv',
             'mime' => 'text/csv',

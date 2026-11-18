@@ -72,7 +72,8 @@ retryable once the file is fixed.
 
 `App\Http\Controllers\ImportController` has three actions. `create` and `store`
 both call `Gate::authorize('imports.run')`. `store` validates a `csv` or `txt`
-file of at most 10240 KB, writes it to the `temp-uploads` disk, records a
+file no larger than `uploads.max_kb` (10240 KB by default), writes it to the
+`uploads.disk` disk (`temp-uploads`), records a
 `TempUpload` (expiry from `uploads.ttl_hours`) and an `ImportBatch`, then
 dispatches `ScanTempUpload` and `ParseImportBatch` and redirects to the batch.
 The request never opens the file. `show` finds the batch through

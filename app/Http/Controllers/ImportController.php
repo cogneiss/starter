@@ -55,16 +55,18 @@ final readonly class ImportController
         $key = $imports->get($import)->key();
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:'.config()->integer('uploads.max_kb')],
         ]);
 
         $file = $request->file('file');
         assert($file instanceof UploadedFile);
 
+        $disk = config()->string('uploads.disk');
+
         $upload = TempUpload::query()->create([
             'user_id' => $user->id,
-            'disk' => 'temp-uploads',
-            'path' => (string) $file->store('imports', 'temp-uploads'),
+            'disk' => $disk,
+            'path' => (string) $file->store('imports', $disk),
             'original_name' => $file->getClientOriginalName(),
             'mime' => $file->getClientMimeType(),
             'size' => $file->getSize(),

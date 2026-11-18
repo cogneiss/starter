@@ -43,3 +43,20 @@ it('ImportQueued stores the file and dispatches instead of parsing in the reques
     $this->assertDatabaseCount('import_rows', 0);
     $this->assertDatabaseCount('organization_invitations', 0);
 });
+
+it('ImportQueued refuses a file over the configured size limit', function (): void {
+    Queue::fake();
+    Storage::fake('temp-uploads');
+    config()->set('uploads.max_kb', 1);
+
+    $organization = Organization::factory()->create();
+    $owner = User::factory()->forOrganization($organization)->create();
+
+    $this->actingAs($owner)
+        ->post(route('import.store', ['import' => 'organization-invitations']), [
+            'file' => UploadedFile::fake()->create('members.csv', 2, 'text/csv'),
+        ])
+        ->assertSessionHasErrors('file');
+
+    Queue::assertNothingPushed();
+});
