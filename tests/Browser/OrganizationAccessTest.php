@@ -156,7 +156,7 @@ it('accepts an invitation as the invitee and lands in the organization', functio
         ->and($accepted?->accepted_at)->not->toBeNull();
 });
 
-it('changes a member role and removes a member through the confirm dialog', function (): void {
+it('changes a member role and removes a member through the row button and confirm dialog', function (): void {
     $member = User::factory()->forOrganization($this->organization, 'Member')->create(['name' => 'Beth Member']);
 
     $membership = OrganizationMembership::query()
@@ -181,9 +181,14 @@ it('changes a member role and removes a member through the confirm dialog', func
 
     expect($roleOf())->toBe('Admin');
 
-    $page->click(sprintf('[data-test="select-%s"]', $membership->id))
-        ->select('[data-test="bulk-action"]', 'remove')
-        ->click('[data-test="bulk-apply"]')
+    $page->click(sprintf('[data-test="remove-%s"]', $membership->id))
+        ->assertPresent('[data-test="confirm-dialog"]')
+        ->click('[data-test="confirm-cancel"]')
+        ->assertSee('Beth Member');
+
+    expect(OrganizationMembership::query()->whereKey($membership->id)->exists())->toBeTrue();
+
+    $page->click(sprintf('[data-test="remove-%s"]', $membership->id))
         ->assertPresent('[data-test="confirm-dialog"]')
         ->click('[data-test="confirm-proceed"]')
         ->assertDontSeeIn('[data-test="table-body"]', 'Beth Member')

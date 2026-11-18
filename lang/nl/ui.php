@@ -99,4 +99,12 @@ return [
         'blog_by' => 'Door',
         'changelog_description' => 'Wat er in elke release is veranderd.',
     ],
+
+    'member_remove' => [
+        'button' => 'Verwijderen',
+        'title' => 'Dit lid verwijderen?',
+        'description' => 'Het lid verliest direct de toegang tot de organisatie. Dit kan niet ongedaan worden gemaakt.',
+        'confirm' => 'Verwijderen',
+        'cancel' => 'Annuleren',
+    ],
 ];

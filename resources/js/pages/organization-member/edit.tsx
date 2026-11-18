@@ -1,6 +1,7 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import { useMemo, type ComponentProps } from 'react';
 import OrganizationMemberController from '@/actions/App/Http/Controllers/OrganizationMemberController';
+import { useConfirm } from '@/components/confirm-dialog';
 import {
     DataTable,
     dataTableColumns,
@@ -13,6 +14,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { type PatchPayload, usePendingPatch } from '@/hooks/use-pending-patch';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { useTranslate } from '@/lib/i18n';
 import { create as invite } from '@/routes/organization-invitation';
 import { index as invitations } from '@/routes/organization-invitation';
 import { bulk, edit } from '@/routes/organization-member';
@@ -163,6 +165,25 @@ function MemberActions({
         data: PatchPayload,
     ) => void;
 }) {
+    const t = useTranslate();
+    const confirm = useConfirm();
+
+    async function removeMember() {
+        const confirmed = await confirm({
+            title: t('member_remove.title'),
+            description: t('member_remove.description'),
+            confirmLabel: t('member_remove.confirm'),
+            cancelLabel: t('member_remove.cancel'),
+            intent: 'destructive',
+        });
+
+        if (confirmed) {
+            router.delete(OrganizationMemberController.destroy.url(member.id), {
+                preserveScroll: true,
+            });
+        }
+    }
+
     return (
         <div
             className="flex items-center gap-2"
@@ -241,21 +262,15 @@ function MemberActions({
                 )}
             </Form>
 
-            <Form
-                {...OrganizationMemberController.destroy.form(member.id)}
-                options={{ preserveScroll: true }}
+            <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                data-test={`remove-${member.id}`}
+                onClick={() => void removeMember()}
             >
-                {({ processing }) => (
-                    <Button
-                        type="submit"
-                        size="sm"
-                        variant="destructive"
-                        disabled={processing}
-                    >
-                        Remove
-                    </Button>
-                )}
-            </Form>
+                {t('member_remove.button')}
+            </Button>
         </div>
     );
 }

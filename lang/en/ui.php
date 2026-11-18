@@ -101,4 +101,12 @@ return [
         'blog_by' => 'By',
         'changelog_description' => 'What changed in each release.',
     ],
+
+    'member_remove' => [
+        'button' => 'Remove',
+        'title' => 'Remove this member?',
+        'description' => 'They lose access to the organization straight away. This cannot be undone.',
+        'confirm' => 'Remove',
+        'cancel' => 'Cancel',
+    ],
 ];
