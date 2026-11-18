@@ -20,3 +20,4 @@ Schedule::command('tokens:prune')->daily();
 Schedule::command('api:prune-logs')->daily();
 Schedule::command('audit:prune')->daily();
 Schedule::command('gdpr:purge')->daily();
+Schedule::command('impersonation:end-stale')->hourly();

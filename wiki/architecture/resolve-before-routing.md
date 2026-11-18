@@ -41,7 +41,9 @@ Appending middleware to the `web` group is routine. The current order in
 `ReadOnlyWhileImpersonating`, `HandleAppearance`, `SetLocale`, `HonorDoNotTrack`, `ResolveOrganization`,
 `HandleBrand`, `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`.
 `ReadOnlyWhileImpersonating` refuses writes during an impersonated session, and
-sits right after the active-user check.
+sits right after the active-user check. It also stamps the impersonation log's
+heartbeat, which is safe before `ResolveOrganization` because `ImpersonationLog`
+is not organization-scoped ([[features/organizations]]).
 `SetContentSecurityPolicy` sits first because it only mints the per-request
 nonce the response's headers and inline scripts share; it has no organization
 to read and nothing later in the stack depends on it running after anything

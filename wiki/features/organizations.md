@@ -22,6 +22,8 @@ code_refs:
     - app/Http/Middleware/EnsureTwoFactorEnabled.php
     - app/Listeners/RecordModelActivity.php
     - app/Listeners/RecordSuccessfulLogin.php
+    - app/Http/Middleware/EnsureUserIsActive.php
+    - app/Console/Commands/EndStaleImpersonationsCommand.php
     - app/Actions/SummarizeAiUsage.php
     - app/Ai/Agents/InvitationDrafter.php
 updated: 2026-11-18
@@ -146,7 +148,16 @@ session is read-only and every step is audited.
 than touching the session directly, so the audit row and the session cannot drift
 apart.
 
-Known gaps, tracked in `todo/org-access.status.json`: a session that expires or
-is torn down by `EnsureUserIsActive` leaves `ended_at` empty, the target is not
-checked for being active, and a target with no organization gets no activity
-row.
+The log always ends. A target deactivated mid-session is caught by
+`EnsureUserIsActive` (`app/Http/Middleware/EnsureUserIsActive.php`), which ends
+the impersonation through `StopImpersonation` and hands the session back to the
+admin instead of signing everybody out. A session that simply expires sends no
+request, so every impersonated request stamps the log's `updated_at`
+(`Impersonation::heartbeat()`), and the hourly `impersonation:end-stale`
+command (`app/Console/Commands/EndStaleImpersonationsCommand.php`) closes a log
+idle for a whole `session.lifetime`, with `ended_at` set to its last use.
+
+`StartImpersonation` refuses a deactivated target. The activity row for an
+impersonation is filed under the log's own `organization_id`, never the bound
+organization, which at start is the admin's. A target with no organization gets
+a platform-level row with a null organization (`app/Listeners/RecordModelActivity.php`).

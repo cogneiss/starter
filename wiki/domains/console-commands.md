@@ -15,6 +15,7 @@ code_refs:
     - app/Console/Commands/AiUsageCommand.php
     - app/Console/Commands/AgentsContextCommand.php
     - app/Console/Commands/StarterInstallCommand.php
+    - app/Console/Commands/EndStaleImpersonationsCommand.php
     - tests/Feature/ZeroKeyBootTest.php
     - app/Support/WikiPage.php
     - routes/console.php
@@ -46,12 +47,14 @@ would otherwise ask a human, or maintains something that would otherwise drift.
 | `php artisan audit:prune`                  | `PruneAuditLogCommand`          | delete audit log entries past retention        |
 | `php artisan gdpr:export <user>`           | `GdprExportCommand`             | queue a personal-data export for a user        |
 | `php artisan gdpr:purge`                   | `GdprPurgeCommand`              | hard-delete anonymised accounts past retention |
+| `php artisan impersonation:end-stale`      | `EndStaleImpersonationsCommand` | close impersonation logs whose session expired |
 | `php artisan agents:context`               | `AgentsContextCommand`          | write nested AGENTS.md from the rules index    |
 | `php artisan starter:install`              | `StarterInstallCommand`         | prune the layers a fresh project does not use  |
 
-`routes/console.php` holds the schedule for the ones that run unattended, all
-daily: feature-override expiry, `LoginHistory` pruning, `uploads:prune`,
-`tokens:prune`, `api:prune-logs`, `audit:prune` and `gdpr:purge`. An unpromoted
+`routes/console.php` holds the schedule for the ones that run unattended. Daily:
+feature-override expiry, `LoginHistory` pruning, `uploads:prune`,
+`tokens:prune`, `api:prune-logs`, `audit:prune` and `gdpr:purge`. Hourly:
+`impersonation:end-stale` ([[features/organizations]]). An unpromoted
 upload is a file nobody claimed, so leaving it on disk is a slow leak rather
 than a kept record ([[domains/ux-import-and-uploads]]). The same file also
 schedules a `health-heartbeat` job every minute, writing the timestamp

@@ -37,7 +37,8 @@ both stall. `app:doctor` tells you to start one with `php artisan queue:work`
 (`app/Console/Commands/DoctorCommand.php`).
 
 **Scheduler.** `routes/console.php` registers a heartbeat every minute and the
-daily prune and purge tasks. Something must run the scheduler every minute.
+daily prune and purge tasks, plus an hourly sweep that closes impersonation
+logs whose session expired. Something must run the scheduler every minute.
 `app:doctor` names `php artisan schedule:work` for the long-running form.
 
 **Reverb.** Optional. `BROADCAST_CONNECTION` is `null` in `.env.example`, and

@@ -64,6 +64,12 @@ final class RecordModelActivity
 
     private function recordBridge(Model $model, string $action): void
     {
+        if ($model instanceof ImpersonationLog) {
+            $this->insert($model, $action, null, $model->organization_id);
+
+            return;
+        }
+
         $organizationId = $model->getAttribute('organization_id')
             ?? resolve(OrganizationContext::class)->id();
 
@@ -93,7 +99,21 @@ final class RecordModelActivity
             return;
         }
 
-        Activity::query()->create([
+        $this->insert($model, $action, $changes, $organizationId);
+    }
+
+    /**
+     * An impersonation is filed under the target's organization from its own
+     * log, never the bound one, which at start is the admin's. A target with
+     * no organization gets a platform-level row (null organization) that only
+     * the admin control plane reads. The save is quiet because the creating
+     * hook would otherwise fill that null from the bound organization.
+     *
+     * @param  array{before: array<string, mixed>, after: array<string, mixed>}|null  $changes
+     */
+    private function insert(Model $model, string $action, ?array $changes, ?string $organizationId): void
+    {
+        new Activity()->forceFill([
             'organization_id' => $organizationId,
             'log_name' => 'audit',
             'description' => $action.' '.class_basename($model),
@@ -103,7 +123,7 @@ final class RecordModelActivity
             'causer_type' => Auth::user()?->getMorphClass(),
             'causer_id' => Auth::id(),
             'properties' => $this->withImpersonator($changes),
-        ]);
+        ])->saveQuietly();
     }
 
     /**

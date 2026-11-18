@@ -62,7 +62,10 @@ the kit's own screens on top of it.
 - **Social login links rather than duplicates.** An OAuth email matching an
   existing _verified_ account links to it; an unverified match is refused, because
   accepting it would let anyone who can receive OAuth for an address take over an
-  account that never proved it owned that address.
+  account that never proved it owned that address. A new identity is also
+  refused when its email is empty or the provider does not vouch for it: GitHub
+  returns only a verified primary address, Google must say `email_verified`, and
+  any other provider is refused (`app/Actions/LinkSocialAccount.php`).
 - **Passkey sign-in is throttled like password login.** The `passkeys` limiter in
   `FortifyServiceProvider` allows 10 attempts a minute per credential id and IP,
   falling back to the session when no credential id is sent.

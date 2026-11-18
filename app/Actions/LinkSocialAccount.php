@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Laravel\Socialite\AbstractUser;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 final readonly class LinkSocialAccount
@@ -20,7 +21,8 @@ final readonly class LinkSocialAccount
      *
      * An unverified local account is never auto-linked: anybody may sign up
      * with somebody else's address, so linking on an unclaimed email hands the
-     * account to whoever holds it at the provider.
+     * account to whoever holds it at the provider. A new identity whose email
+     * is empty or that the provider does not vouch for is refused too.
      *
      * @throws AuthorizationException
      */
@@ -37,6 +39,8 @@ final readonly class LinkSocialAccount
         if ($account instanceof SocialAccount) {
             return $account->user;
         }
+
+        throw_unless($email !== '' && $this->vouchesFor($provider, $identity), AuthorizationException::class);
 
         $user = User::query()->where('email', $email)->first();
 
@@ -58,5 +62,22 @@ final readonly class LinkSocialAccount
 
             return $user;
         });
+    }
+
+    /**
+     * Whether the provider itself verified the address, since linking and
+     * creating both treat it as verified. GitHub's driver returns only a
+     * verified primary address under its default user:email scope, Google says
+     * so in email_verified, and any other provider is refused.
+     */
+    private function vouchesFor(string $provider, SocialiteUser $identity): bool
+    {
+        $raw = $identity instanceof AbstractUser ? $identity->getRaw() : [];
+
+        return match ($provider) {
+            'github' => true,
+            'google' => ($raw['email_verified'] ?? false) === true,
+            default => false,
+        };
     }
 }

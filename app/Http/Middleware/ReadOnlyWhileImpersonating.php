@@ -16,7 +16,8 @@ use Symfony\Component\HttpFoundation\Response;
  * An impersonated session is read-only. Every write is refused with a 403 here,
  * in one place, rather than route by route, so a route added tomorrow is covered
  * the day it exists. A short list of reads that would hand over the target's
- * credentials, second factors or exports is refused too.
+ * credentials, second factors or exports is refused too. Every impersonated
+ * request also stamps the log's heartbeat.
  */
 final readonly class ReadOnlyWhileImpersonating
 {
@@ -42,6 +43,8 @@ final readonly class ReadOnlyWhileImpersonating
         if (! $this->impersonation->active()) {
             return $next($request);
         }
+
+        $this->impersonation->heartbeat();
 
         abort_if($this->isDenied($request), 403);
         abort_unless($this->isReadOnly($request) || $this->isAllowedWrite($request), 403);

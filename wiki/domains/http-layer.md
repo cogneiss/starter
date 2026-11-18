@@ -156,7 +156,7 @@ Authorization does not live here; it lives in the policies
 | `HandleInertiaRequests`        | shares the props every page gets                                          |
 | `ResolveOrganization`          | binds the current organization ([[domains/organization-resolvers]])       |
 | `RequireOrganization`          | alias `organization` — no organization, no further                        |
-| `EnsureUserIsActive`           | a suspended or deactivated user is signed out of the request              |
+| `EnsureUserIsActive`           | a suspended or deactivated user is signed out; an impersonated one ends the impersonation |
 | `EnsureTwoFactorEnabled`       | alias `two-factor` — holds a member on setup when their org requires it, except while impersonating |
 | `ForbiddenDuringImpersonation` | alias `not-impersonating` — blocks destructive routes while impersonating |
 | `HandleAppearance`             | reads the `appearance` cookie so the server renders the right theme       |

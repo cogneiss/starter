@@ -30,6 +30,7 @@ final readonly class StartImpersonation
     {
         throw_unless($impersonator->is_super_admin, AuthorizationException::class);
         throw_if($target->is_super_admin, AuthorizationException::class);
+        throw_unless($target->is_active, AuthorizationException::class);
         throw_if($this->impersonation->active(), AuthorizationException::class);
         throw_if($impersonator->is($target), AuthorizationException::class);
 

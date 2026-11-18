@@ -84,30 +84,30 @@
         {
             "id": 14,
             "name": "social login refuses an unverified provider email and an empty one",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter='SocialAuthController.*(unverified provider|empty provider email)'",
-            "note": "Recorded from the phase 14 review, not built. LinkSocialAccount links a provider identity to a verified local account by email without checking the provider vouches for that email, and (string) getEmail() can be empty. Decide the rule, add those tests, then flip to passing."
+            "note": "LinkSocialAccount refuses a new identity unless the email is non-empty and the provider vouches for it: GitHub (driver returns only a verified primary address), Google (raw email_verified true); any other provider is refused. An already-linked identity still signs in."
         },
         {
             "id": 15,
             "name": "impersonation: end the log when a session expires or EnsureUserIsActive tears it down",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=ImpersonationSessionExpiry",
-            "note": "Record only. ended_at stays null on expiry or teardown. Logout while impersonating (B6) is a separate item."
+            "note": "EnsureUserIsActive ends the impersonation through StopImpersonation when the target is deactivated, closing the log and restoring the admin. Each impersonated request stamps the log's updated_at (Impersonation::heartbeat), and the hourly impersonation:end-stale command closes a log idle for a session lifetime with ended_at set to its last use."
         },
         {
             "id": 16,
             "name": "impersonation: StartImpersonation checks the target is active",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=ImpersonationInactiveTarget",
-            "note": "Record only. Column semantics unverified."
+            "note": "StartImpersonation refuses a deactivated target with an AuthorizationException (403), and no log is written."
         },
         {
             "id": 17,
             "name": "impersonation: a target with no organization writes no activity row",
-            "status": "failing",
+            "status": "passing",
             "command": "php artisan test --compact --filter=ImpersonationNoOrganizationAudit",
-            "note": "Record only. ImpersonationLog is the audit of record meanwhile."
+            "note": "RecordModelActivity files an ImpersonationLog under its own organization_id, never the bound context. A target with no organization gets a platform-level activity row with a null organization, saved quietly so the creating hook cannot fill in the admin's organization."
         }
     ]
 }

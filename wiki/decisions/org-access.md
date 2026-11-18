@@ -17,12 +17,14 @@ active-user enforcement, documentation, and a full-gate phase.
 
 `todo/org-access.status.json` is the record. Phase 13, "full gate green", is
 `failing` there — the plan's own binary rule is that unproven means failing, and
-that phase was never proved on a clean run. Four later items (14 to 17) are also
-`failing` and recorded only, not built: social login accepting an unverified or
-empty provider email, and three impersonation gaps (the log is not ended when a
-session expires or `EnsureUserIsActive` tears it down, `StartImpersonation` does
-not check the target is active, a target with no organization writes no activity
-row).
+that phase was never proved on a clean run. Four later items (14 to 17) were
+added as gaps and are now `passing`: social login refuses an empty provider
+email or one the provider does not vouch for, and three impersonation fixes (the
+log ends when a session expires or `EnsureUserIsActive` tears it down,
+`StartImpersonation` refuses an inactive target, a target with no organization
+gets a platform-level activity row). Session expiry uses an `updated_at`
+heartbeat and a sweep command rather than a new column, so the schema is
+unchanged.
 
 ## The decisions that outlived the plan
 

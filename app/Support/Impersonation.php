@@ -46,6 +46,19 @@ final readonly class Impersonation
         return is_string($id) ? ImpersonationLog::query()->find($id) : null;
     }
 
+    /**
+     * Stamps the open log's updated_at on every impersonated request, so
+     * impersonation:end-stale can close a log whose session expired at the
+     * time it was last used. A builder update, so the audit bridge ignores it.
+     */
+    public function heartbeat(): void
+    {
+        ImpersonationLog::query()
+            ->whereKey($this->session->get(self::LOG_KEY))
+            ->whereNull('ended_at')
+            ->touch();
+    }
+
     public function remember(User $impersonator, ImpersonationLog $log): void
     {
         $this->session->put(self::USER_KEY, $impersonator->id);

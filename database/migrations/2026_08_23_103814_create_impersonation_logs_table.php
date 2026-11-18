@@ -10,7 +10,8 @@ return new class extends Migration
 {
     /**
      * Append-only audit trail. Impersonation without one is an unlogged
-     * privilege escalation, so nothing here is ever updated except ended_at.
+     * privilege escalation, so nothing here is ever updated except ended_at
+     * and the updated_at heartbeat stamped by each impersonated request.
      */
     public function up(): void
     {

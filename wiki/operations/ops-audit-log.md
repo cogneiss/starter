@@ -22,7 +22,8 @@ corrections are new rows.
 
 `ImpersonationLog` and `LoginHistory` keep their own tables and each bridges one
 entry into this log on create; `ImpersonationLog` bridges one more when it ends
-(`ended_at` changes).
+(`ended_at` changes). An impersonation entry takes the log's own organization,
+and a target with no organization gets a platform-level entry with a null one.
 
 ## What a row holds
 

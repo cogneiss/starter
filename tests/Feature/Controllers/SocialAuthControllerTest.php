@@ -23,14 +23,14 @@ function socialiteIdentity(string $id = 'provider-1', string $email = 'ada@examp
     return $identity;
 }
 
-function fakeSocialite(?SocialiteUser $identity = null): void
+function fakeSocialite(?SocialiteUser $identity = null, string $driver = 'github'): void
 {
     $provider = Mockery::mock();
     $provider->shouldReceive('redirect')
         ->andReturn(new RedirectResponse('https://github.com/login/oauth/authorize'));
     $provider->shouldReceive('user')->andReturn($identity ?? socialiteIdentity());
 
-    Socialite::shouldReceive('driver')->with('github')->andReturn($provider);
+    Socialite::shouldReceive('driver')->with($driver)->andReturn($provider);
 }
 
 it('redirects to the provider', function (): void {
@@ -91,6 +91,46 @@ it('refuses the callback when the local account is unverified', function (): voi
     $this->get(route('social-auth.update', 'github'))->assertForbidden();
 
     $this->assertGuest();
+});
+
+it('signs a new user in when google vouches for the provider email', function (): void {
+    config()->set('services.google.client_id', 'client-id');
+    fakeSocialite(socialiteIdentity()->setRaw(['email_verified' => true]), 'google');
+
+    $this->get(route('social-auth.update', 'google'))
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticatedAs(User::query()->sole());
+});
+
+it('refuses an unverified provider email', function (): void {
+    config()->set('services.google.client_id', 'client-id');
+    fakeSocialite(socialiteIdentity()->setRaw(['email_verified' => false]), 'google');
+
+    $this->get(route('social-auth.update', 'google'))->assertForbidden();
+
+    $this->assertGuest();
+
+    expect(User::query()->exists())->toBeFalse();
+});
+
+it('refuses a provider that cannot say whether the email is verified', function (): void {
+    config()->set('services.microsoft.client_id', 'client-id');
+    fakeSocialite(driver: 'microsoft');
+
+    $this->get(route('social-auth.update', 'microsoft'))->assertForbidden();
+
+    expect(User::query()->exists())->toBeFalse();
+});
+
+it('refuses an empty provider email', function (): void {
+    fakeSocialite(socialiteIdentity(email: ''));
+
+    $this->get(route('social-auth.update', 'github'))->assertForbidden();
+
+    $this->assertGuest();
+
+    expect(User::query()->exists())->toBeFalse();
 });
 
 it('hides a provider that has no credentials configured', function (): void {
