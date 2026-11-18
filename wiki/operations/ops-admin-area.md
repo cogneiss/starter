@@ -28,6 +28,8 @@ code_refs:
     - app/Http/Requests/GrantAiCreditRequest.php
     - resources/js/pages/admin/ai-credit.tsx
     - tests/Feature/Controllers/AdminAiCreditTest.php
+    - tests/Browser/AdminAiCreditPickerTest.php
+    - app/Data/OrganizationData.php
 updated: 2026-11-18
 ---
 
