@@ -75,7 +75,7 @@ each method checks the bound organization and a named permission from
 | `app/Policies/AiConfirmTokenPolicy.php` | `AiConfirmToken` | `viewAny`: `ai.view`; `view`: `ai.view` and the token's `user_id` must be the viewer |
 | `app/Policies/AiCreditLedgerEntryPolicy.php` | `AiCreditLedgerEntry` | `viewAny`, `view`: `ai.view`; `create`: `ai.grant` |
 | `app/Policies/AiDocumentPolicy.php` | `AiDocument` | `viewAny`, `view`: `ai.view` |
-| `app/Policies/ApiRequestLogPolicy.php` | `ApiRequestLog` | `viewAny`, `view`: `api.tokens.view` |
+| `app/Policies/ApiRequestLogPolicy.php` | `ApiRequestLog` | `viewAny`, `view`: `api.usage.view` |
 | `app/Policies/WebhookEndpointPolicy.php` | `WebhookEndpoint` | `viewAny`: `webhooks.view`; `create`, `update`, `delete`: `webhooks.manage` |
 | `app/Policies/WebhookDeliveryPolicy.php` | `WebhookDelivery` | `viewAny`: `webhooks.view`; `replay`: `webhooks.manage` |
 | `app/Policies/OnboardingProgressPolicy.php` | `OnboardingProgress` | `manage`: no permission, the row's `user_id` must be the user |
@@ -83,8 +83,8 @@ each method checks the bound organization and a named permission from
 Notes from the files themselves:
 
 - The activity, AI audit and API request logs are append-only, so the policies
-  only cover reading. `ApiRequestLogPolicy` reuses `api.tokens.view` rather than
-  `api.usage.view`.
+  only cover reading. `ApiRequestLogPolicy` gates on `api.usage.view`, not
+  `api.tokens.view`: the log is usage, and token visibility is a separate grant.
 - `AiCreditLedgerEntryPolicy` splits reading usage (`ai.view`) from adding
   credit (`ai.grant`) on purpose: one is a usage question, the other money.
 - `AiConfirmTokenPolicy` does not gate running a confirmation. The doc comment

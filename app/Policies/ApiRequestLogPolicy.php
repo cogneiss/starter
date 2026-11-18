@@ -17,11 +17,11 @@ final readonly class ApiRequestLogPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->context->id() !== null && $user->can('api.tokens.view');
+        return $this->context->id() !== null && $user->can('api.usage.view');
     }
 
     public function view(User $user, ApiRequestLog $log): bool
     {
-        return $this->context->id() === $log->organization_id && $user->can('api.tokens.view');
+        return $this->context->id() === $log->organization_id && $user->can('api.usage.view');
     }
 }
