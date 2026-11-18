@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { index, pages as pageRoute } from '@/routes/admin';
+import { create as grantCredit } from '@/routes/admin/ai-credits';
 import { create, edit } from '@/routes/admin/announcements';
 import type { AdminRow, BreadcrumbItem, TypedResourceList } from '@/types';
 
@@ -115,6 +116,12 @@ export default function Index({
                 {announcements && (
                     <Button render={<Link href={create()} />}>
                         {t('announcements.new')}
+                    </Button>
+                )}
+
+                {page === 'organizations' && (
+                    <Button render={<Link href={grantCredit()} />}>
+                        {t('credits.grant_new')}
                     </Button>
                 )}
 

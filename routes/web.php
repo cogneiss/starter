@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Ai\Blocks\BlockCollection;
+use App\Http\Controllers\Admin\AdminAiCreditController;
 use App\Http\Controllers\Admin\AdminAnnouncementController;
 use App\Http\Controllers\Admin\AdminHealthController;
 use App\Http\Controllers\Admin\AdminResourceController;
@@ -371,6 +372,13 @@ Route::middleware(['auth', 'two-factor', EnsurePlatformAdmin::class])->group(fun
         ->name('admin.announcements.update');
     Route::delete('admin/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])
         ->name('admin.announcements.destroy');
+
+    // AI credit... a platform grant to one organization, written to the ledger and the audit log.
+    Route::get('admin/ai-credits/create', [AdminAiCreditController::class, 'create'])
+        ->name('admin.ai-credits.create');
+    Route::post('admin/ai-credits', [AdminAiCreditController::class, 'store'])
+        ->middleware(HandlePrecognitiveRequests::class)
+        ->name('admin.ai-credits.store');
 });
 
 Route::middleware(['auth', HandlePrecognitiveRequests::class])->group(function (): void {

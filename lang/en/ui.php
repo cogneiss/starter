@@ -49,6 +49,7 @@ return [
         'starter' => 'Starter credit',
         'grant_title' => 'Grant AI credit',
         'grant_new' => 'Grant AI credit',
+        'organization_choose' => 'Choose an organization',
         'organization_field' => 'Organization',
         'amount_field' => 'Amount (micros, 1,000,000 is one dollar)',
         'reason_field' => 'Reason',

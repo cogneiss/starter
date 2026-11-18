@@ -24,6 +24,10 @@ code_refs:
     - app/Data/AnnouncementData.php
     - app/Enums/AnnouncementLevel.php
     - app/Http/Requests/SaveAnnouncementRequest.php
+    - app/Http/Controllers/Admin/AdminAiCreditController.php
+    - app/Http/Requests/GrantAiCreditRequest.php
+    - resources/js/pages/admin/ai-credit.tsx
+    - tests/Feature/Controllers/AdminAiCreditTest.php
 updated: 2026-11-18
 ---
 
@@ -69,6 +73,19 @@ foreign or expired id is a 404. Dismissals live in `announcement_dismissals`,
 per user. The model is audited through `audit.extra`; a global announcement has
 no organization, so the audit listener writes no entry for it (not
 documented as a gap elsewhere).
+
+## Granting AI credit
+
+The organizations page links to a "Grant AI credit" form.
+`AdminAiCreditController` posts through `GrantAiCredits` with no actor, because
+a platform admin is not a member holding `ai.grant`; the platform gate in front
+of the route is the authorization, and a non-admin gets a 404.
+`GrantAiCreditRequest` requires an existing organization, a whole number of
+micros from 1 to 1,000,000,000 (a thousand dollars) and a reason of up to 255
+characters, and validates live through Precognition. Each grant also writes an
+`admin` / `granted` audit entry filed under the target organization, naming the
+admin as causer with the ledger row as its subject
+([[operations/ops-audit-log]], [[domains/ai-metering-and-quotas]]).
 
 ## Health
 
