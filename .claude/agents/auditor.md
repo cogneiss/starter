@@ -1,0 +1,1 @@
+../../.ai/skills/contract/references/auditor.md

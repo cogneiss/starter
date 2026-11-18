@@ -19,7 +19,16 @@ code_refs:
     - composer.json
     - package.json
     - scripts/agent-setup.sh
-updated: 2026-11-18
+    - boost.json
+    - .ai/guidelines/general.blade.php
+    - .ai/skills/contract/SKILL.md
+    - .ai/skills/contract/references/auditor.md
+    - .ai/skills/deepen/SKILL.md
+    - .ai/skills/outcome/SKILL.md
+    - .ai/skills/triage-errors/SKILL.md
+    - .claude/agents/auditor.md
+    - tests/Feature/Docs/AgentKitIsSelfContainedTest.php
+updated: 2026-11-19
 ---
 
 # Contributing
@@ -81,7 +90,7 @@ already requires.
   `package.json` or `vet.json`, which hold the gate thresholds and the
   dependency set, and before a command that adds, removes or updates a
   dependency (`composer require`, `bun add` and their siblings). A plain
-  `composer install` or `bun install` passes. Once `/contract` has frozen its criteria (`.work/feature_list.json`
+  `composer install` or `bun install` passes. Once the `contract` skill has frozen its criteria (`.work/feature_list.json`
   exists), it also asks before `.work/contract.md` changes, so an agent cannot
   rewrite the contract to fit the code it wrote. For files it only sees the Edit
   and Write tools. A shell redirect into the same file gets past it, which is
@@ -100,6 +109,37 @@ the agent gets go-to-definition, references and type errors from Intelephense
 and `typescript-language-server` instead of guessing from grep. `composer setup`
 installs both binaries globally with bun. Without them the plugins stay quiet
 and nothing else breaks.
+
+## The agent workflows ship with the repo
+
+A developer who clones this with no personal agent setup gets the same
+workflows as one who has it. Four skills live in `.ai/skills` and are listed in
+`boost.json`, so `boost:install` publishes them to `.claude/skills` and
+`.agents/skills` for Claude Code, Codex, Amp and OpenCode alike:
+
+- `contract` (`.ai/skills/contract/SKILL.md`) writes acceptance criteria with a
+  runnable check each, has an independent auditor attack them, freezes them in
+  `.work/feature_list.json` and grades the finished work against them. The
+  auditor's instructions are `.ai/skills/contract/references/auditor.md`;
+  `.claude/agents/auditor.md` is a symlink to that file so Claude Code can run
+  it as a subagent, and other agents start a fresh subagent from it.
+- `triage-errors` (`.ai/skills/triage-errors/SKILL.md`) goes from the raw error
+  (Boost, Sentry, a CI log) to a failing Pest test, then to a fix that turns it
+  green.
+- `deepen` (`.ai/skills/deepen/SKILL.md`) and `outcome`
+  (`.ai/skills/outcome/SKILL.md`) run only when someone asks. `deepen` rewrites
+  a task the way a professional in the field would approach it and hands the
+  result to `contract`. `outcome` turns a fix into a standing check recorded in
+  `todo/outcomes.status.json`.
+
+The guidelines in `.ai/guidelines/general.blade.php` point agents at these
+skills and set the rule behind them: done is decided by a test, an exit code or
+a number, not by the model's opinion of its own work.
+
+`tests/Feature/Docs/AgentKitIsSelfContainedTest.php` fails when a hook,
+guideline, skill or this page names a slash command or subagent that only
+exists in someone's personal `~/.claude`. The allowlist is Claude Code's own
+`/loop` and `/schedule`, plus the app's route prefixes such as `/admin`.
 
 ## Each worktree gets its own database
 

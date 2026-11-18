@@ -34,10 +34,14 @@
         "laravel-brain",
         "ai-layer",
         "attack-review",
+        "contract",
+        "deepen",
         "org-access",
+        "outcome",
         "platform-ops",
         "resource-spine",
         "testing-gates",
+        "triage-errors",
         "ux-kit"
     ]
 }

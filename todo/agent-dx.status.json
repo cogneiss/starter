@@ -1,83 +1,89 @@
 {
-    "plan": "agent and AI-native developer experience",
-    "created": "2026-08-24",
-    "follows": [
-        "todo/org-access.status.json",
-        "todo/resource-spine.status.json",
-        "todo/ci-quality.status.json"
-    ],
-    "phases": [
-        {
-            "id": 1,
-            "name": "guideline single source and drift gate",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=GuidelinesAreCurrent"
-        },
-        {
-            "id": 2,
-            "name": "wiki seeded and linted",
-            "status": "passing",
-            "command": "composer test:wiki"
-        },
-        {
-            "id": 3,
-            "name": "documentation automation",
-            "status": "passing",
-            "command": "php artisan wiki:audit && test -f wiki/_meta/audit.json && test -f .claude/commands/document.md"
-        },
-        {
-            "id": 4,
-            "name": "zero-key boot guard",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=ZeroKeyBoot"
-        },
-        {
-            "id": 5,
-            "name": "command parity gate",
-            "status": "passing",
-            "command": "php artisan test --compact --filter=CommandsAreDocumented"
-        },
-        {
-            "id": 6,
-            "name": "first-party skill packs",
-            "status": "passing",
-            "command": "test -d .ai/skills/resource-spine && test -d .ai/skills/org-access && test -d .ai/skills/testing-gates"
-        },
-        {
-            "id": 7,
-            "name": "documentation",
-            "status": "passing",
-            "command": "rg -q 'Agent and AI-native' FEATURES.md && test -f .ai/rules/docs.md && rg -q 'wiki' README.md"
-        },
-        {
-            "id": 8,
-            "name": "full gate green",
-            "status": "passing",
-            "command": "composer test"
-        },
-        {
-            "id": 9,
-            "name": "LSP plugins enabled with binaries on PATH",
-            "status": "passing",
-            "command": "command -v intelephense && command -v typescript-language-server && rg -q \"php-lsp@claude-plugins-official\" .claude/settings.json && rg -q \"typescript-lsp@claude-plugins-official\" .claude/settings.json"
-        },
-        {
-            "id": 10,
-            "name": "guard-gates asks before an agent edits a mutation patch",
-            "status": "passing",
-            "command": "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"tests/Mutations/x.patch\"}}' | .claude/hooks/guard-gates.sh | rg -q ask"
-        },
-        {
-            "id": 11,
-            "name": "each worktree gets its own database",
-            "status": "passing",
-            "command": "test -x bin/worktree-setup && rg -q worktree-setup .githooks/post-checkout && rg -q testing_ tests/bootstrap.php"
-        },
-        {
-            "id": 12,
-            "name": "shared list URLs are a fixed point",
-            "status": "passing",
-            "command": "php artisan test --compact tests/Feature/Resources/UrlRoundTripTest.php"
-        }
-    ]
+  "plan": "agent and AI-native developer experience",
+  "created": "2026-08-24",
+  "follows": [
+    "todo/org-access.status.json",
+    "todo/resource-spine.status.json",
+    "todo/ci-quality.status.json"
+  ],
+  "phases": [
+    {
+      "id": 1,
+      "name": "guideline single source and drift gate",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=GuidelinesAreCurrent"
+    },
+    {
+      "id": 2,
+      "name": "wiki seeded and linted",
+      "status": "passing",
+      "command": "composer test:wiki"
+    },
+    {
+      "id": 3,
+      "name": "documentation automation",
+      "status": "passing",
+      "command": "php artisan wiki:audit && test -f wiki/_meta/audit.json && test -f .claude/commands/document.md"
+    },
+    {
+      "id": 4,
+      "name": "zero-key boot guard",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=ZeroKeyBoot"
+    },
+    {
+      "id": 5,
+      "name": "command parity gate",
+      "status": "passing",
+      "command": "php artisan test --compact --filter=CommandsAreDocumented"
+    },
+    {
+      "id": 6,
+      "name": "first-party skill packs",
+      "status": "passing",
+      "command": "test -d .ai/skills/resource-spine && test -d .ai/skills/org-access && test -d .ai/skills/testing-gates"
+    },
+    {
+      "id": 7,
+      "name": "documentation",
+      "status": "passing",
+      "command": "rg -q 'Agent and AI-native' FEATURES.md && test -f .ai/rules/docs.md && rg -q 'wiki' README.md"
+    },
+    {
+      "id": 8,
+      "name": "full gate green",
+      "status": "passing",
+      "command": "composer test"
+    },
+    {
+      "id": 9,
+      "name": "LSP plugins enabled with binaries on PATH",
+      "status": "passing",
+      "command": "command -v intelephense && command -v typescript-language-server && rg -q \"php-lsp@claude-plugins-official\" .claude/settings.json && rg -q \"typescript-lsp@claude-plugins-official\" .claude/settings.json"
+    },
+    {
+      "id": 10,
+      "name": "guard-gates asks before an agent edits a mutation patch",
+      "status": "passing",
+      "command": "echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"tests/Mutations/x.patch\"}}' | .claude/hooks/guard-gates.sh | rg -q ask"
+    },
+    {
+      "id": 11,
+      "name": "each worktree gets its own database",
+      "status": "passing",
+      "command": "test -x bin/worktree-setup && rg -q worktree-setup .githooks/post-checkout && rg -q testing_ tests/bootstrap.php"
+    },
+    {
+      "id": 12,
+      "name": "shared list URLs are a fixed point",
+      "status": "passing",
+      "command": "php artisan test --compact tests/Feature/Resources/UrlRoundTripTest.php"
+    },
+    {
+      "id": 13,
+      "name": "a fresh clone resolves every slash command and subagent the agent kit names",
+      "status": "passing",
+      "command": "php artisan test --compact tests/Feature/Docs/AgentKitIsSelfContainedTest.php"
+    }
+  ]
 }
