@@ -9,6 +9,12 @@ code_refs:
     - app/Console/Commands/AiInstallCommand.php
     - tests/Feature/Ai/RetrievalTest.php
     - app/Jobs/IndexAiDocument.php
+    - app/Jobs/RemoveAiDocuments.php
+    - app/Listeners/SyncKnowledgeIndex.php
+    - app/Resources/IndexesKnowledge.php
+    - app/Console/Commands/AiReindexCommand.php
+    - tests/Feature/Ai/KnowledgeIndexTest.php
+    - tests/Feature/Ai/AiReindexCommandTest.php
 updated: 2026-11-18
 ---
 
@@ -62,5 +68,22 @@ chunks (`CHUNK`), because one embedding of a whole document averages everything
 into a single point that matches nothing well. Each run first deletes the rows
 for the same source type and id, so re-indexing replaces rather than stacks, then
 calls `Embeddings::for()` at 1536 dimensions and writes one `AiDocument` row per
-chunk. Nothing under `app/` dispatches it; `tests/Feature/Ai/RetrievalTest.php`
-is the only caller found, so wiring a source to it is not documented as done.
+chunk. A resource adapter feeds it by implementing `app/Resources/IndexesKnowledge.php`
+(`knowledgeTitle()` and `knowledgeContent()`). It is a separate interface so
+`ResourceContract` keeps its six methods, and none of the six shipped adapters
+opts in: members, users, audit rows and tokens are personal data, and whatever an
+adapter returns is embedded and sent to the provider. The source type is the
+resource key.
+
+`app/Listeners/SyncKnowledgeIndex.php` listens for `eloquent.saved` and
+`eloquent.deleted`. A save of an opted-in record dispatches `IndexAiDocument`;
+a delete dispatches `app/Jobs/RemoveAiDocuments.php`, which deletes that source's
+rows. Both dispatch after the transaction commits and run under
+`WithOrganizationContext`. A resource that has not opted in dispatches nothing.
+
+`php artisan ai:reindex {resource}` backfills: it refuses a resource that has not
+opted in, and for one that has, walks each organization under
+`OrganizationContext::runAs()` and dispatches one job per record.
+`tests/Feature/Ai/KnowledgeIndexTest.php` and
+`tests/Feature/Ai/AiReindexCommandTest.php` cover it against a fixture resource
+with the embeddings fake and `Queue::fake()`.
