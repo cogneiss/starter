@@ -63,7 +63,7 @@ See [[decisions/org-access]] and [[features/authentication]].
 | Skipped                          | Why                                                                            |
 | -------------------------------- | ------------------------------------------------------------------------------ |
 | Test sharding across runners     | The suite runs in parallel in a couple of minutes                              |
-| Lighthouse / performance budgets | Scores swing with the runner, so the gate would flake and get ignored          |
+| Lighthouse scores                | Scores swing with the runner, so the gate would flake and get ignored. Byte and query counts do not swing, so `bin/bundle-budget` and `tests/Feature/ListQueryBudgetTest.php` budget those |
 | `composer-require-checker`       | Overlaps `composer-unused` and is noisy against a runtime-resolving framework  |
 | envy (`.env` drift)              | `.env.example` and `app:doctor` cover it; the check fires on unrelated changes |
 | Splitting `composer verify`      | The full gate stays on pre-push while CI is on hold; a fast pre-commit set was never timed |

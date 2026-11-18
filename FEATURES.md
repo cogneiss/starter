@@ -683,7 +683,7 @@ The same applies to the CI work — these were considered and left out:
 | Skipped                          | Why                                                                                                                       |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Test sharding across runners     | The suite runs in parallel in a couple of minutes. Sharding buys nothing until it does not.                               |
-| Lighthouse / performance budgets | Scores swing with the runner, so the gate would be flaky and get ignored. axe-core covers the part that is deterministic. |
+| Lighthouse scores                | Scores swing with the runner, so the gate would be flaky and get ignored. axe-core, `bin/bundle-budget` and `tests/Feature/ListQueryBudgetTest.php` cover the parts that are deterministic. |
 | `composer-require-checker`       | Overlaps `composer-unused` from the other direction and is noisy against a framework that resolves a lot at runtime.      |
 | envy (`.env` drift)              | One `.env.example` and `app:doctor` already catch a missing key, and the check fires on every unrelated config change.    |
 

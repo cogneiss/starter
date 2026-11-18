@@ -34,6 +34,11 @@ while ($pending !== []) {
         continue;
     }
 
+    if (! isset($manifest[$key])) {
+        fwrite(STDERR, "{$key} is not in the Vite manifest.\n");
+        exit(1);
+    }
+
     $seen[$key] = true;
     array_push($pending, ...($manifest[$key]['imports'] ?? []));
 }
