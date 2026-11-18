@@ -78,6 +78,10 @@ final class AppServiceProvider extends ServiceProvider
             ? new NullErrorReporter()
             : $this->app->make(SentryErrorReporter::class));
 
+        // The SDK reads only SENTRY_RELEASE. Hand it the release services.php
+        // resolved, git fallback included, so its events name the commit too.
+        config()->set('sentry.release', config('services.sentry.release'));
+
         // Same shape as the error reporter: null unless a key is configured.
         $this->app->singleton(AnalyticsReporter::class, fn (): AnalyticsReporter => config('services.posthog.key') === null
             ? new NullAnalyticsReporter()

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Contracts\ErrorReporter;
 use App\Models\Organization;
+use App\Providers\AppServiceProvider;
 use App\Resources\ResourceRegistry;
 use App\Support\Reporting\NullErrorReporter;
 use App\Support\Reporting\SentryErrorReporter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Sentry\ClientBuilder;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 
@@ -26,6 +28,54 @@ describe('the binding', function (): void {
         $this->app->forgetInstance(ErrorReporter::class);
 
         expect(resolve(ErrorReporter::class))->toBeInstanceOf(SentryErrorReporter::class);
+    });
+});
+
+describe('the release', function (): void {
+    /**
+     * Load config/services.php fresh with the given Sentry variables, then put
+     * the environment back.
+     *
+     * @param  array<string, string>  $env
+     * @return array{dsn: string|null, release: string|null}
+     */
+    function sentryServices(array $env): array
+    {
+        $original = array_intersect_key($_SERVER, $env);
+        $_SERVER = [...$_SERVER, ...$env];
+
+        try {
+            /** @var array{sentry: array{dsn: string|null, release: string|null}} $services */
+            $services = require base_path('config/services.php');
+
+            return $services['sentry'];
+        } finally {
+            $_SERVER = [...array_diff_key($_SERVER, $env), ...$original];
+        }
+    }
+
+    it('names the checked-out commit when a DSN is set without a release', function (): void {
+        $sentry = sentryServices(['SENTRY_DSN' => 'https://examplePublicKey@o0.ingest.sentry.io/0', 'SENTRY_RELEASE' => '']);
+
+        expect($sentry['release'])->toMatch('/^[0-9a-f]{40}$/');
+    });
+
+    it('prefers an explicit release over the commit', function (): void {
+        $sentry = sentryServices(['SENTRY_DSN' => 'https://examplePublicKey@o0.ingest.sentry.io/0', 'SENTRY_RELEASE' => 'v1.2.3']);
+
+        expect($sentry['release'])->toBe('v1.2.3');
+    });
+
+    it('stays empty with no DSN, so a keyless clone never runs git', function (): void {
+        expect(sentryServices(['SENTRY_DSN' => '', 'SENTRY_RELEASE' => ''])['release'])->toBeNull();
+    });
+
+    it('hands the resolved release to the SDK', function (): void {
+        config()->set('services.sentry.release', 'abc123');
+
+        new AppServiceProvider($this->app)->register();
+
+        expect(resolve(ClientBuilder::class)->getOptions()->getRelease())->toBe('abc123');
     });
 });
 

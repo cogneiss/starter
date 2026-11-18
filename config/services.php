@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+// A Sentry event without a release cannot be traced to the commit that threw
+// it, so with a DSN and no SENTRY_RELEASE the checked-out commit stands in.
+// ponytail: git runs whenever this file loads uncached (once at config:cache in
+// production); an image built without .git must set SENTRY_RELEASE itself.
+$checkedOutCommit = filled(env('SENTRY_DSN')) && blank(env('SENTRY_RELEASE'))
+    ? mb_trim((string) shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse HEAD 2>/dev/null'))
+    : '';
+
 return [
 
     /*
@@ -49,7 +57,11 @@ return [
 
     'sentry' => [
         'dsn' => filled(env('SENTRY_DSN')) ? env('SENTRY_DSN') : null,
-        'release' => filled(env('SENTRY_RELEASE')) ? env('SENTRY_RELEASE') : null,
+        'release' => match (true) {
+            filled(env('SENTRY_RELEASE')) => env('SENTRY_RELEASE'),
+            $checkedOutCommit !== '' => $checkedOutCommit,
+            default => null,
+        },
     ],
 
     'slack' => [
