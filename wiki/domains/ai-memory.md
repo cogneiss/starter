@@ -28,7 +28,7 @@ preventing.
 Keeping the predicate in one place means there is one thing to remove and one
 test to go red when it is — `tests/Feature/Ai/AssistantMemoryTest.php` seeds a
 fact for the same person in a second organization and asserts it is not read
-here. Drop either `where` and the suite reddens.
+here. Drop either `where` and the tests redden.
 
 Unlike the rest of the AI models this is an explicit predicate rather than the
 global scope, because the second half of it — the user — is not something the

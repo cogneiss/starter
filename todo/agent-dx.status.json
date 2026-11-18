@@ -84,6 +84,42 @@
       "name": "a fresh clone resolves every slash command and subagent the agent kit names",
       "status": "passing",
       "command": "php artisan test --compact tests/Feature/Docs/AgentKitIsSelfContainedTest.php"
+    },
+    {
+      "id": 14,
+      "name": "workflow skills start without being named",
+      "status": "passing",
+      "command": "vendor/bin/pest tests/Feature/Docs/AgentKitIsSelfContainedTest.php --compact --no-coverage"
+    },
+    {
+      "id": 15,
+      "name": "a session's second app file is refused until a contract is frozen",
+      "status": "passing",
+      "command": "bash bin/prove-contract-hook.sh"
+    },
+    {
+      "id": 16,
+      "name": "the commit gate is fast and scoped to what is staged",
+      "status": "passing",
+      "command": "sh -n .githooks/pre-commit && rg -q 'git ls-files' .githooks/pre-commit && ! rg -q 'pest --parallel' .githooks/pre-commit"
+    },
+    {
+      "id": 17,
+      "name": "the push gate skips a tree it already verified",
+      "status": "passing",
+      "command": "sh -n .githooks/pre-push && rg -q verified-tree .githooks/pre-push"
+    },
+    {
+      "id": 18,
+      "name": "the PR auditor workflow is built and off by default",
+      "status": "passing",
+      "command": "rg -q \"vars.AUDITOR_ENABLED == 'true'\" .github/workflows/auditor.yml && test -f .github/pull_request_template.md"
+    },
+    {
+      "id": 19,
+      "name": "hook, CI and switch-on steps are documented",
+      "status": "passing",
+      "command": "php artisan wiki:lint && rg -q 'Switching CI on' wiki/decisions/ci-quality.md"
     }
   ]
 }

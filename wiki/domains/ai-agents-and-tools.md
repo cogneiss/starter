@@ -74,7 +74,7 @@ boundary is the point where a persuaded model stops being dangerous.
 
 `tests/Feature/Ai/ToolAuthorizationTest.php` proves it, and an architecture test
 fails when a class under `app/Ai/Tools` is added without the call — remove the
-`authorizeFor()` line from a tool and the suite reddens rather than passing with
+`authorizeFor()` line from a tool and the tests redden rather than passing with
 a hole in it.
 
 The same file, `tests/Unit/ArchTest.php`, bans outbound channels from the tool

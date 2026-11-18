@@ -63,7 +63,7 @@ that is not Postgres, so running it on the commented-out SQLite setup is safe an
 pointless. Skipping it costs you vector search and nothing else.
 
 AI provider keys are optional in the same way social keys are: with all three
-blank the app boots, every page renders and the whole suite passes, because no
+blank the app boots, every page renders and the full suite passes, because no
 test is allowed to reach a provider ([[domains/ai-evals]]).
 
 ## Decisions a new project makes early
@@ -88,7 +88,7 @@ test is allowed to reach a provider ([[domains/ai-evals]]).
 
 `composer install` points `core.hooksPath` at `.githooks`, which wires up the
 commit-message check ([[operations/releases]]), the fix-and-check pre-commit, the
-full pre-push gate (`composer verify`), the dependency sync after a pull, and the Laravel Brain
+full pre-push gate (`composer verify`, skipped when the tree already passed it), the dependency sync after a pull, and the Laravel Brain
 rescan ([[operations/code-knowledge-graphs]]). Nothing to run by hand
 ([[operations/contributing]]).
 

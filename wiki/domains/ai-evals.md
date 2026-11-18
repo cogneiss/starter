@@ -85,7 +85,7 @@ no database service. The blocking gates are in [[architecture/fast-blocking-gate
 
 ## What else `tests/Pest.php` carries
 
-The file is shared ground for the whole suite, not just the AI part of it, and
+The file is shared ground for the full suite, not just the AI part of it, and
 the UX layer added helpers there for the same reason the fakes live there: a
 protection everybody has to remember is one somebody forgets.
 `resourceSearchDefects()` judges every resource definition's `searchable()`,

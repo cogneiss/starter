@@ -1,7 +1,6 @@
 ---
 name: outcome
-description: "Turn a one-off fix into a standing outcome for this starter kit: one sentence an outsider can check, the command that decides it, proof that an agent can see the failure, locate the code and prove a fix on its own, an entry in todo/outcomes.status.json, and an optional schedule that keeps it true. Only run this skill when the user explicitly asks for it (/outcome, \"keep it crash-free\", \"make sure this stays fixed\"); never start it as part of another task."
-disable-model-invocation: true
+description: "Use when the user wants something to stay true rather than be fixed once (\"keep it crash-free\", \"never again\", \"stay green\", \"make sure this stays fixed\") or runs /outcome: turn a one-off fix into a standing outcome for this starter kit: one sentence an outsider can check, the command that decides it, proof that an agent can see the failure, locate the code and prove a fix on its own, an entry in todo/outcomes.status.json, and an optional schedule that keeps it true."
 license: MIT
 metadata:
     author: cogneiss

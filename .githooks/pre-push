@@ -6,10 +6,50 @@
 # suite at 100% coverage (Xdebug must be loadable; see wiki/operations/setup.md),
 # dead code, unused packages, the wiki, the audit and duplication. A
 # sloppy report follows that never blocks. Mutation testing stays on demand:
-# composer test:mutate. Takes a few minutes.
+# composer test:mutate.
+#
+# A green run on a clean tree leaves the tree hash in $GIT_DIR/verified-tree.
+# A later push whose every pushed ref tip has that same tree skips the gate: an
+# amended message, a rebase onto nothing new or a second remote changes no file,
+# so there is nothing new to check. Any content change, a missing or unreadable
+# stamp, or a red run forces the full gate.
 
-set -e
+zero=0000000000000000000000000000000000000000
+head_tree="$(git rev-parse 'HEAD^{tree}')"
+stamp="$(git rev-parse --git-dir)/verified-tree"
+recorded="$(cat "$stamp" 2>/dev/null)"
 
-composer verify
+# Skip only when every pushed, non-delete ref carries the stamped tree. A push
+# that only deletes refs has nothing to verify; no refs on stdin (a manual run)
+# always verifies.
+lines=0
+stale=0
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+    lines=1
+    [ "$local_sha" = "$zero" ] && continue
+    tree="$(git rev-parse --verify --quiet "$local_sha^{tree}")"
+    # composer verify checks the checked-out files, so a ref whose tip holds a
+    # different tree would leave unverified. Push it from its own checkout.
+    if [ "$tree" != "$head_tree" ]; then
+        echo "pre-push: $_local_ref is not what is checked out, so composer verify cannot check it. Check it out and push from there." >&2
+        exit 1
+    fi
+    if [ -z "$recorded" ] || [ "$tree" != "$recorded" ]; then
+        stale=1
+    fi
+done
+
+if [ "$lines" -eq 1 ] && [ "$stale" -eq 0 ]; then
+    echo "pre-push: nothing new to verify (tree ${recorded:-n/a} already passed composer verify), skipping."
+    exit 0
+fi
+
+rm -f "$stamp"
+
+composer verify || exit 1
+
+if [ -z "$(git status --porcelain)" ]; then
+    git rev-parse 'HEAD^{tree}' > "$stamp"
+fi
 
 vendor/bin/sloppy diff '@{upstream}' --merge-base --fail-on=never || true

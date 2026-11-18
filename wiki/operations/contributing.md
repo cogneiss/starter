@@ -13,6 +13,10 @@ code_refs:
     - .claude/settings.json
     - .claude/hooks/guard-gates.sh
     - .claude/hooks/guard-generated.sh
+    - .claude/hooks/require-contract.sh
+    - .github/workflows/auditor.yml
+    - .github/pull_request_template.md
+    - bin/prove-contract-hook.sh
     - .claude/hooks/verify-on-stop.sh
     - bin/worktree-setup
     - tests/bootstrap.php
@@ -38,7 +42,7 @@ updated: 2026-11-19
 ## Commit messages are enforced locally
 
 `.githooks/commit-msg` rejects anything that is not a conventional commit before
-it reaches a branch. That is not style policing — release-please reads those
+it reaches a branch. That is not style policing, release-please reads those
 prefixes to pick the next version and write the changelog
 ([[operations/releases]]).
 
@@ -47,7 +51,10 @@ prefixes to pick the next version and write the changelog
 `.githooks/pre-commit` fixes the staged files and stages the result: Rector and
 Pint for PHP, `vp fmt` and `vp lint --fix` for TypeScript and CSS. A file that
 also has unstaged edits is only checked, never rewritten, so it can't pick up
-hunks you held back. Whatever the fixers can't repair fails the commit.
+hunks you held back. Whatever the fixers can't repair fails the commit. So does a staged PHP or
+TypeScript change that breaks phpstan, `tsc` or a test that maps to it (see the
+commit gate below). A clean one-file PHP commit takes about 8s and a
+docs-only commit 1s.
 
 `.githooks/pre-push` runs `composer verify`, so CI is a second opinion rather
 than the first. The `verify` script in `composer.json` is `composer test` (lint,
@@ -55,7 +62,16 @@ Larastan and `tsc`, strict PHPStan, 100% type coverage, the suite at 100%
 coverage), then dead code, unused Composer packages, knip, the Vitest unit
 tests (`composer test:js`), the wiki lint, the dependency audit and the
 duplicate-code check. A Sloppy report on the pushed
-range prints last and never blocks. It takes a few minutes. Mutation testing stays on demand (`composer test:mutate`).
+range prints last and never blocks. A full run takes about 113s. Mutation testing stays on demand (`composer test:mutate`).
+
+A green run on a clean tree writes the tree hash to `verified-tree` in the git
+directory. The next push skips the gate when the tip of every ref it pushes has that
+same tree (older commits in the range are not checked), which is what an amended message, a rebase onto nothing new or a push
+to a second remote produces. That skip takes about 1s. Any edit to a file,
+a missing stamp or a red run brings the full gate back. A push that only deletes
+a branch has nothing to verify. Pushing a branch other than the one checked out is
+refused, because `composer verify` checks the files on disk and would pass a branch
+it never looked at; check that branch out and push from there.
 
 A fresh `composer create-project` ends by running `php artisan starter:install`
 (the `post-create-project-cmd` script in `composer.json`). It asks which
@@ -77,7 +93,7 @@ postinstall.
 
 ## Claude Code sessions check themselves
 
-`.claude/settings.json` gives every Claude Code session four project hooks.
+`.claude/settings.json` gives every Claude Code session five project hooks.
 They read their input with PHP, so they need nothing beyond what the project
 already requires.
 
@@ -99,6 +115,16 @@ already requires.
   to a nested `AGENTS.md` that carries the `agents:context` generated marker. The
   denial names the regenerate command. Like the gate guard, it only sees the Edit
   and Write tools.
+- `.claude/hooks/require-contract.sh` lets a session edit one file under `app/`
+  freely. It denies the second distinct `app/` file until `.work/feature_list.json`
+  exists with at least one item and every item has a non-empty `verified_by`. The
+  denial names `.ai/skills/deepen/SKILL.md` and `.ai/skills/contract/SKILL.md`.
+  Per-session state sits in `.work/sessions/<session_id>.files` (gitignored) and
+  counts only edits that were allowed. It fails open when `php` is missing or
+  that directory is not writable. It sees Edit, Write and MultiEdit only: a shell
+  redirect or `NotebookEdit` gets past it, so the commit and push gates still
+  run for everyone. `bin/prove-contract-hook.sh` proves both directions by piping
+  hook JSON into it.
 - `.claude/hooks/verify-on-stop.sh` runs PHPStan, the tests touching
   uncommitted files and `tsc` before the agent may report done, and hands any
   failure back to it. It runs once per stop, so an error the agent cannot fix
@@ -114,8 +140,9 @@ and nothing else breaks.
 
 A developer who clones this with no personal agent setup gets the same
 workflows as one who has it. Four skills live in `.ai/skills` and are listed in
-`boost.json`, so `boost:install` publishes them to `.claude/skills` and
-`.agents/skills` for Claude Code, Codex, Amp and OpenCode alike:
+`boost.json`, so `boost:install` publishes them to `.claude/skills`,
+`.agents/skills` (Codex, Amp, OpenCode), `.cursor/skills` and `.github/skills`
+(Copilot) alike:
 
 - `contract` (`.ai/skills/contract/SKILL.md`) writes acceptance criteria with a
   runnable check each, has an independent auditor attack them, freezes them in
@@ -126,19 +153,45 @@ workflows as one who has it. Four skills live in `.ai/skills` and are listed in
 - `triage-errors` (`.ai/skills/triage-errors/SKILL.md`) goes from the raw error
   (Boost, Sentry, a CI log) to a failing Pest test, then to a fix that turns it
   green.
-- `deepen` (`.ai/skills/deepen/SKILL.md`) and `outcome`
-  (`.ai/skills/outcome/SKILL.md`) run only when someone asks. `deepen` rewrites
-  a task the way a professional in the field would approach it and hands the
-  result to `contract`. `outcome` turns a fix into a standing check recorded in
+- `deepen` (`.ai/skills/deepen/SKILL.md`) rewrites a task the way a professional
+  in the field would approach it and hands the result to `contract`. `outcome`
+  (`.ai/skills/outcome/SKILL.md`) turns a fix into a standing check recorded in
   `todo/outcomes.status.json`.
 
-The guidelines in `.ai/guidelines/general.blade.php` point agents at these
-skills and set the rule behind them: done is decided by a test, an exit code or
-a number, not by the model's opinion of its own work.
+None of them has to be named. The guidelines in
+`.ai/guidelines/general.blade.php` tell the agent to run `deepen` then
+`contract` before multi-step work (a one-file change with an obvious test skips
+both), `triage-errors` for production errors and `outcome` when someone wants
+something to stay true. Each skill's description says when to start it, and none
+sets `disable-model-invocation`. Routing is instruction strength: no agent has a
+hook that can judge "this task is non-trivial". An agent without skill support
+reads the file at the path the guidelines name. They also set the rule behind
+the skills: done is decided by a test, an exit code or a number, not by the
+model's opinion of its own work.
+
+The one thing enforced for every agent and every human is the commit gate.
+`.githooks/pre-commit` runs phpstan when PHP is staged and `tsc --noEmit` when
+TypeScript is staged, both over the whole project, because a changed signature
+breaks callers that are not staged. Then it runs Pest on the staged test files
+plus the mirrored `FooTest.php` of each staged `app/**/Foo.php`, found with
+`git ls-files`. When no test maps, it says so and leaves the suite to the push.
+Docs-only and deletion-only commits skip all of it. The full suite is the
+pre-push gate, so the commit stays fast and the push stays complete.
+
+The only local bypass is skipping the hooks with git's own flag, and
+`guard-gates.sh` refuses that for an agent. Nothing stops a human, which is why
+the real gate is CI once Actions are on ([[decisions/ci-quality]]).
+
+On a pull request, `.github/workflows/auditor.yml` grades the diff against the
+acceptance criteria in the PR body. `.github/pull_request_template.md` has the
+table to fill in: an id, the criterion and the command that decides it. The job
+is off until the repository variable `AUDITOR_ENABLED` is `true`
+(switch-on steps in [[decisions/ci-quality]]).
 
 `tests/Feature/Docs/AgentKitIsSelfContainedTest.php` fails when a hook,
 guideline, skill or this page names a slash command or subagent that only
-exists in someone's personal `~/.claude`. The allowlist is Claude Code's own
+exists in someone's personal `~/.claude`, and when one of the four workflow
+skills sets `disable-model-invocation`. The allowlist is Claude Code's own
 `/loop` and `/schedule`, plus the app's route prefixes such as `/admin`.
 
 ## Each worktree gets its own database
@@ -203,7 +256,7 @@ So `CONTRIBUTING.md` states three: list through
 than a 403, validate through the form request Precognition already checks
 against, and take copy, colour and duration from `lang/`, the brand tokens and
 `resources/js/lib/motion.ts` rather than from the component. Each is backed by
-something that fails — `tests/Feature/CrossOrgLeakTest.php` case by case,
+something that fails, `tests/Feature/CrossOrgLeakTest.php` case by case,
 `tests/Feature/PrecognitionParityTest.php` on drift, and the locale key-set test
 ([[domains/ux-list-kit]]).
 

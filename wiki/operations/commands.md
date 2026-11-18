@@ -23,7 +23,7 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 
 | Command                   | Does                                                             |
 | ------------------------- | ---------------------------------------------------------------- |
-| `composer test`           | Lint, type coverage, PHPStan, and the suite at `--exactly=100.0` |
+| `composer test`           | Lint, type coverage, PHPStan, and the tests at `--exactly=100.0` |
 | `composer test:a11y`      | axe-core at level 3 over every page the kit ships                |
 | `composer test:audit`     | `composer audit` plus `bun audit`, one advisory ignored by id    |
 | `composer test:dead-code` | PHPStan's dead-code rules over `app/`                            |
@@ -39,7 +39,7 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 
 | Command                | Does                                                                             |
 | ---------------------- | -------------------------------------------------------------------------------- |
-| `composer test:sqlite` | The whole suite against SQLite instead of Postgres, minus vector search, nightly |
+| `composer test:sqlite` | The full suite against SQLite instead of Postgres, minus vector search, nightly |
 | `composer test:mutate` | Mutation score over `app/`, weekly                                               |
 | `composer test:evals`  | Grade prompts against real providers, weekly and on request                      |
 | `bun run test:dupes`   | jscpd copy-paste report over `resources/js`, advisory                            |

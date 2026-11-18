@@ -40,14 +40,15 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Just Better Laravel Defaults**: Thanks to **[Essentials](https://github.com/nunomaduro/essentials)** / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
 - **Code Knowledge Graph**: Laravel Brain indexes routes, models, events and jobs, rebuilt after every commit, so AI agents pull a request path's call chain from an index instead of burning tokens crawling files
-- **An AI layer, not a chatbot**: `laravel/ai` wired into the same architecture as everything else — agents scoped to one organization, read-only tools that call `authorizeFor()`, writes that go through a single-use confirm token, untrusted text fenced before it reaches a model, and every run metered against a per-org budget. It boots and passes the whole suite with zero keys configured, and no test may reach a provider ([`app/Ai/`](app/Ai), [wiki](wiki/domains/ai-layer-overview.md))
+- **An AI layer, not a chatbot**: `laravel/ai` wired into the same architecture as everything else — agents scoped to one organization, read-only tools that call `authorizeFor()`, writes that go through a single-use confirm token, untrusted text fenced before it reaches a model, and every run metered against a per-org budget. It boots and passes the full suite with zero keys configured, and no test may reach a provider ([`app/Ai/`](app/Ai), [wiki](wiki/domains/ai-layer-overview.md))
 - **A UX layer, not a component dump**: A ⌘K command palette over every registered resource, and a server-driven list kit — search, faceted filters, sorting, column controls, saved views, bulk actions, CSV export and a detail drawer — where every one of those happens in a scoped query, so a foreign id is a 404 and a filtered export cannot leak another organization's rows. Plus live notifications, Precognition forms, an onboarding checklist, scanned bulk imports, brand theming and localization ([`resources/js/components/data-table.tsx`](resources/js/components/data-table.tsx), [wiki](wiki/domains/ux-list-kit.md))
 - **A platform ops layer**: Per-organization API tokens (hashed, shown once) driving a registry-backed read API at `/api/v1`, usage logging with per-plan rate tiers, an append-only audit log, GDPR export and anonymising deletion, a `/health` endpoint, Sentry and PostHog seams that stay silent with no keys, signed outgoing webhook deliveries with retries and an SSRF guard, an enforced CSP, and a super-admin control plane built on the same list kit ([`routes/api.php`](routes/api.php), [`app/Webhooks/`](app/Webhooks), [`app/Admin/`](app/Admin))
-- **Documentation That Fails The Build**: A linted [wiki](wiki/index.md) whose pages name the files they describe, five loadable skill packs, and one generated source for every agent guideline file — change a documented file without updating its page and CI goes red
+- **An agent guard rail**: A Claude Code `require-contract` hook that refuses a session's second `app/` file until `.work/feature_list.json` freezes acceptance criteria, a fast commit gate (phpstan, `tsc`, the tests that map to the staged files), a push gate that skips when the tree already passed, and a PR `auditor` workflow, off until you enable it ([`.claude/hooks/require-contract.sh`](.claude/hooks/require-contract.sh), [`.github/workflows/auditor.yml`](.github/workflows/auditor.yml))
+- **Documentation That Fails The Build**: A linted [wiki](wiki/index.md) whose pages name the files they describe, eleven loadable skill packs, and one generated source for every agent guideline file — change a documented file without updating its page and CI goes red
 - **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
 - **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
-- **Full Testing Suite**: 2028 tests with 100% code coverage using Pest
-- **Quality Gates That Block**: Every pull request runs the suite, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; the SQLite and mutation runs happen on a schedule
+- **Full Testing Suite**: 2077 tests with 100% code coverage using Pest
+- **Quality Gates That Block**: Every pull request runs the tests, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; the SQLite and mutation runs happen on a schedule
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
@@ -89,10 +90,46 @@ composer dev
 
 While you are working, `composer test:fast` is the quick loop — parallel,
 compact, stops at the first failure. `composer test` is the gate that has to
-pass before you push; it is the same one CI runs, and the `pre-push` hook runs
-it for you. The `pre-commit` hook fixes formatting on staged files, and pulling
-or switching branches reinstalls dependencies when a lock file changed and
+pass before you push, and the `pre-push` hook runs `composer verify` (that gate
+plus dead code, unused packages, knip, the JS tests, the wiki lint, the audit
+and duplication), the same command CI runs. The `pre-commit` hook fixes
+formatting on staged files and checks phpstan, `tsc` and the tests that map to
+them. Pulling or switching branches reinstalls dependencies when a lock file changed and
 migrates when new migrations arrived, so there is no command to remember.
+
+### What runs at commit and push
+
+| When | What runs | Measured |
+| --- | --- | --- |
+| `git commit`, PHP staged | Rector, Pint, `vp fmt`/`vp lint` on staged files; phpstan (whole project); `tsc` if TypeScript is staged; Pest on the staged tests plus the mirrored `FooTest.php` of each staged `app/**/Foo.php` | about 8s for a clean one-file commit |
+| `git commit`, docs only | no analysis, no tests | about 1s |
+| `git push`, new tree | `composer verify`, the full gate | about 113s |
+| `git push`, tree already verified | skipped; a green run on a clean tree stamps its tree hash in `verified-tree` inside the git directory | about 1s |
+
+The skip is by tree, so an amended message, a rebase onto nothing new or a push
+to a second remote reuses the stamp, and any content change forces the full gate.
+The gate checks the checked-out working tree, so push the branch you have checked
+out. A source file with no mirrored test reaches the push gate before any test
+sees it.
+
+**Enforced:** `commit-msg`, `pre-commit` and `pre-push` for everyone (skipping
+them is refused only for Claude Code, by `guard-gates.sh`), and the Claude Code
+`require-contract` hook, which denies a session's second `app/` file until
+`.work/feature_list.json` exists with a `verified_by` command on every item. It
+checks the shape of that file, not the quality of the criteria, only sees Edit,
+Write and MultiEdit, and fails open without `php`.
+**Only instructed:** running `deepen`, then `contract`, before multi-step work,
+`triage-errors` for production errors and `outcome` for standing checks. These are
+rules in `AGENTS.md`, so an agent can ignore them. The PR `auditor` is advisory:
+it comments and never blocks.
+
+**Switch on CI and the auditor.** GitHub Actions are on hold and nothing
+triggers either today. To enable: turn Actions on in the repository settings,
+add the secret `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`), set the
+repository variable `AUDITOR_ENABLED` to `true`, then open a pull request whose
+body has at least one row under `## Acceptance criteria` (the template is
+`.github/pull_request_template.md`). Steps and reasoning:
+[wiki](wiki/decisions/ci-quality.md).
 
 If anything misbehaves, run `php artisan app:doctor` — it checks PHP, extensions,
 the coverage driver, `.env`, the database, migrations, bun, the browser-test

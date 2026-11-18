@@ -323,7 +323,7 @@ Each failure message names the exact command that fixes it.
 - Test Impact Analysis enabled locally — only the tests your change touches run.
   It is deliberately local only (`pest()->tia()->locally()`): CI has no reason
   to trust a map it did not build, so every CI job runs the full suite.
-- `composer test:sqlite` reruns the whole suite on SQLite nightly, minus the
+- `composer test:sqlite` reruns the full suite on SQLite nightly, minus the
   `pgvector` group. Postgres is the default everywhere, so the scheduled run
   proves a fork that drops it still gets everything except vector search. The
   two engines disagree on UUID keys, JSON columns, unordered `ORDER BY` and
@@ -379,8 +379,23 @@ reason, or fix the code.
   agents get version-correct docs and this project's conventions. The skills
   `boost.json` lists ship: package skills (Laravel best practices, AI SDK,
   Fortify, Inertia+React, Wayfinder, Tailwind, Pennant, Socialite and more)
-  plus the first-party packs in `.ai/skills`, mirrored into `.agents/` and
-  `.claude/`.
+  plus the first-party packs in `.ai/skills`, mirrored into `.agents/`,
+  `.claude/`, `.cursor/` and `.github/`. The workflow skills (`deepen`,
+  `contract`, `triage-errors`, `outcome`) start on their own, and
+  `.githooks/pre-commit` blocks a commit that breaks phpstan, tsc or a test
+  that maps to the staged files (about 8s for a clean PHP commit, 1s docs
+  only), and `.githooks/pre-push` runs `composer verify` (about 113s) unless the
+  tip of every pushed ref has a tree that already passed (about 1s; stamp in
+  `verified-tree` in the git directory). The git hooks are enforced for
+  everyone; the skill routing is instruction only. The `require-contract` hook
+  (`.claude/hooks/require-contract.sh`) stops a Claude Code session from editing
+  a second `app/` file until `.work/feature_list.json` freezes criteria, and an
+  `auditor` workflow (`.github/workflows/auditor.yml`, off until
+  `AUDITOR_ENABLED` is set) grades each pull request against the criteria in its
+  body. The auditor is advisory and never blocks. To switch on CI and the
+  auditor: enable Actions, add the secret `CLAUDE_CODE_OAUTH_TOKEN`, set the
+  repository variable `AUDITOR_ENABLED` to `true`, and give the pull request an
+  `## Acceptance criteria` table (`wiki/decisions/ci-quality.md`).
 - `AGENTS.md`, `CLAUDE.md` (the one line `@AGENTS.md`) and `opencode.json` ship
   configured. `boost.json` records which agents and skills are installed;
   `php artisan boost:install --guidelines --skills` regenerates them.
@@ -499,7 +514,7 @@ A product layer built on `laravel/ai`, living in `app/Ai/` and wired so the
 tenancy, authorization and metering rules the rest of the kit enforces apply to
 an agent too. It boots with zero keys: with no provider credential configured
 every agent is answered by the fake gateway, so a fresh clone renders the AI
-pages and runs the whole suite without an account anywhere.
+pages and runs the full suite without an account anywhere.
 
 **Agents inherit the pipeline.** Every vertical implements `OrganizationScoped`
 and runs four middleware in `app/Ai/Middleware` — a quota check, an untrusted
@@ -585,7 +600,7 @@ Scheduled — these report, they never block:
 
 | Command                | What it does                                                                                       |
 | ---------------------- | -------------------------------------------------------------------------------------------------- |
-| `composer test:sqlite` | The whole suite against SQLite instead of PostgreSQL, minus the vector-search tests. Runs nightly. |
+| `composer test:sqlite` | The full suite against SQLite instead of PostgreSQL, minus the vector-search tests. Runs nightly. |
 | `composer test:mutate` | Mutation score over `app/`. Runs weekly.                                                           |
 | `composer test:evals`  | Grades the shipped agents against a real provider. Weekly and on request; skips itself with no key set. |
 | `composer sbom`        | Write `sbom.json` (CycloneDX). Attached to each release.                                           |

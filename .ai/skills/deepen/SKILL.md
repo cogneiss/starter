@@ -1,7 +1,6 @@
 ---
 name: deepen
-description: "Rewrite a task the way a top professional in its field would approach it: the practice the request leaves out, the rawest material in this app to start from, the instruments to run, and a check outside the model that shows the result is right. Ends with a rewritten prompt for the contract skill. Only run this skill when the user explicitly asks for it (/deepen, \"a deeper version\", \"be more ambitious\"); never start it as part of another task."
-disable-model-invocation: true
+description: "Use before building anything non-trivial in this starter kit (a feature, a cross-layer refactor, a performance goal, a fix with unclear blast radius), and on /deepen, \"a deeper version\" or \"be more ambitious\": rewrite the task the way a top professional in its field would approach it: the practice the request leaves out, the rawest material in this app to start from, the instruments to run, and a check outside the model that shows the result is right. Feeds the contract skill. Skip it for a one-file change with an obvious test."
 license: MIT
 metadata:
     author: cogneiss
@@ -41,7 +40,15 @@ ask it:
 
 ## Output
 
+Started by the user (/deepen, "a deeper version", "be more ambitious"):
+
 1. The four answers, one short paragraph each.
 2. The rewritten prompt in a fenced block, ready to paste.
 3. Stop. Do not start the work. Once the user approves, the rewritten prompt
    goes through the `contract` skill and answer (4) becomes its criteria.
+
+Started on its own before a build:
+
+1. Show the user the four answers, two lines each.
+2. Go straight into the `contract` skill with answer (4) as its criteria. Ask
+   one question only if an answer widens the scope or needs access you lack.

@@ -79,7 +79,7 @@ one is central for the reason the bans are: the per-file copy is the one that
 drifts.
 
 `motionStyles()` constructs the Symfony process directly, because the facade is
-faked for the whole suite and this helper genuinely has to run a program.
+faked for the full suite and this helper genuinely has to run a program.
 
 `tests/Evals/` is the deliberate exception, and the only one. `tests/Pest.php`
 groups it `Evals` and says it only runs under `--evals`. Its `beforeEach` skips

@@ -7,6 +7,7 @@
 
 php_files="$(git diff --cached --name-only --diff-filter=ACMR -- '*.php' ':(exclude)*.blade.php')"
 web_files="$(git diff --cached --name-only --diff-filter=ACMR -- 'resources/*.ts' 'resources/*.tsx' 'resources/*.css')"
+web_ts_files="$(git diff --cached --name-only --diff-filter=ACMR -- 'resources/*.ts' 'resources/*.tsx')"
 
 fully_staged() {
     for file in "$@"; do
@@ -61,6 +62,53 @@ if [ -n "$web_files" ]; then
     node_modules/.bin/vp fmt --check $web_files || status=1
     # shellcheck disable=SC2086
     node_modules/.bin/vp lint $web_files || status=1
+fi
+
+# Then refuse a commit that breaks analysis, types or a test. phpstan and tsc run
+# on the whole project because a changed signature breaks callers in files that
+# are not staged. pest runs only what the commit points at: staged test files
+# plus the mirrored FooTest.php of each staged app/**/Foo.php. The full suite is
+# the pre-push gate. Docs-only and deletion-only commits stage no PHP or TS and
+# skip all of this.
+if [ "$status" -eq 0 ] && [ -n "$php_files$web_ts_files" ]; then
+    export XDEBUG_MODE=off
+
+    if [ -n "$php_files" ] && [ -x vendor/bin/phpstan ]; then
+        vendor/bin/phpstan analyse --memory-limit=2G --no-progress || {
+            echo "pre-commit: phpstan failed." >&2
+            status=1
+        }
+    fi
+
+    if [ -n "$web_ts_files" ] && [ -x node_modules/.bin/tsc ]; then
+        node_modules/.bin/tsc --noEmit || {
+            echo "pre-commit: tsc failed." >&2
+            status=1
+        }
+    fi
+
+    if [ "$status" -eq 0 ] && [ -n "$php_files" ] && [ -x vendor/bin/pest ]; then
+        staged_tests="$(printf '%s\n' "$php_files" | grep '^tests/.*Test\.php$')"
+        mirrors="$(printf '%s\n' "$php_files" | grep '^app/' | while IFS= read -r source; do
+            git ls-files ":(glob)tests/**/$(basename "$source" .php)Test.php"
+        done)"
+        targets="$(printf '%s\n%s\n' "$staged_tests" "$mirrors" | grep . | sort -u)"
+
+        if [ -z "$targets" ]; then
+            echo "pre-commit: no tests map to the staged files; pre-push runs the tests."
+        else
+            OLDIFS="$IFS"
+            IFS='
+'
+            # shellcheck disable=SC2086
+            set -- $targets
+            IFS="$OLDIFS"
+            vendor/bin/pest --compact --no-coverage "$@" || {
+                echo "pre-commit: tests failed." >&2
+                status=1
+            }
+        fi
+    fi
 fi
 
 if [ "$status" -ne 0 ]; then

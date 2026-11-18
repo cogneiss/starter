@@ -49,7 +49,7 @@ body, headers and tokens are left out on purpose.
 
 Three reasons, all of them the same reason the AI layer boots keyless:
 
-- **Zero-key boot** — the app, every page and the whole suite work with an
+- **Zero-key boot** — the app, every page and the full suite work with an
   empty `.env`. There is no "configure Sentry to run the tests" step.
 - **No stray network calls** — the suite binds the null reporter, so a test
   can never post an exception to a real project.

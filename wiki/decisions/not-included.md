@@ -20,11 +20,11 @@ architecture it belongs to.
 ## Product surfaces
 
 Billing. An admin panel and a token-auth read API used to sit on this list; the
-platform ops layer shipped both, so what remains absent is a _write_ API — the
+platform ops layer shipped both, so what remains absent is a _write_ API, the
 read surface at `/api/v1` is deliberately read-only ([[operations/ops-admin-area]],
 [[operations/ops-read-api]], [[operations/ops-api-tokens]]).
 
-Two entries left this list with the UX layer. Localization shipped — one server
+Two entries left this list with the UX layer. Localization shipped, one server
 side set of translation files, a supported-locale list and a key parity test
 ([[domains/ux-i18n]]). So did the upload surface, though not as a general file
 manager: uploads exist to feed a bulk import, are quarantined until a scanner
@@ -46,7 +46,7 @@ double the component layer to maintain.
 
 | Skipped                                     | Why                                                                                          |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Host classifier (apex vs organization root) | Only makes sense with subdomains — add it with the subdomain resolver                        |
+| Host classifier (apex vs organization root) | Only makes sense with subdomains, add it with the subdomain resolver                        |
 | Custom domains with on-demand TLS           | Depends entirely on the deploy target                                                        |
 | Self-serve role builder UI                  | Most products need three fixed roles; `PermissionCatalog` is the data such a UI would render |
 | Plan catalog and seat quotas                | Billing-shaped                                                                               |
@@ -66,7 +66,6 @@ See [[decisions/org-access]] and [[features/authentication]].
 | Lighthouse scores                | Scores swing with the runner, so the gate would flake and get ignored. Byte and query counts do not swing, so `bin/bundle-budget` and `tests/Feature/ListQueryBudgetTest.php` budget those |
 | `composer-require-checker`       | Overlaps `composer-unused` and is noisy against a runtime-resolving framework  |
 | envy (`.env` drift)              | `.env.example` and `app:doctor` cover it; the check fires on unrelated changes |
-| Splitting `composer verify`      | The full gate stays on pre-push while CI is on hold; a fast pre-commit set was never timed |
 | Dropping `jscpd`                 | Stays as the duplicate-code gate; its overlap with the other gates was not measured |
 
 See [[decisions/ci-quality]].
@@ -84,15 +83,15 @@ entries above are now shipped rather than skipped:
 
 | Was skipped                                   | What shipped instead                                                                                                                                                  |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `searchQuery()` / Scout / a generic `/search` | A scoped `search` endpoint over the registry, a word-prefix match through `ResourceQuery` (full-text on Postgres, `like` elsewhere) and still driver-free — the Scout decision is deferred, not made ([[domains/ux-search-and-palette]]) |
+| `searchQuery()` / Scout / a generic `/search` | A scoped `search` endpoint over the registry, a word-prefix match through `ResourceQuery` (full-text on Postgres, `like` elsewhere) and still driver-free, the Scout decision is deferred, not made ([[domains/ux-search-and-palette]]) |
 | ⌘K palette                                    | The client half of that endpoint, keyboard-first ([[domains/ux-search-and-palette]])                                                                                  |
 | `visibleTo()` / `scopeFilter()` / `find()`    | Not resurrected as adapter methods. The list kit filters at the query level and lets the policy answer the rest ([[domains/ux-list-kit]])                             |
 | The motion layer                              | A token module the components read, honouring `prefers-reduced-motion` ([[domains/ux-motion-and-a11y]])                                                               |
 | Guard G6 (precognition on form routes)        | `tests/Feature/PrecognitionParityTest.php`, walking the router rather than the filesystem ([[domains/ux-forms-precognition]])                                         |
 
 The third row is the one worth reading twice. The original reason for cutting
-`visibleTo()` — _policies already answer that question, and duplicating the rule
-in an adapter is two places to get it wrong_ — held, so search and lists got a
+`visibleTo()`, _policies already answer that question, and duplicating the rule
+in an adapter is two places to get it wrong_, held, so search and lists got a
 scope at the query level and a policy check on top, and no third copy of the
 rule in an adapter method.
 
@@ -104,7 +103,7 @@ this is the reasoning:
 | Skipped                                              | Why                                                                                                         |
 | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | A chat product                                       | Threads, history, sharing and moderation are a product; blocks, tools and confirm tokens are its foundation |
-| Billing for AI spend                                 | Billing-shaped — the credit ledger and `ai:usage` are the meter such a module would read                    |
+| Billing for AI spend                                 | Billing-shaped, the credit ledger and `ai:usage` are the meter such a module would read                    |
 | Images, speech, transcription, provider file storage | Supported by the SDK, but each brings storage, moderation and a second provider account                     |
 | Reranking                                            | Pays off against a tuned corpus, and there is no corpus here to tune                                        |
 | Provider-hosted vector stores                        | pgvector keeps the corpus inside the tenancy boundary the rest of the kit enforces                          |
@@ -118,13 +117,13 @@ this is the reasoning:
 | A2A, ACP, AP2, x402, WebMCP                          | No current need; watch only |
 
 The last row is the one with teeth. Every other control in the layer assumes the
-data never leaves a database this application scopes — see
+data never leaves a database this application scopes, see
 [[domains/ai-retrieval]] and [[architecture/fail-closed-scoping]]. A hosted store
 puts the corpus somewhere `BelongsToOrganization` cannot reach, so the boundary
 would have to be re-implemented against someone else's filter API.
 
-An earlier cut in the resource spine — `actions()` / `actionSchemas()`, listed
-above as _only useful to an AI assistant layer that is not here_ — is now half
+An earlier cut in the resource spine, `actions()` / `actionSchemas()`, listed
+above as _only useful to an AI assistant layer that is not here_, is now half
 answered: `app/Ai/ConfirmableActions.php` is the registry of writes an agent may
 propose ([[domains/ai-confirm-tokens]]). It is explicit rather than derived from
 an adapter, because a write an agent can reach is worth listing by hand.

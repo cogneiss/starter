@@ -12,12 +12,13 @@ code_refs:
     - .github/workflows/tia-baseline.yml
     - .github/workflows/release-please.yml
     - .github/workflows/claude.yml
-updated: 2026-11-18
+    - .github/workflows/auditor.yml
+updated: 2026-11-19
 ---
 
 # CI topology
 
-Nine workflow files. One of them blocks.
+Ten workflow files. One of them blocks.
 
 ## `ci.yml`, the blocking one
 
@@ -65,7 +66,7 @@ own. Do not remove it, and do not swap the trigger for `pull_request_target`.
 The same condition is false on a push to `main`, so the job only ever runs on a
 pull request.
 
-## The other eight
+## The other nine
 
 | Workflow             | Trigger                                         | Does                                               |
 | -------------------- | ----------------------------------------------- | -------------------------------------------------- |
@@ -77,6 +78,7 @@ pull request.
 | `tia-baseline.yml`   | push to `main`                                  | `composer test:tia-seed`, recording the impact map |
 | `release-please.yml` | push to `main`                                  | keeps the release pull request open                |
 | `claude.yml`         | issue and review comments, new issues           | runs `anthropics/claude-code-action`               |
+| `auditor.yml`        | pull request, only when `AUDITOR_ENABLED` is `true` | grades the diff against the criteria in the PR body ([[decisions/ci-quality]]) |
 
 Nothing here may add `--dirty` or `--tia`: CI runs the full suite, because it has
 no reason to trust an impact map it did not build.

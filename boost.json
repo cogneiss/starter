@@ -3,7 +3,9 @@
         "claude_code",
         "amp",
         "codex",
-        "opencode"
+        "opencode",
+        "cursor",
+        "copilot"
     ],
     "cloud": false,
     "guidelines": true,

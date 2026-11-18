@@ -26,7 +26,7 @@ block for anyone who wants the file-less
 version and no vector search.
 
 Nothing else in the kit depends on Postgres, which is what `composer test:sqlite`
-proves nightly: the whole suite minus the `pgvector` group, on SQLite in memory
+proves nightly: the full suite minus the `pgvector` group, on SQLite in memory
 ([[operations/testing]]).
 
 ## Flags worth knowing on day one
@@ -51,7 +51,7 @@ preset to `localhost`, `8080` and `http`. With
 written to the database and the panel fetches them, so the websocket is the
 upgrade rather than the requirement ([[domains/ux-realtime-notifications]]).
 
-Third-party credentials are all optional: the app boots and the suite passes with
+Third-party credentials are all optional: the app boots and the tests pass with
 every social, mail and AI provider key blank ([[features/authentication]],
 [[domains/ai-layer-overview]]). The same holds for `SENTRY_DSN`/`SENTRY_RELEASE`
 and `POSTHOG_KEY`/`POSTHOG_HOST`: blank by default, and error reporting and

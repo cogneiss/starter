@@ -121,7 +121,7 @@ Test Impact Analysis is enabled locally only — `tests/Pest.php` calls
 
 ## Scheduled runs
 
-`composer test:sqlite` reruns the suite on SQLite in memory nightly, minus the
+`composer test:sqlite` reruns the tests on SQLite in memory nightly, minus the
 `pgvector` group. Postgres is the default everywhere now
 ([[operations/runtime]]), so the scheduled run checks the other direction: that a
 fork which wants no Postgres still gets everything except vector search. The two

@@ -81,3 +81,30 @@ it('defines every subagent a project skill hands work to', function (): void {
         implode(', ', $missing),
     ));
 });
+
+/**
+ * Whether the frontmatter lets the model start the skill on its own.
+ */
+function modelCanStart(string $skill): bool
+{
+    preg_match('/\A---\n(.*?)\n---/s', $skill, $frontmatter);
+
+    return preg_match('/^disable-model-invocation:\s*true\s*$/m', $frontmatter[1] ?? '') !== 1;
+}
+
+it('lets the model start every workflow skill the guidelines route to', function (): void {
+    $blocked = collect(['contract', 'deepen', 'outcome', 'triage-errors'])
+        ->reject(fn (string $name): bool => modelCanStart((string) file_get_contents(base_path(".ai/skills/{$name}/SKILL.md"))))
+        ->values()
+        ->all();
+
+    expect($blocked)->toBe([], sprintf(
+        'The guidelines tell the agent to start these itself, but their frontmatter has disable-model-invocation: true: %s.',
+        implode(', ', $blocked),
+    ));
+});
+
+it('detects a skill the model cannot start', function (): void {
+    expect(modelCanStart("---\nname: x\ndisable-model-invocation: true\n---\n# X"))->toBeFalse()
+        ->and(modelCanStart("---\nname: x\ndescription: y\n---\n# X"))->toBeTrue();
+});
