@@ -15,7 +15,7 @@ code_refs:
     - app/Console/Commands/AgentsContextCommand.php
     - tests/Feature/Docs/NestedAgentContextTest.php
     - .claude/hooks/guard-generated.sh
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # Documentation
@@ -35,8 +35,9 @@ a specific kind of change. A fact belongs in exactly one of them
 Skills are authored in `.ai/skills/<name>/SKILL.md` and published into
 `.claude/skills/*/` alongside the vendor packs by
 `php artisan boost:install --skills`. Edit the source, not the published copy.
-Seven are first-party (the directories in `.ai/skills`): `resource-spine`, `org-access`, `testing-gates`,
-`ai-layer`, `ux-kit`, `attack-review` and `platform-ops`. Publishing writes a symlink per agent directory, `.claude` and
+Eleven are first-party (the directories in `.ai/skills`): `resource-spine`, `org-access`, `testing-gates`,
+`ai-layer`, `ux-kit`, `attack-review`, `platform-ops`, and the four workflow skills `contract`, `deepen`, `outcome`
+and `triage-errors` ([[operations/contributing]]). Publishing writes a symlink per agent directory, `.claude` and
 `.agents`, and both are committed, so a clone gets the pack without running
 Boost first.
 

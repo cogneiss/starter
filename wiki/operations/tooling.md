@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # Tooling
@@ -54,7 +54,8 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
   package docs instead of guessing at an API.
 - `boost.json` records which agents and skills are installed, first-party packs
   included. The agents are Claude Code, Amp, Codex and OpenCode. `ai-layer` and `attack-review` sit in that list next to `org-access`,
-  `platform-ops`, `resource-spine`, `testing-gates` and `ux-kit`. The list tracks the installed packages: `pest-testing`
+  `platform-ops`, `resource-spine`, `testing-gates` and `ux-kit`, as do the workflow skills `contract`, `deepen`,
+  `outcome` and `triage-errors`. The list tracks the installed packages: `pest-testing`
   is gone, `testing-best-practices` replaced the Pest pack, and
   `echo-development` and `echo-react-development` are published because `laravel-echo` and `@laravel/echo-react` are dependencies, and `mcp-development` because `laravel/mcp` is. `php artisan boost:install --guidelines --skills`
   regenerates all of them ([[operations/documentation]]).

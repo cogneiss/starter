@@ -6,7 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
 # Commands
@@ -62,6 +62,7 @@ fails that run and opens an issue, for the reasons in [[domains/ai-evals]].
 | `composer test:fast`                       | Parallel, compact, stops at the first failure             |
 | `composer test:dirty`                      | Only the tests covering files you edited                  |
 | `composer test:tia-seed`                   | Record the impact map `test:dirty` reads                  |
+| `composer test:status [files]`             | Re-run every check in `todo/*.status.json`, record results |
 | `composer lint`                            | Rector, Pint and the frontend formatter, applying fixes   |
 | `composer update:requirements`             | Bump PHP and JS dependencies to latest                    |
 | `composer typescript:generate`             | Rewrite the generated TypeScript declarations             |
