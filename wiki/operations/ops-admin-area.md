@@ -76,7 +76,11 @@ documented as a gap elsewhere).
 
 ## Granting AI credit
 
-The organizations page links to a "Grant AI credit" form.
+The organizations page links to a "Grant AI credit" form. Its organization
+picker holds at most 20 `OrganizationData` rows, sorted by name, and a search
+box narrows them on the server with a name match, so the page stays the same
+size however many organizations exist. A new search clears the choice, so a
+grant never goes to an organization the picker no longer shows.
 `AdminAiCreditController` posts through `GrantAiCredits` with no actor, because
 a platform admin is not a member holding `ai.grant`; the platform gate in front
 of the route is the authorization, and a non-admin gets a 404.

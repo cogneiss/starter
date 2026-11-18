@@ -1,4 +1,5 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -9,18 +10,26 @@ import AppLayout from '@/layouts/app-layout';
 import { useTranslate } from '@/lib/i18n';
 import { index, pages } from '@/routes/admin';
 import { store } from '@/routes/admin/ai-credits';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem, Organization } from '@/types';
 
 type Props = {
-    organizations: { id: string; name: string }[];
+    search: string;
+    organizations: Organization[];
     maxMicros: number;
 };
 
 const selectClass =
     'border-input bg-background h-9 w-full rounded-md border px-3 text-sm';
 
-export default function AiCredit({ organizations, maxMicros }: Props) {
+/** Typing a name should be one request, not one per letter. */
+const SEARCH_DEBOUNCE_MS = 300;
+
+export default function AiCredit({ search, organizations, maxMicros }: Props) {
     const t = useTranslate();
+    const [term, setTerm] = useState(search);
+    const debounce = useRef<number | undefined>(undefined);
+
+    useEffect(() => () => window.clearTimeout(debounce.current), []);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Admin', href: index() },
@@ -41,6 +50,22 @@ export default function AiCredit({ organizations, maxMicros }: Props) {
         form.submit();
     };
 
+    // A new search replaces the options, so a choice made from the old ones is
+    // dropped rather than left selected out of sight.
+    const searchOrganizations = (value: string) => {
+        setTerm(value);
+        form.setData('organization_id', '');
+        window.clearTimeout(debounce.current);
+        debounce.current = window.setTimeout(
+            () =>
+                router.reload({
+                    data: { search: value },
+                    only: ['search', 'organizations'],
+                }),
+            SEARCH_DEBOUNCE_MS,
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('credits.grant_title')} />
@@ -54,6 +79,21 @@ export default function AiCredit({ organizations, maxMicros }: Props) {
                     <Label htmlFor="organization_id">
                         {t('credits.organization_field')}
                     </Label>
+                    <Input
+                        type="search"
+                        aria-label={t('credits.organization_search')}
+                        placeholder={t('credits.organization_search')}
+                        data-test="organization-search"
+                        value={term}
+                        onChange={(event) =>
+                            searchOrganizations(event.target.value)
+                        }
+                    />
+                    {organizations.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            {t('credits.organization_none')}
+                        </p>
+                    )}
                     <select
                         id="organization_id"
                         name="organization_id"

@@ -48,6 +48,8 @@ return [
         'grant_title' => 'AI-krediet toekennen',
         'grant_new' => 'AI-krediet toekennen',
         'organization_choose' => 'Kies een organisatie',
+        'organization_search' => 'Zoek organisaties op naam',
+        'organization_none' => 'Geen organisatie komt overeen met die zoekopdracht.',
         'organization_field' => 'Organisatie',
         'amount_field' => 'Bedrag (micro, 1.000.000 is één dollar)',
         'reason_field' => 'Reden',

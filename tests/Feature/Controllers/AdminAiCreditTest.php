@@ -43,6 +43,23 @@ it('lets a platform admin grant AI credit, writing the ledger row and the audit 
         ->and($audit->properties->all())->toBe(['micros' => 2_500_000, 'reason' => 'Support goodwill']);
 });
 
+it('offers at most twenty organizations, narrowed on the server by a name search', function (): void {
+    Organization::factory()->count(25)->create();
+    $wanted = Organization::factory()->create(['name' => 'Zebra Logistics']);
+
+    $this->actingAs(User::factory()->superAdmin()->create())
+        ->get(route('admin.ai-credits.create'))
+        ->assertInertia(fn ($page) => $page->count('organizations', 20)->where('search', ''));
+
+    $this->get(route('admin.ai-credits.create', ['search' => '  zebra ']))
+        ->assertInertia(fn ($page) => $page
+            ->where('search', 'zebra')
+            ->count('organizations', 1)
+            ->where('organizations.0.id', $wanted->id)
+            ->where('organizations.0.name', 'Zebra Logistics')
+            ->where('organizations.0.slug', $wanted->slug));
+});
+
 it('is a 404 for anyone who is not a platform admin', function (): void {
     $member = User::factory()->forOrganization($this->organization)->create();
 

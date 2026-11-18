@@ -50,6 +50,8 @@ return [
         'grant_title' => 'Grant AI credit',
         'grant_new' => 'Grant AI credit',
         'organization_choose' => 'Choose an organization',
+        'organization_search' => 'Search organizations by name',
+        'organization_none' => 'No organization matches that search.',
         'organization_field' => 'Organization',
         'amount_field' => 'Amount (micros, 1,000,000 is one dollar)',
         'reason_field' => 'Reason',

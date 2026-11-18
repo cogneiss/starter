@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GrantAiCredits;
+use App\Data\OrganizationData;
 use App\Http\Requests\GrantAiCreditRequest;
 use App\Models\Activity;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,10 +26,25 @@ use Inertia\Response;
  */
 final readonly class AdminAiCreditController
 {
-    public function create(): Response
+    /**
+     * The picker holds at most this many matches, so the page stays the same
+     * size however many organizations the platform has. A search narrows it.
+     */
+    private const int PICKER_LIMIT = 20;
+
+    public function create(Request $request): Response
     {
+        $search = $request->string('search')->trim()->value();
+
         return Inertia::render('admin/ai-credit', [
-            'organizations' => Organization::query()->orderBy('name')->get(['id', 'name']),
+            'search' => $search,
+            'organizations' => OrganizationData::collect(
+                Organization::query()
+                    ->when($search !== '', fn (Builder $query): Builder => $query->whereLike('name', '%'.$search.'%'))
+                    ->orderBy('name')
+                    ->limit(self::PICKER_LIMIT)
+                    ->get(),
+            ),
             'maxMicros' => GrantAiCreditRequest::MAX_MICROS,
         ]);
     }
