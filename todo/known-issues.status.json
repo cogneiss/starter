@@ -28,7 +28,7 @@
             "id": 4,
             "name": "bun audit ignores GHSA-fc5q-39xc-vjpf (picomatch ReDoS) because no fixed release exists",
             "status": "failing",
-            "note": "Added 2026-11-18. picomatch <=4.0.7 is flagged and 4.0.7 is the latest release, so there is nothing to upgrade to. It arrives through build tooling (knip, shadcn, vite-plus, laravel-vite-plugin, @inertiajs/vite, @rolldown/plugin-babel) and matches globs the repo writes, not request input. composer.json test:audit passes --ignore for this one advisory. Remove the flag when a fixed picomatch ships.",
+            "note": "Added 2026-11-18. picomatch <=4.0.7 is flagged and 4.0.7 is the latest release, so there is nothing to upgrade to. It arrives through build tooling (knip, shadcn, vite-plus, laravel-vite-plugin, @inertiajs/vite, @rolldown/plugin-babel) and matches globs the repo writes, not request input. composer.json test:audit passes --ignore for this one advisory. Remove the flag when a fixed picomatch ships. 2026-11-18 recheck: npm latest is still 4.0.7 and the advisory lists no patched version; the newest knip, vitest, @rolldown/plugin-babel, tinyglobby, micromatch and vite-plugin-full-reload all still depend on picomatch; no maintained fork exists to override with, and public/build contains none of it. Exit condition: picomatch 4.0.8 or later.",
             "command": "! grep -q 'GHSA-fc5q-39xc-vjpf' composer.json && bun audit --prod"
         },
         {
