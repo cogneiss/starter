@@ -10,7 +10,9 @@ use App\Models\SavedSearch;
 use App\Models\User;
 use App\Resources\IndexesKnowledge;
 use App\Resources\ResourceRegistry;
+use App\Resources\SyncKnowledgeIndex;
 use App\Support\OrganizationContext;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Ai\Embeddings;
 use Laravel\Ai\Prompts\EmbeddingsPrompt;
@@ -34,6 +36,8 @@ function optIn(): void
     );
 
     app()->instance(ResourceRegistry::class, $registry);
+
+    Event::subscribe(SyncKnowledgeIndex::class);
 }
 
 beforeEach(function (): void {
@@ -130,6 +134,8 @@ it('queues nothing for a resource that has not opted in', function (): void {
 });
 
 it('keeps the shipped resources out of the knowledge corpus', function (): void {
+    expect(new ResourceRegistry()->knowledgeEvents())->toBe([]);
+
     foreach (new ResourceRegistry()->all() as $resource) {
         expect($resource)->not->toBeInstanceOf(IndexesKnowledge::class);
     }

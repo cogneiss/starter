@@ -89,6 +89,26 @@ final class ResourceRegistry
         ));
     }
 
+    /**
+     * The Eloquent events of every model whose resource opted in to the
+     * knowledge corpus, so the listener is attached to those models alone.
+     *
+     * @return list<string>
+     */
+    public function knowledgeEvents(): array
+    {
+        $events = [];
+
+        foreach ($this->all() as $resource) {
+            if ($resource instanceof IndexesKnowledge) {
+                $events[] = 'eloquent.saved: '.$resource->model();
+                $events[] = 'eloquent.deleted: '.$resource->model();
+            }
+        }
+
+        return $events;
+    }
+
     public function cachePath(): string
     {
         return $this->cachePath ?? app()->bootstrapPath('cache/resources.json');

@@ -520,6 +520,8 @@ when a human confirms it.
 fetch. The controls have tests that go red when the control is removed, not tests
 that only assert the happy path.
 
+**Knowledge.** A resource that implements `IndexesKnowledge` is embedded into the retrieval corpus on save and removed on delete. None of the shipped resources opt in, because they hold personal data. `php artisan ai:reindex {resource}` backfills one that does.
+
 **Metered.** Every run writes an audit row with tokens and cost.
 `php artisan ai:usage` and the organization usage page read the same action, and
 quotas (per hour, per day, per month of spend) refuse a run before it costs

@@ -26,7 +26,7 @@ final class AiReindexCommand extends Command
 {
     public function handle(ResourceRegistry $registry, OrganizationContext $context): int
     {
-        $key = (string) $this->argument('resource');
+        $key = $this->argument('resource');
 
         try {
             $resource = $registry->get($key);
@@ -47,7 +47,7 @@ final class AiReindexCommand extends Command
         Organization::query()->each(function (Organization $organization) use ($context, $resource, &$queued): void {
             $context->runAs($organization, function () use ($organization, $resource, &$queued): void {
                 $resource->scopedQuery()->each(function (Model $record) use ($organization, $resource, &$queued): void {
-                    dispatch(new IndexAiDocument($organization->id, $resource->key(), (string) $record->getKey(), $resource->knowledgeTitle($record), $resource->knowledgeContent($record)));
+                    dispatch(IndexAiDocument::forRecord($resource, $record, $organization->id));
 
                     $queued++;
                 });

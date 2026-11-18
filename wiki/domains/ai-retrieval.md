@@ -10,7 +10,7 @@ code_refs:
     - tests/Feature/Ai/RetrievalTest.php
     - app/Jobs/IndexAiDocument.php
     - app/Jobs/RemoveAiDocuments.php
-    - app/Listeners/SyncKnowledgeIndex.php
+    - app/Resources/SyncKnowledgeIndex.php
     - app/Resources/IndexesKnowledge.php
     - app/Console/Commands/AiReindexCommand.php
     - tests/Feature/Ai/KnowledgeIndexTest.php
@@ -75,11 +75,11 @@ opts in: members, users, audit rows and tokens are personal data, and whatever a
 adapter returns is embedded and sent to the provider. The source type is the
 resource key.
 
-`app/Listeners/SyncKnowledgeIndex.php` listens for `eloquent.saved` and
-`eloquent.deleted`. A save of an opted-in record dispatches `IndexAiDocument`;
+`app/Resources/SyncKnowledgeIndex.php` subscribes to `eloquent.saved` and
+`eloquent.deleted` of the models whose resource opted in, and of no other model. A save of an opted-in record dispatches `IndexAiDocument`;
 a delete dispatches `app/Jobs/RemoveAiDocuments.php`, which deletes that source's
 rows. Both dispatch after the transaction commits and run under
-`WithOrganizationContext`. A resource that has not opted in dispatches nothing.
+`WithOrganizationContext`. A resource that has not opted in is never listened to.
 
 `php artisan ai:reindex {resource}` backfills: it refuses a resource that has not
 opted in, and for one that has, walks each organization under

@@ -127,7 +127,7 @@ return [
     */
 
     'credits' => [
-        'starter_micros' => (int) (env('AI_STARTER_CREDIT_MICROS') ?: 0),
+        'starter_micros' => max(0, (int) env('AI_STARTER_CREDIT_MICROS')),
     ],
 
     /*

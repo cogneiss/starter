@@ -15,11 +15,11 @@ use App\Enums\KnownFeatures;
 use App\Listeners\DispatchWebhookEvents;
 use App\Listeners\RecordAnalyticsEvent;
 use App\Listeners\RecordModelActivity;
-use App\Listeners\SyncKnowledgeIndex;
 use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Models\User;
 use App\Resources\ResourceRegistry;
+use App\Resources\SyncKnowledgeIndex;
 use App\Support\Analytics\NullAnalyticsReporter;
 use App\Support\Analytics\PostHogReporter;
 use App\Support\Health\Checks\DatabaseCheck;
@@ -116,10 +116,7 @@ final class AppServiceProvider extends ServiceProvider
             DispatchWebhookEvents::class,
         );
 
-        Event::listen(
-            ['eloquent.saved: *', 'eloquent.deleted: *'],
-            SyncKnowledgeIndex::class,
-        );
+        Event::subscribe(SyncKnowledgeIndex::class);
 
         // Every stored notification carries the organization it was raised in.
         // Laravel resolves the `database` driver through the container, so the

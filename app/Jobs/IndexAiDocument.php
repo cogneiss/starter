@@ -7,7 +7,9 @@ namespace App\Jobs;
 use App\Contracts\OrganizationAware;
 use App\Models\AiDocument;
 use App\Queue\Middleware\WithOrganizationContext;
+use App\Resources\IndexesKnowledge;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Str;
 use Laravel\Ai\Embeddings;
@@ -36,6 +38,25 @@ final class IndexAiDocument implements OrganizationAware, ShouldQueue
         private readonly string $title,
         private readonly string $content,
     ) {}
+
+    public static function forRecord(IndexesKnowledge $resource, Model $record, string $organizationId): self
+    {
+        return new self(
+            $organizationId,
+            $resource->key(),
+            self::sourceId($record),
+            $resource->knowledgeTitle($record),
+            $resource->knowledgeContent($record),
+        );
+    }
+
+    public static function sourceId(Model $record): string
+    {
+        $key = $record->getKey();
+        assert(is_string($key) || is_int($key));
+
+        return (string) $key;
+    }
 
     public function organizationId(): string
     {
