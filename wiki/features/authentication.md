@@ -27,7 +27,6 @@ code_refs:
     - app/Http/Requests/CreateUserMagicLinkRequest.php
     - app/Http/Requests/CreateUserPasswordRequest.php
     - app/Http/Requests/ShowUserTwoFactorAuthenticationRequest.php
-    - app/Http/Requests/UpdateEmailVerificationRequest.php
 updated: 2026-11-18
 ---
 
@@ -128,9 +127,8 @@ Each of these is a thin controller over an action in `app/Actions`.
   It exists to mix in Fortify's `InteractsWithTwoFactorState` for
   `UserTwoFactorAuthenticationController::show`.
 
-`app/Http/Requests/UpdateEmailVerificationRequest.php` is an empty subclass of
-Laravel's `EmailVerificationRequest`, but nothing in `app` or `routes` references
-it: `UserEmailVerificationController::update` type-hints the framework class.
+`UserEmailVerificationController::update` type-hints Laravel's own
+`EmailVerificationRequest`, so there is no app-level request class for it.
 
 ## One login flow, no driver setting
 

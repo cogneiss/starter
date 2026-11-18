@@ -20,7 +20,6 @@ code_refs:
     - app/Http/Requests/DeleteBrowserSessionRequest.php
     - app/Http/Requests/DeleteUserRequest.php
     - app/Http/Requests/ShowUserTwoFactorAuthenticationRequest.php
-    - app/Http/Requests/UpdateEmailVerificationRequest.php
     - app/Http/Requests/UpdateUserLocaleRequest.php
     - app/Http/Requests/UpdateUserNotificationPreferenceRequest.php
     - app/Http/Requests/UpdateUserPasswordRequest.php
@@ -159,8 +158,8 @@ own rule.
 
 The account and sign-in requests are explained where they are used:
 `CreateUserEmailResetNotificationRequest`, `CreateUserMagicLinkRequest`,
-`CreateUserPasswordRequest`, `ShowUserTwoFactorAuthenticationRequest` and
-`UpdateEmailVerificationRequest` in [[features/authentication]];
+`CreateUserPasswordRequest` and `ShowUserTwoFactorAuthenticationRequest` in
+[[features/authentication]];
 `UpdateUserRequest`, `UpdateUserPasswordRequest`, `DeleteUserRequest`,
 `DeleteBrowserSessionRequest`, `UpdateUserLocaleRequest` and
 `UpdateUserNotificationPreferenceRequest` in [[features/account-settings]].
