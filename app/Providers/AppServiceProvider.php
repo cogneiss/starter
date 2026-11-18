@@ -15,6 +15,7 @@ use App\Enums\KnownFeatures;
 use App\Listeners\DispatchWebhookEvents;
 use App\Listeners\RecordAnalyticsEvent;
 use App\Listeners\RecordModelActivity;
+use App\Listeners\SyncKnowledgeIndex;
 use App\Models\ApiToken;
 use App\Models\Organization;
 use App\Models\User;
@@ -113,6 +114,11 @@ final class AppServiceProvider extends ServiceProvider
         Event::listen(
             ['eloquent.created: *', 'eloquent.updated: *', 'eloquent.deleted: *'],
             DispatchWebhookEvents::class,
+        );
+
+        Event::listen(
+            ['eloquent.saved: *', 'eloquent.deleted: *'],
+            SyncKnowledgeIndex::class,
         );
 
         // Every stored notification carries the organization it was raised in.
