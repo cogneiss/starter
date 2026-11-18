@@ -52,6 +52,13 @@ it('refuses to link a provider identity to an unverified user', function (): voi
     expect(SocialAccount::query()->count())->toBe(0);
 });
 
+it('refuses a new identity from a provider it has no verification rule for', function (): void {
+    expect(fn () => resolve(LinkSocialAccount::class)->handle('gitlab', identity()))
+        ->toThrow(AuthorizationException::class);
+
+    expect(User::query()->exists())->toBeFalse();
+});
+
 it('is idempotent for an identity that is already linked', function (): void {
     $existing = User::factory()->create();
     SocialAccount::factory()->create([

@@ -340,7 +340,6 @@ final class DoctorCommand extends Command
             $this->credential('Social login', 'the provider buttons stay hidden', [
                 'services.google.client_id',
                 'services.github.client_id',
-                'services.microsoft.client_id',
             ]),
             // Judged by the transport rather than by a key, because each one
             // takes different credentials and two of them take none at all.

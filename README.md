@@ -109,7 +109,6 @@ knobs worth knowing:
 | `ORGANIZATIONS_RESOLVER`          | `session` | How the current organization is found: `session`, `subdomain`, or `single`.                                              |
 | `GOOGLE_CLIENT_ID` / `_SECRET`    | empty     | Google social login.                                                                                                     |
 | `GITHUB_CLIENT_ID` / `_SECRET`    | empty     | GitHub social login.                                                                                                     |
-| `MICROSOFT_CLIENT_ID` / `_SECRET` | empty     | Microsoft social login.                                                                                                  |
 | `ANTHROPIC_API_KEY`               | empty     | The AI layer's default provider. Blank is a supported state: agents simply have nothing to call.                         |
 | `AI_FAKE`                         | `false`   | Answer every agent from a canned response instead of a provider.                                                         |
 

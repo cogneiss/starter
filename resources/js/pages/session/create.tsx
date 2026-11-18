@@ -25,7 +25,6 @@ type Props = {
 const providerLabels: Record<string, string> = {
     google: 'Google',
     github: 'GitHub',
-    microsoft: 'Microsoft',
 };
 
 export default function Login({

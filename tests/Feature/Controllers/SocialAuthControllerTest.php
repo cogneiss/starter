@@ -114,15 +114,6 @@ it('refuses an unverified provider email', function (): void {
     expect(User::query()->exists())->toBeFalse();
 });
 
-it('refuses a provider that cannot say whether the email is verified', function (): void {
-    config()->set('services.microsoft.client_id', 'client-id');
-    fakeSocialite(driver: 'microsoft');
-
-    $this->get(route('social-auth.update', 'microsoft'))->assertForbidden();
-
-    expect(User::query()->exists())->toBeFalse();
-});
-
 it('refuses an empty provider email', function (): void {
     fakeSocialite(socialiteIdentity(email: ''));
 

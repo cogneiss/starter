@@ -189,9 +189,10 @@ FEATURE_IMPERSONATION_ENABLED=true
 
 ## Social login
 
-Off until you configure a provider and turn the flag on. Google, GitHub and
-Microsoft ship wired; adding another Socialite provider is a `config/services.php`
-entry plus a `KnownFeatures`-guarded link.
+Off until you configure a provider and turn the flag on. Google and GitHub ship
+wired; adding another Socialite provider is a `config/services.php` entry, its
+name in `EnabledSocialProviders::PROVIDERS`, and a rule in
+`LinkSocialAccount::vouchesFor()` saying how it proves the email is verified.
 
 1. Register an OAuth app with the provider and set the callback URL to
    `https://your-app.test/auth/{provider}/callback` — for example

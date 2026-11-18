@@ -77,9 +77,9 @@
         {
             "id": 13,
             "name": "full gate green",
-            "status": "failing",
+            "status": "passing",
             "command": "composer test",
-            "note": "composer lint clean; test:type-coverage 100.0%; test:types phpstan 0 errors + tsc clean; bun run build ok; php artisan test --compact 383/383 passing. Local composer test still fails at test:unit: under Xdebug the default (all-suite) run reports Total 91.0%, and --testsuite=Unit,Feature reports 99.9%. Clover from those runs shows the only uncovered line repo-wide is app/Http/Controllers/UserPasskeyController.php:43 (pre-existing, the else arm of a multi-line ternary that Xdebug does not attribute; CI uses pcov). Manual UX pass (7 steps) not performed."
+            "note": "2026-11-18 local run exit 0: lint clean, phpstan 0 errors, tsc clean, test:strict passed, type coverage 100%, test:unit 2028/2028 passing at Total 100.0% coverage. Manual UX pass (7 steps) not performed; it is outside this command."
         },
         {
             "id": 14,

@@ -235,7 +235,6 @@ it('says which half of rag retrieval is missing, and reports it on when neither 
 it('reports a missing third-party credential as off rather than failed', function (): void {
     config()->set('services.google.client_id', '');
     config()->set('services.github.client_id', '');
-    config()->set('services.microsoft.client_id', '');
 
     Artisan::call('app:doctor', ['--json' => true]);
 

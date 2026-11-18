@@ -15,7 +15,6 @@ it('offers only the providers that carry credentials', function (): void {
     config()->set('features.defaults.social-login-enabled', true);
     config()->set('services.github.client_id', 'client-id');
     config()->set('services.google.client_id', '');
-    config()->set('services.microsoft.client_id', '');
 
     expect(resolve(EnabledSocialProviders::class)->handle())->toBe(['github']);
 });

@@ -42,12 +42,6 @@ return [
         'redirect' => '/auth/github/callback',
     ],
 
-    'microsoft' => [
-        'client_id' => env('MICROSOFT_CLIENT_ID', ''),
-        'client_secret' => env('MICROSOFT_CLIENT_SECRET', ''),
-        'redirect' => '/auth/microsoft/callback',
-    ],
-
     'posthog' => [
         'key' => filled(env('POSTHOG_KEY')) ? env('POSTHOG_KEY') : null,
         'host' => filled(env('POSTHOG_HOST')) ? env('POSTHOG_HOST') : 'https://app.posthog.com',

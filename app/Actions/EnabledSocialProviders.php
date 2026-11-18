@@ -14,7 +14,7 @@ final readonly class EnabledSocialProviders
      *
      * @var list<string>
      */
-    public const array PROVIDERS = ['google', 'github', 'microsoft'];
+    public const array PROVIDERS = ['google', 'github'];
 
     /**
      * The providers a visitor may actually use right now. A provider without

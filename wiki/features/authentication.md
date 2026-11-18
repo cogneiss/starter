@@ -75,7 +75,7 @@ the kit's own screens on top of it.
 
 Social login is off behind a feature flag and needs credentials before a provider
 button appears at all. `app/Actions/EnabledSocialProviders.php` is the one place
-that decides which of `google`, `github` and `microsoft` are live: the
+that decides which of `google` and `github` are live: the
 `social-login-enabled` flag must be on and `services.<provider>.client_id` must be
 non-empty. `SessionController` passes that list to the login page and
 `SocialAuthController` returns a 404 for any provider outside it

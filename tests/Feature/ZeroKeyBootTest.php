@@ -26,8 +26,6 @@ function optionalCredentials(): array
         'services.google.client_secret',
         'services.github.client_id',
         'services.github.client_secret',
-        'services.microsoft.client_id',
-        'services.microsoft.client_secret',
         'services.slack.notifications.bot_user_oauth_token',
         'services.slack.notifications.channel',
         'mail.mailers.smtp.username',
