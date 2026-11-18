@@ -599,6 +599,7 @@ Local loops:
 | `composer dev`                                 | Server, queue worker, log tail, and Vite together.                            |
 | `composer test:fast`                           | Parallel, compact, stops at the first failure. The one to run while working.  |
 | `composer test:dirty`                          | Only the tests covering files you have edited.                                |
+| `composer test:status [files]`                 | Re-run every check in `todo/*.status.json` and record the result; exits 1 when a passing one stopped holding. Slow: pass files to narrow it. |
 | `composer test:tia-seed`                       | Record the impact map `test:dirty` reads. Needs a coverage driver.            |
 | `composer lint`                                | Rector, Pint, and the frontend formatter, applying fixes.                     |
 | `composer update:requirements`                 | Bump PHP and JS dependencies to latest.                                       |

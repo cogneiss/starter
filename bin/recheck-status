@@ -1,0 +1,91 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * Re-run the command behind every phase in todo/*.status.json and write back
+ * whether it still holds. Exits 1 when a phase recorded as passing no longer
+ * passes, so a claim in the plan files cannot quietly go stale.
+ *
+ * Plain PHP rather than an artisan command: artisan loads .env into the
+ * environment every child process inherits, and phpunit.xml does not force
+ * APP_ENV or DB_DATABASE, so a child `php artisan test` would run
+ * RefreshDatabase against the development database.
+ *
+ * Only the status values are rewritten, in place, so each file keeps its own
+ * formatting. A repeated command runs once.
+ *
+ * Usage: bin/recheck-status [todo/<plan>.status.json ...]
+ */
+
+$root = dirname(__DIR__);
+$files = array_slice($argv, 1) ?: (glob($root.'/todo/*.status.json') ?: []);
+
+$outcomes = [];
+$stoppedHolding = [];
+$nowPassing = [];
+$counts = ['passing' => 0, 'failing' => 0];
+
+foreach ($files as $file) {
+    $original = (string) file_get_contents($file);
+    $phases = json_decode($original, true, flags: JSON_THROW_ON_ERROR)['phases'];
+    preg_match_all('/"status"\s*:\s*"\K(?:passing|failing)(?=")/', $original, $statuses, PREG_OFFSET_CAPTURE);
+
+    if (count($statuses[0]) !== count($phases)) {
+        $stoppedHolding[] = "{$file}: needs exactly one \"status\": \"passing\" or \"failing\" per phase.";
+
+        continue;
+    }
+
+    $rewritten = $original;
+
+    foreach ($phases as $index => $phase) {
+        $label = sprintf('%s #%s %s', basename($file, '.status.json'), $phase['id'], $phase['name']);
+        echo "  {$label} ... ";
+
+        $outcomes[$phase['command']] ??= run($phase['command'], $root);
+        [$holds, $tail] = $outcomes[$phase['command']];
+        [$was, $offset] = $statuses[0][$index];
+        $status = $holds ? 'passing' : 'failing';
+
+        echo $status, PHP_EOL;
+        $counts[$status]++;
+
+        if ($was === 'passing' && ! $holds) {
+            $stoppedHolding[] = "{$label}\n    \$ {$phase['command']}\n    {$tail}";
+        }
+
+        if ($was === 'failing' && $holds) {
+            $nowPassing[] = $label;
+        }
+
+        $rewritten = substr_replace($rewritten, $status, $offset, strlen($status));
+    }
+
+    if ($rewritten !== $original) {
+        file_put_contents($file, $rewritten);
+    }
+}
+
+printf("\n%d passing, %d failing.\n", $counts['passing'], $counts['failing']);
+
+if ($nowPassing !== []) {
+    echo "\nNow passing:\n  ", implode("\n  ", $nowPassing), PHP_EOL;
+}
+
+if ($stoppedHolding !== []) {
+    fwrite(STDERR, "\nStopped holding:\n  ".implode("\n  ", $stoppedHolding).PHP_EOL);
+
+    exit(1);
+}
+
+/**
+ * @return array{bool, string} whether the command exited 0, and its last lines
+ */
+function run(string $command, string $root): array
+{
+    exec('cd '.escapeshellarg($root).' && ('.$command.') 2>&1', $output, $exitCode);
+
+    return [$exitCode === 0, implode("\n    ", array_slice($output, -5))];
+}
