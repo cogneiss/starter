@@ -112,6 +112,7 @@ it('lists application files no page claims, and only those', function (): void {
     $paths = array_column(auditOf($root)['undocumented'], 'path');
 
     expect($paths)->not->toContain('app/Support/WikiPage.php')
+        ->and($paths)->not->toContain('app/Models/AGENTS.md')
         ->and($paths)->toContain('app/Models/User.php')
         ->and(auditOf($root)['undocumented'][0]['reason'])->toBe('no wiki page lists this file in code_refs');
 });

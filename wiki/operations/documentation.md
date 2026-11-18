@@ -123,8 +123,11 @@ which clears the gate and hides the drift.
 
 `php artisan wiki:audit` writes `wiki/_meta/audit.json`: a worklist of stale
 pages, application files no page lists in `code_refs`, and pages whose refs have
-all been deleted. `.githooks/post-commit` refreshes it after every commit and
-`app:doctor` prints the counts, so the work surfaces without being looked for.
+all been deleted. The nested `AGENTS.md` files under `app/` are left off the
+undocumented list, because `agents:context` generates them and no page explains
+them (`app/Console/Commands/WikiAuditCommand.php`). `.githooks/post-commit`
+refreshes it after every commit and `app:doctor` prints the counts, so the work
+surfaces without being looked for.
 The file is generated and git-ignored — regenerate it, never edit it.
 
 Agents do not load the wiki by default. A page is opened when the task touches a

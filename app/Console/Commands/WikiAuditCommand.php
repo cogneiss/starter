@@ -91,7 +91,8 @@ final class WikiAuditCommand extends Command
 
     /**
      * Application files no page claims. Reported, never blocked: a gate here
-     * buys one-line pages written to clear it.
+     * buys one-line pages written to clear it. Nested `AGENTS.md` files are
+     * skipped: `agents:context` generates them from `.ai/rules/index.md`.
      *
      * @param  array<string, WikiPage>  $pages
      * @return list<array{path: string, reason: string}>
@@ -111,7 +112,7 @@ final class WikiAuditCommand extends Command
         foreach (File::allFiles(app_path()) as $file) {
             $path = 'app/'.str_replace(DIRECTORY_SEPARATOR, '/', $file->getRelativePathname());
 
-            if (array_key_exists($path, $documented)) {
+            if (array_key_exists($path, $documented) || $file->getFilename() === 'AGENTS.md') {
                 continue;
             }
 
