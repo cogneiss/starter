@@ -6,6 +6,7 @@ code_refs:
     - composer.json
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
+    - bin/bundle-budget
 updated: 2026-11-19
 ---
 
@@ -63,6 +64,7 @@ fails that run and opens an issue, for the reasons in [[domains/ai-evals]].
 | `composer test:dirty`                      | Only the tests covering files you edited                  |
 | `composer test:tia-seed`                   | Record the impact map `test:dirty` reads                  |
 | `composer test:status [files]`             | Re-run every check in `todo/*.status.json`, record results |
+| `bin/bundle-budget <bytes>`                | Build, fail if the entry JS is over that many gzipped bytes |
 | `composer lint`                            | Rector, Pint and the frontend formatter, applying fixes   |
 | `composer update:requirements`             | Bump PHP and JS dependencies to latest                    |
 | `composer typescript:generate`             | Rewrite the generated TypeScript declarations             |

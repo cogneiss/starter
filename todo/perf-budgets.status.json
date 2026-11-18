@@ -1,0 +1,27 @@
+{
+    "plan": "performance budgets: list screens and the JavaScript every page loads",
+    "created": "2026-11-19",
+    "phases": [
+        {
+            "id": 1,
+            "name": "a list screen sends the same number of queries for a full page as for one row",
+            "status": "passing",
+            "note": "Covers members, invitations and the audit log. 2026-11-19: it caught the members screen loading each member's roles one at a time (23 queries for 10 rows against 15 for 2); OrganizationMemberResource::scopedQuery() now eager-loads user.roles, which also fixes the API index.",
+            "command": "vendor/bin/pest tests/Feature/ListQueryBudgetTest.php --compact --no-coverage"
+        },
+        {
+            "id": 2,
+            "name": "the app entry and its static imports stay under 190 000 gzipped bytes",
+            "status": "passing",
+            "note": "2026-11-19: 181 437 bytes across 10 chunks. The budget is the measured size plus about 5 %, so a new heavy import on the entry path trips it.",
+            "command": "bin/bundle-budget 190000"
+        },
+        {
+            "id": 3,
+            "name": "stretch: the app entry and its static imports fit in 90 000 gzipped bytes",
+            "status": "failing",
+            "note": "Half the 2026-11-19 measurement. Reaching it means moving code off the entry path into the page chunks that need it.",
+            "command": "bin/bundle-budget 90000"
+        }
+    ]
+}

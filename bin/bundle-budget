@@ -1,0 +1,50 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * Gzipped bytes of the JavaScript every page downloads before its own chunk:
+ * the app entry and everything it imports statically, read from the Vite
+ * manifest of a fresh production build. Exits 1 when that is over the budget
+ * given in bytes.
+ *
+ * Usage: bin/bundle-budget <bytes>
+ */
+
+$root = dirname(__DIR__);
+$budget = (int) ($argv[1] ?? 0);
+
+exec('cd '.escapeshellarg($root).' && bun run build 2>&1', $buildOutput, $buildExit);
+
+if ($buildExit !== 0) {
+    fwrite(STDERR, implode("\n", array_slice($buildOutput, -20))."\n");
+    exit(1);
+}
+
+$manifest = json_decode((string) file_get_contents($root.'/public/build/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
+
+$pending = ['resources/js/app.tsx'];
+$seen = [];
+
+while ($pending !== []) {
+    $key = array_pop($pending);
+
+    if (isset($seen[$key])) {
+        continue;
+    }
+
+    $seen[$key] = true;
+    array_push($pending, ...($manifest[$key]['imports'] ?? []));
+}
+
+$bytes = 0;
+
+foreach (array_keys($seen) as $key) {
+    // 8bit: gzip output is bytes, not UTF-8 characters.
+    $bytes += mb_strlen((string) gzencode((string) file_get_contents($root.'/public/build/'.$manifest[$key]['file']), 9), '8bit');
+}
+
+printf("%d chunks, %d gzipped bytes, budget %d.\n", count($seen), $bytes, $budget);
+
+exit($budget > 0 && $bytes <= $budget ? 0 : 1);
