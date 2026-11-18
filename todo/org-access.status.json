@@ -79,7 +79,7 @@
             "name": "full gate green",
             "status": "passing",
             "command": "composer test",
-            "note": "2026-11-18 local run exit 0: lint clean, phpstan 0 errors, tsc clean, test:strict passed, type coverage 100%, test:unit 2028/2028 passing at Total 100.0% coverage. Manual UX pass (7 steps) not performed; it is outside this command."
+            "note": "2026-11-18 local run exit 0: lint clean, phpstan 0 errors, tsc clean, test:strict passed, type coverage 100%, test:unit 2028/2028 passing at Total 100.0% coverage. The manual UX pass (7 steps) was never written down, so its steps could not be recovered; item 18 replaces it with a browser test."
         },
         {
             "id": 14,
@@ -108,6 +108,13 @@
             "status": "passing",
             "command": "php artisan test --compact --filter=ImpersonationNoOrganizationAudit",
             "note": "RecordModelActivity files an ImpersonationLog under its own organization_id, never the bound context. A target with no organization gets a platform-level activity row with a null organization, saved quietly so the creating hook cannot fill in the admin's organization."
+        },
+        {
+            "id": 18,
+            "name": "UX pass: the organization and access screens work in a real browser",
+            "status": "passing",
+            "command": "php artisan test --compact tests/Browser/OrganizationAccessTest.php",
+            "note": "2026-11-18: replaces the unrecorded manual pass. The 7 steps were derived from this plan's phases and routes, not recovered: create an organization, switch organizations, rename it, invite a member, accept an invitation, change a role and remove a member, and the sessions and two-factor screens including the forced-2FA hold. 9/9 green on 5 consecutive runs. The sessions list itself is not asserted because the test env uses SESSION_DRIVER=array."
         }
     ]
 }
