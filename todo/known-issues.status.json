@@ -22,7 +22,7 @@
             "name": "app:doctor reports the coverage driver as FAIL under Herd",
             "status": "passing",
             "note": "Xdebug is not loaded by default under Herd. 2026-11-18: with Xdebug loaded through php.ini (xdebug.mode=off, the line SETUP.md gives) and a queue worker running, app:doctor exits 0 and reports Coverage driver PASS; the check's fix line points at that SETUP.md section.",
-            "command": "php artisan app:doctor"
+            "command": "QUEUE_CONNECTION=sync php artisan app:doctor"
         },
         {
             "id": 4,

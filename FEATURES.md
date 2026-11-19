@@ -391,7 +391,7 @@ reason, or fix the code.
   keep themselves current: `.githooks/commit-msg` refuses a `feat` that changes
   `app/` or `resources/js/` without staging a `todo/*.status.json` (a `Todo: none`
   trailer opts out), and after a full green push gate `bin/recheck-todo` re-runs
-  every status check in the background on its own `testing_recheck` database and
+  the status checks of the plans the push touched in the background on its own `testing_recheck` database and
   commits what changed as `chore(todo): recheck statuses`. The push does not wait
   for it, and that commit is status-only, so the next push skips the gate. The `require-contract` hook
   (`.claude/hooks/require-contract.sh`) stops a Claude Code session from editing

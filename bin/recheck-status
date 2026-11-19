@@ -85,7 +85,9 @@ if ($stoppedHolding !== []) {
  */
 function run(string $command, string $root): array
 {
-    exec('cd '.escapeshellarg($root).' && ('.$command.') 2>&1', $output, $exitCode);
+    $pestDb = getenv('RECHECK_PEST_DB');
+    $env = $pestDb && preg_match('/pest|composer test|artisan test/', $command) ? 'DB_DATABASE='.escapeshellarg($pestDb).' ' : '';
+    exec('cd '.escapeshellarg($root).' && '.$env.'sh -c '.escapeshellarg($command).' 2>&1', $output, $exitCode);
 
     return [$exitCode === 0, implode("\n    ", array_slice($output, -5))];
 }

@@ -5,14 +5,17 @@
 #
 #   bin/recheck-todo --detach   start in the background and return at once
 #                               (what .githooks/pre-push does after a green gate)
-#   bin/recheck-todo            run in the foreground
+#   bin/recheck-todo            run in the foreground, every status file
+#   RECHECK_FILES="todo/a.status.json ..." limits the run to those files; the
+#   pre-push hook passes the status files the push touches, so a push costs
+#   only the plans it changed.
 #
 # Log: recheck-status.log in the git directory.
 #
 # Why it is safe next to your own work:
 # - One run at a time: a lock directory in the git directory holds the pid, and a
 #   lock whose pid is dead is reclaimed.
-# - Pest uses its own database, testing_recheck, never `testing`. Two Pest runs on
+# - Pest commands (only those) use their own database, testing_recheck, never `testing`. Two Pest runs on
 #   one database fail with duplicate-table errors, and pre-commit, the Claude Stop
 #   hook and you all use `testing`. Parallel workers become testing_recheck_test_N.
 # - It starts only on a clean tree with no commit, rebase, merge or cherry-pick
@@ -83,14 +86,24 @@ if [ "${RECHECK_ISOLATE_DB:-1}" = 1 ]; then
         say "skipped, could not prepare database testing_recheck"
         exit 0
     fi
-    export DB_DATABASE=testing_recheck
+    export RECHECK_PEST_DB=testing_recheck
 fi
+
+# Detached from a terminal the PATH can be short; add where gitleaks, bun, herd
+# and composer usually live.
+PATH="$PATH:/opt/homebrew/bin:/usr/local/bin:$HOME/.composer/vendor/bin:$HOME/Library/Application Support/Herd/bin"
+export PATH
 
 say "start at $head"
 # A phase that stopped holding gets one more run before it is believed, so a
-# flaky command does not commit a false "failing".
-php bin/recheck-status ${RECHECK_FILES:-} >"$gitdir/recheck-status.out" 2>&1 \
-    || php bin/recheck-status ${RECHECK_FILES:-} >"$gitdir/recheck-status.out" 2>&1
+# flaky command does not commit a false "failing". Only the files that changed
+# run again, so the retry does not double the time.
+# shellcheck disable=SC2086
+php bin/recheck-status ${RECHECK_FILES:-} >"$gitdir/recheck-status.out" 2>&1 || {
+    flipped="$(git diff --name-only -- "todo/*.status.json")"
+    # shellcheck disable=SC2086
+    php bin/recheck-status $flipped >"$gitdir/recheck-status.out" 2>&1
+}
 tail -n 4 "$gitdir/recheck-status.out"
 
 files="$(git diff --name-only -- "todo/*.status.json")"

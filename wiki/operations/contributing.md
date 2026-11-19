@@ -84,18 +84,20 @@ code, and they are all the background recheck below ever commits. Any other edit
 a missing stamp or a red run brings the full gate back. A push that only deletes
 a branch has nothing to verify.
 
-After a full green run the hook also starts `bin/recheck-todo --detach` and returns
-without waiting for it, so the push takes the same time as before. The recheck
-re-runs the command behind every phase in `todo/*.status.json`
-(`bin/recheck-status`, one more attempt for a phase that stops holding) and
+After a full green run the hook also starts `bin/recheck-todo --detach` for the
+status files the push touches (none touched, nothing starts) and returns without
+waiting for it, so the push takes the same time as before. The recheck
+re-runs the command behind every phase in those files (`bin/recheck-status`; a
+phase that stops holding gets one more attempt, for its file only) and
 commits the files that changed as `chore(todo): recheck statuses`. The next push
 carries that commit and, being status-only, takes the 1s skip. Set
-`SKIP_TODO_RECHECK=1` to turn it off, or run `bin/recheck-todo` by hand. The log
+`SKIP_TODO_RECHECK=1` to turn it off, or run `bin/recheck-todo` by hand (no `RECHECK_FILES` means every status file,
+about 30 minutes). The log
 is `recheck-status.log` in the git directory.
 
 Many of those commands run Pest, and two Pest runs on one database fail with
 duplicate-table errors (the Claude Code stop hook and your own `pest` use
-`testing`). So the recheck runs with `DB_DATABASE=testing_recheck`, created from
+`testing`). So the recheck runs Pest commands, and only those, with `DB_DATABASE=testing_recheck`, created from
 the `.env` credentials when it is missing, and skips itself if it can't. It also
 holds a lock in the git directory (one recheck at a time, a dead pid is
 reclaimed), starts only on a clean tree with no commit, rebase or merge in

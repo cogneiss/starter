@@ -121,7 +121,7 @@ group_pre_push() {
     export PATH="$base/bin:$PATH" RECHECK_ISOLATE_DB=0
     zero=0000000000000000000000000000000000000000
     stamp="$(git rev-parse --absolute-git-dir)/verified-tree"
-    push() { : > "$log"; echo "refs/heads/main $(git rev-parse HEAD) refs/heads/main $zero" | .githooks/pre-push >/dev/null 2>&1; rc=$?; }
+    push() { : > "$log"; echo "refs/heads/main $(git rev-parse HEAD) refs/heads/main ${1:-$zero}" | .githooks/pre-push >/dev/null 2>&1; rc=$?; }
     verifies() { grep -c '^composer verify' "$log"; }
 
     git rev-parse 'HEAD^{tree}' > "$stamp"
@@ -136,6 +136,12 @@ group_pre_push() {
     git add -A; git commit -q -m "fix: code"
     SKIP_TODO_RECHECK=1 push
     [ $rc -eq 0 ] && [ "$(verifies)" -eq 1 ] && check p-full-code ok || check p-full-code bad "rc=$rc verifies=$(verifies)"
+    # A full green push that touches no status file starts no recheck.
+    prev="$(git rev-parse HEAD)"
+    echo "<?php // more" >> app/Changed.php
+    git commit -q -am "fix: more code"
+    push "$prev"; sleep 1
+    [ $rc -eq 0 ] && [ ! -e .git/recheck-status.lock ] && [ ! -e .git/recheck-status.log ] && check p-launch-scoped ok || check p-launch-scoped bad "rc=$rc"
 
     git rev-parse 'HEAD^{tree}' > "$stamp"
     FAKE_VERIFY=red SKIP_TODO_RECHECK= push

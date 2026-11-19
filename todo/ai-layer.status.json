@@ -9,7 +9,7 @@
             "id": 1,
             "name": "postgres 17 + pgvector primary",
             "status": "passing",
-            "command": "composer test:sqlite && php artisan app:doctor"
+            "command": "composer test:sqlite && QUEUE_CONNECTION=sync php artisan app:doctor"
         },
         {
             "id": 2,

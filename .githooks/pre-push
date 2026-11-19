@@ -16,8 +16,8 @@
 # only in todo/*.status.json counts as stamped too: those files hold no code, and
 # it is what the background recheck commits (bin/recheck-todo).
 #
-# After a full green run the hook starts bin/recheck-todo detached, so the todo
-# statuses are re-decided without making the push wait. SKIP_TODO_RECHECK=1
+# After a full green run the hook starts bin/recheck-todo detached for the status
+# files the push touches, so they are re-decided without making the push wait. SKIP_TODO_RECHECK=1
 # turns that off.
 
 # True when tree $1 is the stamped tree, or differs from it only in status files.
@@ -39,9 +39,13 @@ recorded="$(cat "$stamp" 2>/dev/null)"
 # always verifies.
 lines=0
 stale=0
-while read -r _local_ref local_sha _remote_ref _remote_sha; do
+pushed_status=""
+while read -r _local_ref local_sha _remote_ref remote_sha; do
     lines=1
     [ "$local_sha" = "$zero" ] && continue
+    base="$remote_sha"
+    [ "$base" = "$zero" ] && base="$(git merge-base "$local_sha" '@{upstream}' 2>/dev/null)"
+    [ -n "$base" ] && pushed_status="$pushed_status $(git diff --name-only "$base" "$local_sha" -- 'todo/*.status.json' 2>/dev/null | tr '\n' ' ')"
     tree="$(git rev-parse --verify --quiet "$local_sha^{tree}")"
     # composer verify checks the checked-out files, so a ref whose tip holds a
     # different tree would leave unverified. Push it from its own checkout.
@@ -67,6 +71,6 @@ fi
 
 vendor/bin/sloppy diff '@{upstream}' --merge-base --fail-on=never || true
 
-if [ -z "${SKIP_TODO_RECHECK:-}" ] && [ -x bin/recheck-todo ]; then
-    bin/recheck-todo --detach
+if [ -z "${SKIP_TODO_RECHECK:-}" ] && [ -x bin/recheck-todo ] && [ -n "$(echo $pushed_status)" ]; then
+    RECHECK_FILES="$(printf '%s\n' $pushed_status | sort -u | tr '\n' ' ')" bin/recheck-todo --detach
 fi

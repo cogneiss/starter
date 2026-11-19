@@ -47,8 +47,9 @@ not an explanation.
 - **The todo state manages itself.** Agents add an item with each feature, and
   `.githooks/commit-msg` refuses a `feat` that changes `app/` or `resources/js/`
   without one (opt out with a `Todo: none` trailer). After a green push gate,
-  `bin/recheck-todo` re-decides every status in the background and commits what
-  changed. Alternatives that lost: running the recheck inside the push (adds
+  `bin/recheck-todo` re-decides the statuses of the plans the push touched in
+  the background and commits what changed (all of them take about 30 minutes, so
+  a push is scoped to its own files). Alternatives that lost: running the recheck inside the push (adds
   minutes to a 113s push), and running it against the shared `testing` database
   (collides with pre-commit and the Stop hook; it uses `testing_recheck`).
   A tree that differs from the stamp only in status files skips the push gate;
