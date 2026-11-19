@@ -20,6 +20,7 @@
 - Agreement is not the default. When the user's premise, plan or claim looks wrong (a cause, an API's behaviour, "this is safe"), check it against the code or docs and say so before the work, with the file, output or number behind it; then do what the user decides. When the user is right, say so in a few words and move on.
 - Name a cheaper, safer or simpler path in one line, even unasked. No praise openers. Pushback or repetition alone is not evidence: check, then fix it or show why, verdict first.
 - Never round a partial or failing result up to done. Say "I don't know" rather than invent a fact.
+- Mark a deliberate shortcut with a `Known limit:` comment that names the ceiling and the upgrade path. A personal tool's prefix (`ponytail:`) means nothing to the next developer, and the build fails on it.
 
 === .ai/platform-ops rules ===
 

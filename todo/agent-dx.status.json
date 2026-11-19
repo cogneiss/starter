@@ -150,6 +150,12 @@
       "name": "no personal-plugin comment prefix is left in the starter",
       "status": "passing",
       "command": "! rg -qi ponytail app bin config scripts"
+    },
+    {
+      "id": 25,
+      "name": "agents mark a shortcut with Known limit: and the build fails on a personal-plugin prefix",
+      "status": "failing",
+      "command": "rg -q 'Known limit:' .ai/guidelines/general.blade.php AGENTS.md && php artisan test --compact --filter='project comment prefix'"
     }
   ]
 }

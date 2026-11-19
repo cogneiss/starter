@@ -230,7 +230,10 @@ is off until the repository variable `AUDITOR_ENABLED` is `true`
 guideline, skill or this page names a slash command or subagent that only
 exists in someone's personal `~/.claude`, and when one of the four workflow
 skills sets `disable-model-invocation`. The allowlist is Claude Code's own
-`/loop` and `/schedule`, plus the app's route prefixes such as `/admin`.
+`/loop` and `/schedule`, plus the app's route prefixes such as `/admin`. It
+also fails when a Codex hook command starts from one machine's path instead of
+`$(git rev-parse --show-toplevel)`, and when code carries a personal plugin's
+`ponytail:` comment prefix: a deliberate shortcut is marked `Known limit:`.
 
 ## Each worktree gets its own database
 

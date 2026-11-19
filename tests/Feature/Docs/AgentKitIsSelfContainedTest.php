@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Routing\Route as RouteDefinition;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Claude Code ships these, so a fresh clone has them without any personal
@@ -116,4 +118,18 @@ it('resolves every Codex hook from the checkout it runs in', function (): void {
     expect($commands)->not->toBeEmpty()
         ->and($commands->reject(fn (string $command): bool => str_contains($command, '$(git rev-parse --show-toplevel)"/.codex/hooks/'))->all())
         ->toBe([], 'A Codex hook command must start from $(git rev-parse --show-toplevel), not a path on one machine: it would run another checkout\'s scripts in a worktree.');
+});
+
+it('marks a deliberate shortcut with the project comment prefix', function (): void {
+    $offenders = collect(['app', 'bin', 'config', 'database', 'resources', 'routes', 'scripts'])
+        ->flatMap(fn (string $directory): array => File::allFiles(base_path($directory)))
+        ->filter(fn (SplFileInfo $file): bool => mb_stripos($file->getContents(), 'ponytail:') !== false)
+        ->map(fn (SplFileInfo $file): string => str_replace(base_path().'/', '', $file->getPathname()))
+        ->values()
+        ->all();
+
+    expect($offenders)->toBe([], sprintf(
+        "These files use a personal plugin's comment prefix; write `Known limit:` instead: %s.",
+        implode(', ', $offenders),
+    ));
 });
