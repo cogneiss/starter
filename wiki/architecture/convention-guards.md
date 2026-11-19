@@ -5,7 +5,8 @@ supersedes: []
 code_refs:
     - tests/Unit/Conventions/ConventionTest.php
     - config/conventions.php
-updated: 2026-10-31
+    - tests/Unit/Conventions/RawSqlConventionTest.php
+updated: 2026-11-19
 ---
 
 # Convention guards G1, G4 and G5
@@ -83,3 +84,14 @@ Precognition on form routes is now enforced too, but not from here: the check
 has to walk the router rather than the filesystem, so it lives in
 `tests/Feature/PrecognitionParityTest.php` — see
 [[domains/ux-forms-precognition]].
+
+## Raw SQL is never built from parts
+
+`tests/Unit/Conventions/RawSqlConventionTest.php` parses every PHP file under
+`app`, `bootstrap`, `config`, `database` and `routes` with nikic/php-parser and
+fails when a raw SQL call (`DB::select`, `statement`, `raw`, `whereRaw`,
+`selectRaw`, `orderByRaw` and the rest) gets query text that is concatenated,
+interpolated or `sprintf`-ed with a non-literal. Bindings arrays are fine. A bare
+variable is not flagged and neither is a string built on an earlier line, so the
+guard is a floor, not a proof. `tests/Fixtures/RawSql/injectable-queries.php.txt`
+holds the planted bad calls that show the guard fires.

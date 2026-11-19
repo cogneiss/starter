@@ -1,0 +1,11 @@
+<?php
+
+use Illuminate\Support\Facades\DB;
+
+$name = $request->name;
+
+DB::select("select * from users where name = '".$name."'");
+DB::select("select * from users where name = '{$name}'");
+DB::statement(sprintf("delete from users where name = '%s'", $name));
+User::query()->whereRaw('name = '.$request->name);
+User::query()->orderByRaw("$column desc");
