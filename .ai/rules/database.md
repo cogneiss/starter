@@ -7,9 +7,10 @@ paths:
 # Database design
 
 These rules bind new and changed tables.
-`tests/Unit/Conventions/SchemaConventionTest.php` holds every single-column
-foreign key and every `organization_id` column to the two index rules. No test
-covers the other rules, so a table being there is not a reason to copy it.
+`tests/Unit/Conventions/SchemaConventionTest.php` holds the two index rules,
+the UTC pin, the ban on a time zone column type and the ban on a unique rule
+that skips soft-deleted rows. No test covers the rest, so a table being there
+is not a reason to copy it.
 
 ## The design is agreed as text before a migration exists
 
@@ -65,6 +66,46 @@ value then needs a migration.
 Nullable is a decision: say what a null means in the design text. A flag or a
 counter has a default, not a null.
 
+## A timestamp column has no time zone and holds UTC
+
+Use `timestamp()`, `timestamps()` and `softDeletes()`. Never a `Tz` column
+method and never `timestamptz` in raw SQL: only PostgreSQL has the type, and
+MySQL and SQLite build a plain timestamp for it. `config/app.php` keeps the
+application in UTC and `config/database.php` pins the PostgreSQL, MySQL and
+MariaDB session to UTC, so `now()` and a `useCurrent()` default agree. Change
+neither. Eloquent saves a Carbon's wall-clock time and drops its zone, so call
+`->utc()` on a Carbon from another zone before you save it. The pin covers the
+sessions Laravel opens. A `psql` or `mysql` shell uses the server default.
+
+## A check constraint holds a permanent invariant, never a value set
+
+A set of values, such as a status, is a string column with an enum cast. The
+set grows, and a constraint on it then needs a migration on every engine. A
+rule that can never change, such as an amount that is not negative, may be a
+check constraint. `Blueprint` has no method for one: run `alter table ... add
+constraint ... check (...)` through `DB::statement` behind a driver check for
+PostgreSQL and MySQL. SQLite cannot add one to an existing table and goes
+without. Validation still states the rule, because a database error is not a
+message for a person.
+
+## A soft-deleted row keeps its unique value
+
+A unique index on a table with `softDeletes()` stays a plain one, never a
+partial index that skips deleted rows. A deleted organization still owns its
+slug, so a lookup that guards a unique value reads `withTrashed()`, as
+`app/Actions/CreateOrganization.php` does. A `Rule::unique` never adds
+`withoutTrashed()` or `whereNull('deleted_at')`: the index would refuse the
+row that validation let through. To free a value on delete, rewrite it in the
+same transaction, as `app/Actions/DeleteAccount.php` does with the email.
+
+## A unique rule for only some rows is a partial unique index with its own test
+
+"One pending invitation per email and organization" binds the pending rows
+only. That is a partial unique index on PostgreSQL and SQLite and an
+expression key part on MySQL, written per driver in the migration. The gap
+query does not count a partial index, so the rule gets its own test.
+`tests/Unit/Models/OrganizationInvitationTest.php` is the pattern.
+
 ## Every migration runs on PostgreSQL, SQLite and MySQL
 
 `bin/check-migrations` runs every migration up, down and up again on all
@@ -103,10 +144,6 @@ so in the design text before you write it.
 The owner has not decided these. Do not settle one inside a migration: ask,
 and name what each answer costs.
 
-- A timestamp that stores a time zone (`timestampTz`, `timestampsTz`).
-- A check constraint.
-- A soft delete on a table that has a unique index.
-- A partial unique index.
 - An engine other than PostgreSQL, SQLite and MySQL, such as MariaDB or SQL
   Server.
 - A change to an existing migration. A change is a new migration.

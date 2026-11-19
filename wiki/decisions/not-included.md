@@ -8,6 +8,9 @@ code_refs:
     - app/Support/ResourceQuery.php
     - app/Ai/ConfirmableActions.php
     - app/Ai/Middleware/RecordAudit.php
+    - .ai/rules/database.md
+    - config/database.php
+    - tests/Unit/Conventions/SchemaConventionTest.php
 updated: 2026-11-20
 ---
 
@@ -143,6 +146,40 @@ visits have no call site yet; adopt them on the first page that ships a
 loading skeleton. Promptfoo, Braintrust and a Node
 sidecar are not part of the kit: the Pest evals plugin and `laravel/ai` cover
 what they would add.
+
+## Database design
+
+Three things a schema review might expect are absent. `.ai/rules/database.md`
+states each one as a rule.
+
+No `timestampTz` column. A probe on PostgreSQL saved the same instants into a
+plain `timestamp` column and a `timestampTz` column through Eloquent. With the
+session pinned to UTC, both columns returned the same instant for a Carbon in
+UTC. With the session left at the server default, `Asia/Kolkata` on the machine
+that ran the probe, the `timestampTz` column came back 5 hours 30 minutes off
+and a `useCurrent()` default on the plain column was 19,800 seconds off. So the
+pin is what keeps a time correct, and `config/database.php` sets it on the
+PostgreSQL, MySQL and MariaDB connections. The MySQL value is the offset
+`+00:00`, because a named zone needs time zone tables that a server may not
+have loaded. The type also means something on PostgreSQL only: the MySQL and
+SQLite grammars build a plain timestamp for it. A Carbon in another zone lost
+its instant on both column types, pinned or not, because Eloquent saves the
+wall-clock time and drops the zone. The rule answers that with `->utc()`.
+Nothing here runs MariaDB, so its pin is untested.
+
+No check constraint on a value set. A status is a string column with an enum
+cast, since a new value would otherwise need a constraint migration on every
+engine. A check constraint is allowed for a rule that can never change, and the
+kit's schema has none today. PostgreSQL and MySQL accepted one added with
+`alter table` and refused a bad row. SQLite refused the statement, so SQLite
+goes without.
+
+No partial unique index that frees a soft-deleted value. A deleted
+organization keeps its slug, so a unique index on a soft-deleting table stays
+plain, and `tests/Unit/Conventions/SchemaConventionTest.php` fails on a
+`Rule::unique` that skips deleted rows. A partial unique index is still the
+tool for a rule that binds only some rows, such as one pending invitation per
+email and organization.
 
 ## Drafted, not shipped
 

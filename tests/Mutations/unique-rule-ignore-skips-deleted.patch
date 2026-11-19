@@ -1,0 +1,11 @@
+--- a/app/Http/Requests/UpdateUserRequest.php
++++ b/app/Http/Requests/UpdateUserRequest.php
+@@ -28,7 +28,7 @@
+                 'lowercase',
+                 'email',
+                 'max:255',
+-                Rule::unique(User::class)->ignore($user->id),
++                Rule::unique(User::class)->ignore($user->id)->withoutTrashed(),
+             ],
+         ];
+     }

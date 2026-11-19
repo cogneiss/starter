@@ -1,0 +1,10 @@
+--- a/config/database.php
++++ b/config/database.php
+@@ -102,7 +102,6 @@
+             'prefix' => '',
+             'prefix_indexes' => true,
+             'search_path' => 'public',
+-            'timezone' => 'UTC',
+             'sslmode' => env('DB_SSLMODE', 'prefer'),
+         ],
+ 

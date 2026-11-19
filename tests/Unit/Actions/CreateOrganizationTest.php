@@ -45,6 +45,14 @@ it('never reuses a slug', function (): void {
     expect($organization->slug)->toStartWith('acme-inc-');
 });
 
+it('never reuses the slug of a deleted organization', function (): void {
+    Organization::factory()->create(['slug' => 'acme-inc'])->delete();
+
+    $organization = resolve(CreateOrganization::class)->handle(User::factory()->create(), 'Acme Inc.');
+
+    expect($organization->slug)->toStartWith('acme-inc-');
+});
+
 it('falls back to a generic slug when the name has none', function (): void {
     $organization = resolve(CreateOrganization::class)->handle(User::factory()->create(), '###');
 

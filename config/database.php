@@ -61,6 +61,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // An offset, not a name: a named zone needs the server's time zone tables.
+            'timezone' => '+00:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ], static fn (mixed $value): bool => (bool) $value) : [],
@@ -81,6 +83,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // An offset, not a name: a named zone needs the server's time zone tables.
+            'timezone' => '+00:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ], static fn (mixed $value): bool => (bool) $value) : [],
@@ -98,6 +102,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
+            'timezone' => 'UTC',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 

@@ -1,0 +1,11 @@
+--- a/database/migrations/0001_01_01_000000_create_users_table.php
++++ b/database/migrations/0001_01_01_000000_create_users_table.php
+@@ -20,7 +20,7 @@
+             $table->text('two_factor_recovery_codes')->nullable();
+             $table->timestamp('two_factor_confirmed_at')->nullable();
+             $table->rememberToken();
+-            $table->timestamps();
++            $table->timestampsTz();
+         });
+ 
+         Schema::create('password_reset_tokens', function (Blueprint $table): void {

@@ -180,6 +180,12 @@
       "name": "every migration runs up, down and up again on PostgreSQL, SQLite and MySQL",
       "status": "passing",
       "command": "bin/check-migrations --strict"
+    },
+    {
+      "id": 30,
+      "name": "Sessions pinned to UTC, no time zone column types, and no unique rule or slug lookup that skips soft-deleted rows",
+      "status": "passing",
+      "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php tests/Unit/Actions/CreateOrganizationTest.php --compact --fail-on-skipped"
     }
   ]
 }

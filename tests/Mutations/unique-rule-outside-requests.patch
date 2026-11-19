@@ -1,0 +1,10 @@
+--- a/app/Console/Commands/GdprPurgeCommand.php
++++ b/app/Console/Commands/GdprPurgeCommand.php
+@@ -22,6 +22,7 @@
+ {
+     public function handle(DeleteUser $delete): int
+     {
++        Rule::unique(User::class)->withoutTrashed();
+         $due = User::onlyTrashed()
+             ->where('deleted_at', '<=', now()->subDays(config()->integer('gdpr.purge_after_days')))
+             ->get();

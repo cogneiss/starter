@@ -58,7 +58,10 @@ running. It also needs the configured runtime, `node` by default, on the host.
 **Assets.** `bun run build` produces the client bundle (`package.json`).
 
 **Postgres and pgvector.** `.env.example` defaults to `DB_CONNECTION=pgsql`
-and `config/database.php` carries the connection. Retrieval stores embeddings
+and `config/database.php` carries the connection. That file also pins the
+session time zone to UTC on PostgreSQL, MySQL and MariaDB, so the server's
+default zone does not matter to the application. A `psql` shell opened by
+hand still uses the server default. Retrieval stores embeddings
 in a real vector column. The migration
 `database/migrations/2026_08_25_090000_create_ai_documents_table.php` calls
 `Schema::ensureVectorExtensionExists()` on Postgres, and

@@ -64,8 +64,14 @@ feeds the next one.
   gets `BelongsToOrganization`. Load `org-access` for the scope.
 - **Keys.** The primary key, then for every reference what a delete does.
 - **Columns.** Type, `NOT NULL` or not, default. Money and a fixed set of
-  values have their own rules.
+  values have their own rules. A time is a plain `timestamp()` in UTC: call
+  `->utc()` on a Carbon from another zone before you save it.
 - **Uniqueness.** What must never appear twice, and inside which organization.
+  A soft-deleted row keeps its value, so look it up `withTrashed()`. A rule
+  for only some rows is a partial unique index with its own test.
+- **Invariants.** A rule that can never change (an amount is not negative)
+  may be a check constraint, written as raw SQL behind a driver check. A set
+  of values is never one.
 - **Indexes, last.** Build them from the reads you listed in step 2. One
   composite index can cover a foreign key and `organization_id` at once.
 
@@ -135,13 +141,6 @@ query returns no row for them.
 design needs one, stop before the migration and ask one question that names the
 table and what each answer costs.
 
-- A time zone on a timestamp: ask whether readers in different zones see the
-  value, and say that the other timestamps in the kit carry no zone.
-- A check constraint: ask whether the rule belongs in the database or in
-  validation, and say that a rule in the database also binds imports and jobs.
-- A soft delete: ask whether a deleted row's unique value may be used again.
-- A partial unique index: ask first, because it is what the soft delete answer
-  usually leads to and the gap query above does not count it.
 - An engine other than PostgreSQL, SQLite and MySQL (MariaDB, SQL Server): ask
   who will run the migrations and the suite on it. `bin/check-migrations` does
   not, and the gap query is written for PostgreSQL.
