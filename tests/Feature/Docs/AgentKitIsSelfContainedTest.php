@@ -108,3 +108,12 @@ it('detects a skill the model cannot start', function (): void {
     expect(modelCanStart("---\nname: x\ndisable-model-invocation: true\n---\n# X"))->toBeFalse()
         ->and(modelCanStart("---\nname: x\ndescription: y\n---\n# X"))->toBeTrue();
 });
+
+it('resolves every Codex hook from the checkout it runs in', function (): void {
+    $hooks = json_decode((string) file_get_contents(base_path('.codex/hooks.json')), true, flags: JSON_THROW_ON_ERROR)['hooks'];
+    $commands = collect(data_get($hooks, '*.*.hooks.*.command'));
+
+    expect($commands)->not->toBeEmpty()
+        ->and($commands->reject(fn (string $command): bool => str_contains($command, '$(git rev-parse --show-toplevel)"/.codex/hooks/'))->all())
+        ->toBe([], 'A Codex hook command must start from $(git rev-parse --show-toplevel), not a path on one machine: it would run another checkout\'s scripts in a worktree.');
+});

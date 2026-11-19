@@ -126,6 +126,12 @@
       "name": "todo state manages itself: feat commits carry a todo item and pushes recheck statuses in the background",
       "status": "passing",
       "command": "bash bin/prove-todo-gate.sh && rg -q 'recheck-todo' README.md && rg -q 'recheck-todo' FEATURES.md && rg -q 'recheck-todo' wiki/operations/contributing.md"
+    },
+    {
+      "id": 21,
+      "name": "Codex hooks resolve from the checkout they run in, not one machine path",
+      "status": "failing",
+      "command": "php artisan test --compact --filter=Codex"
     }
   ]
 }
