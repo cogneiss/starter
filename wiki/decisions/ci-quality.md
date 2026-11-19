@@ -13,8 +13,6 @@ code_refs:
     - .github/workflows/auditor.yml
     - .github/pull_request_template.md
     - bin/prove-contract-hook.sh
-    - todo/ci-quality.status.json
-    - todo/agent-dx.status.json
 updated: 2026-11-19
 ---
 
@@ -63,7 +61,7 @@ narrower form. The commit gate and the push gate now have different jobs.
 - **Push: complete.** `.githooks/pre-push` still runs all of `composer verify`.
   Measured: full push 113s. A green run on a clean tree stamps the tree hash in
   `verified-tree` inside the git directory, and a later push of the same tree
-  skips the run: skip push 1s.
+  skips the run: skip push 1s. A tree that differs only in `todo/*.status.json` also skips; see [[operations/contributing]].
 
 The stamp is by tree, not by commit, so it cannot excuse a content change, and it
 is written only after a green gate on a clean working tree. A failed run deletes

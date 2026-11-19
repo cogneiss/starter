@@ -7,6 +7,9 @@ code_refs:
     - .githooks/commit-msg
     - .githooks/pre-commit
     - .githooks/pre-push
+    - bin/recheck-todo
+    - bin/recheck-status
+    - bin/prove-todo-gate.sh
     - .githooks/post-merge
     - .githooks/sync-deps
     - .githooks/post-checkout
@@ -46,6 +49,14 @@ it reaches a branch. That is not style policing, release-please reads those
 prefixes to pick the next version and write the changelog
 ([[operations/releases]]).
 
+The same hook keeps the plan files current. A `feat` commit (`feat:` or
+`feat(scope):`) that stages anything under `app/` or `resources/js/` is refused
+unless it also stages a `todo/<area>.status.json`, where the item and the command
+that decides it live. A `Todo: none` line in the message skips the check for a
+feature that needs no item. Other commit types, and a feat that only touches
+tests or docs, are not looked at. The check is one `git diff --cached`, so it adds
+well under 0.1s.
+
 ## Format and static checks run before code leaves the machine
 
 `.githooks/pre-commit` fixes the staged files and stages the result: Rector and
@@ -67,9 +78,34 @@ range prints last and never blocks. A full run takes about 113s. Mutation testin
 A green run on a clean tree writes the tree hash to `verified-tree` in the git
 directory. The next push skips the gate when the tip of every ref it pushes has that
 same tree (older commits in the range are not checked), which is what an amended message, a rebase onto nothing new or a push
-to a second remote produces. That skip takes about 1s. Any edit to a file,
+to a second remote produces. That skip takes about 1s. A tree that differs from
+the stamp only in `todo/*.status.json` counts as stamped too: those files hold no
+code, and they are all the background recheck below ever commits. Any other edit,
 a missing stamp or a red run brings the full gate back. A push that only deletes
-a branch has nothing to verify. Pushing a branch other than the one checked out is
+a branch has nothing to verify.
+
+After a full green run the hook also starts `bin/recheck-todo --detach` and returns
+without waiting for it, so the push takes the same time as before. The recheck
+re-runs the command behind every phase in `todo/*.status.json`
+(`bin/recheck-status`, one more attempt for a phase that stops holding) and
+commits the files that changed as `chore(todo): recheck statuses`. The next push
+carries that commit and, being status-only, takes the 1s skip. Set
+`SKIP_TODO_RECHECK=1` to turn it off, or run `bin/recheck-todo` by hand. The log
+is `recheck-status.log` in the git directory.
+
+Many of those commands run Pest, and two Pest runs on one database fail with
+duplicate-table errors (the Claude Code stop hook and your own `pest` use
+`testing`). So the recheck runs with `DB_DATABASE=testing_recheck`, created from
+the `.env` credentials when it is missing, and skips itself if it can't. It also
+holds a lock in the git directory (one recheck at a time, a dead pid is
+reclaimed), starts only on a clean tree with no commit, rebase or merge in
+flight, and commits with `git commit --only` so whatever you have staged is
+untouched. It throws the result away if HEAD moved, if a file outside `todo/` and
+`wiki/_meta/` changed during the run, or if a status file changed on any line
+other than `"status"`. `bin/prove-todo-gate.sh` proves each of these, and the
+refusals above, in throwaway clones. Status files stay out of wiki `code_refs`
+for the same reason as in [[decisions/agent-dx]]: a recheck commit would
+otherwise turn the wiki lint red for a page nobody touched. Pushing a branch other than the one checked out is
 refused, because `composer verify` checks the files on disk and would pass a branch
 it never looked at; check that branch out and push from there.
 

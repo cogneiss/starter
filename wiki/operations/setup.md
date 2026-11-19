@@ -88,7 +88,7 @@ test is allowed to reach a provider ([[domains/ai-evals]]).
 
 `composer install` points `core.hooksPath` at `.githooks`, which wires up the
 commit-message check ([[operations/releases]]), the fix-and-check pre-commit, the
-full pre-push gate (`composer verify`, skipped when the tree already passed it), the dependency sync after a pull, and the Laravel Brain
+full pre-push gate (`composer verify`, skipped when the tree already passed it, then a background recheck of the todo statuses), the dependency sync after a pull, and the Laravel Brain
 rescan ([[operations/code-knowledge-graphs]]). Nothing to run by hand
 ([[operations/contributing]]).
 

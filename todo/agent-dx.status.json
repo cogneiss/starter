@@ -120,6 +120,12 @@
       "name": "hook, CI and switch-on steps are documented",
       "status": "passing",
       "command": "php artisan wiki:lint && rg -q 'Switching CI on' wiki/decisions/ci-quality.md"
+    },
+    {
+      "id": 20,
+      "name": "todo state manages itself: feat commits carry a todo item and pushes recheck statuses in the background",
+      "status": "passing",
+      "command": "bash bin/prove-todo-gate.sh && rg -q 'recheck-todo' README.md && rg -q 'recheck-todo' FEATURES.md && rg -q 'recheck-todo' wiki/operations/contributing.md"
     }
   ]
 }

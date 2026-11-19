@@ -6,7 +6,7 @@ code_refs:
     - .github/workflows/release-please.yml
     - .githooks/commit-msg
     - release-please-config.json
-updated: 2026-08-24
+updated: 2026-11-19
 ---
 
 # Releases
@@ -16,7 +16,9 @@ updated: 2026-08-24
 `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `ci:`, `chore:`, with `!` or a
 `BREAKING CHANGE:` footer for a break. `.githooks/commit-msg` — wired up by
 `composer install` — rejects anything else locally, because the prefix is an
-input to the version number rather than a style preference.
+input to the version number rather than a style preference. For a `feat` it also
+checks that the commit carries a todo item, or a `Todo: none` line in the message
+([[operations/contributing]]); that check never touches the version.
 
 ## release-please owns the version and the changelog
 

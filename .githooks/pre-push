@@ -12,7 +12,22 @@
 # A later push whose every pushed ref tip has that same tree skips the gate: an
 # amended message, a rebase onto nothing new or a second remote changes no file,
 # so there is nothing new to check. Any content change, a missing or unreadable
-# stamp, or a red run forces the full gate.
+# stamp, or a red run forces the full gate. A tree that differs from the stamp
+# only in todo/*.status.json counts as stamped too: those files hold no code, and
+# it is what the background recheck commits (bin/recheck-todo).
+#
+# After a full green run the hook starts bin/recheck-todo detached, so the todo
+# statuses are re-decided without making the push wait. SKIP_TODO_RECHECK=1
+# turns that off.
+
+# True when tree $1 is the stamped tree, or differs from it only in status files.
+is_verified() {
+    [ -n "$recorded" ] || return 1
+    [ "$1" = "$recorded" ] && return 0
+    changed="$(git diff --name-only "$recorded" "$1" 2>/dev/null)" || return 1
+    [ -n "$changed" ] || return 1
+    ! printf '%s\n' "$changed" | grep -Evq '^todo/[^/]+\.status\.json$'
+}
 
 zero=0000000000000000000000000000000000000000
 head_tree="$(git rev-parse 'HEAD^{tree}')"
@@ -34,13 +49,11 @@ while read -r _local_ref local_sha _remote_ref _remote_sha; do
         echo "pre-push: $_local_ref is not what is checked out, so composer verify cannot check it. Check it out and push from there." >&2
         exit 1
     fi
-    if [ -z "$recorded" ] || [ "$tree" != "$recorded" ]; then
-        stale=1
-    fi
+    is_verified "$tree" || stale=1
 done
 
 if [ "$lines" -eq 1 ] && [ "$stale" -eq 0 ]; then
-    echo "pre-push: nothing new to verify (tree ${recorded:-n/a} already passed composer verify), skipping."
+    echo "pre-push: nothing new to verify (tree ${recorded:-n/a} or a status-file-only change already passed composer verify), skipping."
     exit 0
 fi
 
@@ -53,3 +66,7 @@ if [ -z "$(git status --porcelain)" ]; then
 fi
 
 vendor/bin/sloppy diff '@{upstream}' --merge-base --fail-on=never || true
+
+if [ -z "${SKIP_TODO_RECHECK:-}" ] && [ -x bin/recheck-todo ]; then
+    bin/recheck-todo --detach
+fi

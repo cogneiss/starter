@@ -1,0 +1,124 @@
+#!/usr/bin/env sh
+#
+# Re-decide the todo/*.status.json statuses without anyone asking, and commit the
+# files that changed as `chore(todo): recheck statuses`.
+#
+#   bin/recheck-todo --detach   start in the background and return at once
+#                               (what .githooks/pre-push does after a green gate)
+#   bin/recheck-todo            run in the foreground
+#
+# Log: recheck-status.log in the git directory.
+#
+# Why it is safe next to your own work:
+# - One run at a time: a lock directory in the git directory holds the pid, and a
+#   lock whose pid is dead is reclaimed.
+# - Pest uses its own database, testing_recheck, never `testing`. Two Pest runs on
+#   one database fail with duplicate-table errors, and pre-commit, the Claude Stop
+#   hook and you all use `testing`. Parallel workers become testing_recheck_test_N.
+# - It starts only on a clean tree with no commit, rebase, merge or cherry-pick
+#   in flight, and commits only if HEAD did not move, nothing outside the status
+#   files (and the generated wiki/_meta) changed, and the status files changed
+#   only on their "status" lines.
+# - `git commit --only -- <files>` leaves whatever you have staged untouched.
+#
+# ponytail: stale-lock reclaim is not atomic (two runs reclaiming at the very
+# same instant could both go); use flock if that ever happens.
+
+cd "$(dirname "$0")/.." || exit 0
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE
+
+gitdir="$(git rev-parse --absolute-git-dir)" || exit 0
+log="$gitdir/recheck-status.log"
+lock="$gitdir/recheck-status.lock"
+
+if [ "${1:-}" = "--detach" ]; then
+    nohup "$PWD/bin/recheck-todo" >>"$log" 2>&1 </dev/null &
+    exit 0
+fi
+
+say() { printf '%s recheck-todo: %s\n' "$(date '+%H:%M:%S')" "$*"; }
+
+for busy in rebase-merge rebase-apply; do
+    [ -d "$gitdir/$busy" ] && { say "skipped, $busy in progress"; exit 0; }
+done
+for busy in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD index.lock; do
+    [ -e "$gitdir/$busy" ] && { say "skipped, $busy present"; exit 0; }
+done
+[ -z "$(git status --porcelain)" ] || { say "skipped, working tree not clean"; exit 0; }
+
+if ! mkdir "$lock" 2>/dev/null; then
+    if kill -0 "$(cat "$lock/pid" 2>/dev/null)" 2>/dev/null; then
+        say "skipped, another recheck is running"
+        exit 0
+    fi
+    rm -rf "$lock"
+    mkdir "$lock" 2>/dev/null || { say "skipped, another recheck is running"; exit 0; }
+fi
+echo $$ > "$lock/pid"
+trap 'rm -rf "$lock"' EXIT
+
+statuses='todo/[^/]*\.status\.json'
+head="$(git rev-parse HEAD)"
+started="$(date +%s)"
+
+# Give Pest a database of its own, created from the .env credentials when absent.
+# Without isolation the run would race `testing`, so a failure here skips the run.
+if [ "${RECHECK_ISOLATE_DB:-1}" = 1 ]; then
+    if ! php -r '
+        $env = [];
+        foreach (@file(".env", FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+            if (preg_match("/^(DB_HOST|DB_PORT|DB_USERNAME|DB_PASSWORD)=(.*)$/", $line, $m)) {
+                $env[$m[1]] = trim($m[2], "\"\x27 ");
+            }
+        }
+        try {
+            $pdo = new PDO(sprintf("pgsql:host=%s;port=%s;dbname=postgres", $env["DB_HOST"] ?? "127.0.0.1", $env["DB_PORT"] ?? "5432"), $env["DB_USERNAME"] ?? "", $env["DB_PASSWORD"] ?? "");
+            $exists = $pdo->query("select 1 from pg_database where datname = \x27testing_recheck\x27")->fetchColumn();
+            $exists || $pdo->exec("create database testing_recheck");
+        } catch (Throwable $e) {
+            fwrite(STDERR, get_class($e).PHP_EOL);
+            exit(1);
+        }
+    '; then
+        say "skipped, could not prepare database testing_recheck"
+        exit 0
+    fi
+    export DB_DATABASE=testing_recheck
+fi
+
+say "start at $head"
+# A phase that stopped holding gets one more run before it is believed, so a
+# flaky command does not commit a false "failing".
+php bin/recheck-status ${RECHECK_FILES:-} >"$gitdir/recheck-status.out" 2>&1 \
+    || php bin/recheck-status ${RECHECK_FILES:-} >"$gitdir/recheck-status.out" 2>&1
+tail -n 4 "$gitdir/recheck-status.out"
+
+files="$(git diff --name-only -- "todo/*.status.json")"
+[ -n "$files" ] || { say "done in $(($(date +%s) - started))s, no status changed"; exit 0; }
+
+# shellcheck disable=SC2086
+only_status_lines() { ! git diff -U0 -- $files | grep -E '^[-+][^-+]' | grep -qv '"status"'; }
+# shellcheck disable=SC2086
+restore() { git checkout -q -- $files; }
+
+if ! only_status_lines; then
+    say "left alone, the status files carry edits other than statuses"
+    exit 0
+fi
+
+busy=""
+[ "$(git rev-parse HEAD)" = "$head" ] || busy="HEAD moved"
+[ -z "$(git status --porcelain | grep -Ev "^.. ($statuses|wiki/_meta/)")" ] || busy="tree changed during the run"
+for lockfile in index.lock rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD; do
+    [ -e "$gitdir/$lockfile" ] && busy="$lockfile present"
+done
+if [ -n "$busy" ]; then
+    restore
+    say "discarded, $busy"
+    exit 0
+fi
+
+# shellcheck disable=SC2086
+git commit -q --only -m "chore(todo): recheck statuses" -- $files \
+    && say "committed $(echo $files) after $(($(date +%s) - started))s" \
+    || say "commit failed, status files left modified"

@@ -3,7 +3,6 @@ title: Decision log — organizations and access
 status: current
 supersedes: []
 code_refs:
-    - todo/org-access.status.json
 updated: 2026-11-18
 ---
 

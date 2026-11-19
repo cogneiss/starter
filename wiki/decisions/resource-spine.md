@@ -3,7 +3,6 @@ title: Decision log — the resource spine
 status: current
 supersedes: []
 code_refs:
-    - todo/resource-spine.status.json
 updated: 2026-08-24
 ---
 

@@ -4,6 +4,10 @@
 # the changelog and decide the next version, so a stray message costs a release
 # note. A regex rather than commitlint: no dependency to install, no config to
 # drift.
+#
+# A feat that stages files under app/ or resources/js/ must also stage a
+# todo/*.status.json, so the plan files move with the code. A `Todo: none`
+# trailer in the message opts out.
 
 message_file="$1"
 subject="$(head -n 1 "$message_file")"
@@ -14,6 +18,24 @@ case "$subject" in
 esac
 
 if printf '%s' "$subject" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'; then
+    if printf '%s' "$subject" | grep -Eq '^feat(\([^)]*\))?!?: ' \
+        && ! grep -Eiq '^Todo: none[[:space:]]*$' "$message_file"; then
+        staged="$(git diff --cached --name-only)"
+        if printf '%s\n' "$staged" | grep -Eq '^(app|resources/js)/' \
+            && ! printf '%s\n' "$staged" | grep -Eq '^todo/[^/]+\.status\.json$'; then
+            cat >&2 <<'EOF'
+Commit message rejected: a feat that changes app/ or resources/js/ must also
+stage an item in the matching todo/<area>.status.json (a phase with its
+deciding command), for example todo/agent-dx.status.json.
+
+If this feat genuinely needs no todo item, add a trailer line to the message:
+
+    Todo: none
+
+EOF
+            exit 1
+        fi
+    fi
     exit 0
 fi
 

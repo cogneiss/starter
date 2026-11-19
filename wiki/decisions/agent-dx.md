@@ -3,7 +3,12 @@ title: Decision log — agent developer experience
 status: current
 supersedes: []
 code_refs:
-updated: 2026-11-17
+    - .githooks/commit-msg
+    - .githooks/pre-push
+    - bin/recheck-todo
+    - bin/prove-todo-gate.sh
+    - .ai/guidelines/general.blade.php
+updated: 2026-11-19
 ---
 
 # Decision log — agent developer experience
@@ -39,6 +44,15 @@ not an explanation.
   two decision logs citing their own `todo/*.status.json`: three commits that
   did nothing but tick a phase off. The refs were dropped rather than the rule
   loosened.
+- **The todo state manages itself.** Agents add an item with each feature, and
+  `.githooks/commit-msg` refuses a `feat` that changes `app/` or `resources/js/`
+  without one (opt out with a `Todo: none` trailer). After a green push gate,
+  `bin/recheck-todo` re-decides every status in the background and commits what
+  changed. Alternatives that lost: running the recheck inside the push (adds
+  minutes to a 113s push), and running it against the shared `testing` database
+  (collides with pre-commit and the Stop hook; it uses `testing_recheck`).
+  A tree that differs from the stamp only in status files skips the push gate;
+  see [[operations/contributing]].
 - **Pages are superseded, never deleted.** A wrong page becomes
   `status: superseded` pointing at its replacement, so a link into it still lands
   somewhere true.

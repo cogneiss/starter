@@ -387,7 +387,13 @@ reason, or fix the code.
   only), and `.githooks/pre-push` runs `composer verify` (about 113s) unless the
   tip of every pushed ref has a tree that already passed (about 1s; stamp in
   `verified-tree` in the git directory). The git hooks are enforced for
-  everyone; the skill routing is instruction only. The `require-contract` hook
+  everyone; the skill routing is instruction only. The todo plan files
+  keep themselves current: `.githooks/commit-msg` refuses a `feat` that changes
+  `app/` or `resources/js/` without staging a `todo/*.status.json` (a `Todo: none`
+  trailer opts out), and after a full green push gate `bin/recheck-todo` re-runs
+  every status check in the background on its own `testing_recheck` database and
+  commits what changed as `chore(todo): recheck statuses`. The push does not wait
+  for it, and that commit is status-only, so the next push skips the gate. The `require-contract` hook
   (`.claude/hooks/require-contract.sh`) stops a Claude Code session from editing
   a second `app/` file until `.work/feature_list.json` freezes criteria, and an
   `auditor` workflow (`.github/workflows/auditor.yml`, off until

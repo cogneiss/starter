@@ -104,10 +104,12 @@ migrates when new migrations arrived, so there is no command to remember.
 | `git commit`, PHP staged | Rector, Pint, `vp fmt`/`vp lint` on staged files; phpstan (whole project); `tsc` if TypeScript is staged; Pest on the staged tests plus the mirrored `FooTest.php` of each staged `app/**/Foo.php` | about 8s for a clean one-file commit |
 | `git commit`, docs only | no analysis, no tests | about 1s |
 | `git push`, new tree | `composer verify`, the full gate | about 113s |
-| `git push`, tree already verified | skipped; a green run on a clean tree stamps its tree hash in `verified-tree` inside the git directory | about 1s |
+| `git push`, tree already verified | skipped; a green run on a clean tree stamps its tree hash in `verified-tree` inside the git directory. A tree that differs only in `todo/*.status.json` counts as verified | about 1s |
+| after a full green push gate | `bin/recheck-todo` starts in the background, re-runs the check behind every `todo/*.status.json` phase and commits the ones that changed as `chore(todo): recheck statuses`; the push does not wait for it | no added time |
+| `git commit`, message `feat` touching `app/` or `resources/js/` | refused unless a `todo/*.status.json` is staged or the message has a `Todo: none` line | under 0.1s |
 
 The skip is by tree, so an amended message, a rebase onto nothing new or a push
-to a second remote reuses the stamp, and any content change forces the full gate.
+to a second remote reuses the stamp, and any other content change forces the full gate.
 The gate checks the checked-out working tree, so push the branch you have checked
 out. A source file with no mirrored test reaches the push gate before any test
 sees it.
