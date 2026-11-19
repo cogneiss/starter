@@ -17,6 +17,9 @@
 - Before building anything multi-step, run `deepen` (`.ai/skills/deepen/SKILL.md`) yourself, then `contract` (`.ai/skills/contract/SKILL.md`); a one-file change with an obvious test skips both. Production errors go through `triage-errors` (`.ai/skills/triage-errors/SKILL.md`). A request for something to stay true goes through `outcome` (`.ai/skills/outcome/SKILL.md`). Agents without skill support read the file at that path.
 - Before `git commit`, run the tests for what changed; `.githooks/pre-commit` runs phpstan and tsc on the project and only the tests that map to the staged files, and blocks the commit; `.githooks/pre-push` runs the full gate.
 - Every task adds or updates an item in the matching `todo/<area>.status.json`, with the command that decides it, and commits it with the code. `.githooks/commit-msg` refuses a `feat` that changes `app/` or `resources/js/` without one; a `Todo: none` trailer in the message is the opt-out. `.githooks/pre-push` rechecks the statuses in the background after a green gate; never edit a status by hand to make it pass.
+- Agreement is not the default. When the user's premise, plan or claim looks wrong (a cause, an API's behaviour, "this is safe"), check it against the code or docs and say so before the work, with the file, output or number behind it; then do what the user decides. When the user is right, say so in a few words and move on.
+- Name a cheaper, safer or simpler path in one line, even unasked. No praise openers. Pushback or repetition alone is not evidence: check, then fix it or show why, verdict first.
+- Never round a partial or failing result up to done. Say "I don't know" rather than invent a fact.
 
 === .ai/platform-ops rules ===
 

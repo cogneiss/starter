@@ -132,6 +132,12 @@
       "name": "Codex hooks resolve from the checkout they run in, not one machine path",
       "status": "failing",
       "command": "php artisan test --compact --filter=Codex"
+    },
+    {
+      "id": 22,
+      "name": "the guidelines carry the anti-yes-man rules and AGENTS.md is rendered from them",
+      "status": "failing",
+      "command": "rg -q 'Agreement is not the default' .ai/guidelines/general.blade.php AGENTS.md && php artisan test --compact --filter=GuidelinesAreCurrent"
     }
   ]
 }
