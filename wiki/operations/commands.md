@@ -7,7 +7,8 @@ code_refs:
     - package.json
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
     - bin/bundle-budget
-updated: 2026-11-19
+    - bin/check-migrations
+updated: 2026-11-20
 ---
 
 # Commands
@@ -32,7 +33,8 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 | `composer test:js`        | Vitest through `vp test` — the unit tests under `resources/js`   |
 | `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity |
 | `composer test:wiki`      | `wiki:lint` — dead code refs, dangling links, stale pages        |
-| `composer verify`         | `test`, dead code, deps, knip, wiki, audit and jscpd |
+| `composer test:migrations` | `bin/check-migrations`: every migration up, down and up again on SQLite, PostgreSQL and MySQL. MySQL is skipped when no server answers |
+| `composer verify`         | `test`, migrations, dead code, deps, knip, wiki, audit and jscpd |
 | `composer test:ai`        | The AI layer's tests and `ArchTest`, the loop for `app/Ai`       |
 
 ## Reporting — scheduled, never blocking

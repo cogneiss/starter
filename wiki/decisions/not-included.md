@@ -8,7 +8,7 @@ code_refs:
     - app/Support/ResourceQuery.php
     - app/Ai/ConfirmableActions.php
     - app/Ai/Middleware/RecordAudit.php
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Not included

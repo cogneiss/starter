@@ -70,7 +70,9 @@ docs-only commit 1s.
 `.githooks/pre-push` runs `composer verify`, so CI is a second opinion rather
 than the first. The `verify` script in `composer.json` is `composer test` (lint,
 Larastan and `tsc`, strict PHPStan, 100% type coverage, the suite at 100%
-coverage), then dead code, unused Composer packages, knip, the Vitest unit
+coverage), then every migration up, down and up again on SQLite, PostgreSQL
+and MySQL (`composer test:migrations`, about 7s, and MySQL is skipped when no
+server answers), then dead code, unused Composer packages, knip, the Vitest unit
 tests (`composer test:js`), the wiki lint, the dependency audit and the
 duplicate-code check. A Sloppy report on the pushed
 range prints last and never blocks. A full run takes about 113s. Mutation testing stays on demand (`composer test:mutate`).

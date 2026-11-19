@@ -17,7 +17,7 @@ code_refs:
     - resources/js/components/assistant-chat.tsx
     - tests/Feature/Ai/AssistantTest.php
     - tests/Browser/AssistantTest.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # AI assistant

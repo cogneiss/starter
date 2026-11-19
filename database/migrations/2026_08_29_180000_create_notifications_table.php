@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -30,7 +31,11 @@ return new class extends Migration
 
             // The predicate the bell and the panel run, in the order they run
             // it: one person's unread notifications in one organization.
-            $table->index(['notifiable_type', 'notifiable_id', 'organization_id', 'read_at']);
+            // The generated name is 71 characters and MySQL stops at 64.
+            $table->index(
+                ['notifiable_type', 'notifiable_id', 'organization_id', 'read_at'],
+                DB::connection()->getDriverName() === 'mysql' ? 'notifications_notifiable_org_read_index' : null,
+            );
         });
     }
 

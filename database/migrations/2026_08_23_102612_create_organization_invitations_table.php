@@ -11,6 +11,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        /**
+         * One pending invitation per email per organization. Partial, so the
+         * same person can be re-invited after they accepted and left. MySQL
+         * has no partial index, so there the second key part is an expression
+         * that is null once the invitation is accepted. An engine with neither
+         * form stops here, before the table exists without its rule.
+         */
+        $pendingUnique = match (DB::connection()->getDriverName()) {
+            'pgsql', 'sqlite' => 'create unique index organization_invitations_pending_unique
+             on organization_invitations (organization_id, email)
+             where accepted_at is null',
+            'mysql' => 'create unique index organization_invitations_pending_unique
+             on organization_invitations (organization_id, (if(accepted_at is null, email, null)))',
+            default => throw new RuntimeException('No pending-invitation unique index is written for this database driver.'),
+        };
+
         Schema::create('organization_invitations', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
@@ -23,15 +39,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        /**
-         * One pending invitation per email per organization. Partial, so the
-         * same person can be re-invited after they accepted and left.
-         */
-        DB::statement(
-            'create unique index organization_invitations_pending_unique
-             on organization_invitations (organization_id, email)
-             where accepted_at is null'
-        );
+        DB::statement($pendingUnique);
     }
 
     public function down(): void

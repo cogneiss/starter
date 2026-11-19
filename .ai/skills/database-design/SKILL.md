@@ -1,6 +1,6 @@
 ---
 name: database-design
-description: "Use before any schema decision in this starter kit: planning a new table or model, adding or changing a column, key, index or foreign key, writing or reviewing a migration, or deciding how to store money, a status or an organization-owned record. Covers reading the live schema first, showing the design as text and getting a yes before the first migration, the index rules for foreign keys and organization_id, integer micros for money, migrations that run on PostgreSQL and SQLite, changing a table that already has rows, and the catalog query that lists index gaps. A wrong table passes every test and gets expensive once it holds rows, so load this at plan time, not after the migration is written."
+description: "Use before any schema decision in this starter kit: planning a new table or model, adding or changing a column, key, index or foreign key, writing or reviewing a migration, or deciding how to store money, a status or an organization-owned record. Covers reading the live schema first, showing the design as text and getting a yes before the first migration, the index rules for foreign keys and organization_id, integer micros for money, migrations that run on PostgreSQL, SQLite and MySQL, changing a table that already has rows, and the catalog query that lists index gaps. A wrong table passes every test and gets expensive once it holds rows, so load this at plan time, not after the migration is written."
 license: MIT
 metadata:
     author: cogneiss
@@ -73,14 +73,16 @@ feeds the next one.
 
 - `php artisan make:migration create_projects_table --no-interaction`. One
   change, one new file.
-- Use the schema builder. The suite runs on PostgreSQL and again on SQLite, so
-  a PostgreSQL-only statement goes behind the driver check the rule file shows.
+- Use the schema builder. `bin/check-migrations` runs every migration on
+  PostgreSQL, SQLite and MySQL, so a statement one engine does not understand
+  goes behind the driver check the rule file shows.
 - `foreignUuid('organization_id')->constrained()` creates no index on
   PostgreSQL. Add the index in the same migration.
 - Write `down()` so that it reverses `up()`.
 - Then the model: `HasUuids`, casts, the scope trait, a factory. Load
   `resource-spine` for the rest of the resource.
-- Run `php artisan migrate`, then the tests for what changed.
+- Run `php artisan migrate`, then `bin/check-migrations`, then the tests for
+  what changed.
 
 ## 5. Change a table that has rows
 
@@ -140,7 +142,8 @@ table and what each answer costs.
 - A soft delete: ask whether a deleted row's unique value may be used again.
 - A partial unique index: ask first, because it is what the soft delete answer
   usually leads to and the gap query above does not count it.
-- MySQL or MariaDB: ask who runs the suite on that engine. The foreign key
-  index rule and the gap query are written for PostgreSQL.
+- An engine other than PostgreSQL, SQLite and MySQL (MariaDB, SQL Server): ask
+  who will run the migrations and the suite on it. `bin/check-migrations` does
+  not, and the gap query is written for PostgreSQL.
 - An existing migration: ask whether any database has already run it. If one
   has, the change is a new migration.

@@ -148,6 +148,7 @@
         "test:tia-seed": "XDEBUG_MODE=\"coverage\" pest --tia --fresh -d memory_limit=2G",
         "sbom": "@composer CycloneDX:make-sbom --output-format=JSON --output-file=sbom.json",
         "test:sqlite": "DB_CONNECTION=sqlite DB_DATABASE=:memory: pest --compact --exclude-group=pgvector -d memory_limit=2G",
+        "test:migrations": "bin/check-migrations",
         "test:mutate": "pest --mutate --min=80 --covered-only --path=app --compact -d memory_limit=2G",
         "test:a11y": "pest tests/Browser/AccessibilityTest.php --compact",
         "test:dirty": "pest --parallel --compact --dirty",
@@ -167,6 +168,7 @@
         ],
         "verify": [
             "@test",
+            "@test:migrations",
             "@test:dead-code",
             "@test:deps",
             "@test:knip",

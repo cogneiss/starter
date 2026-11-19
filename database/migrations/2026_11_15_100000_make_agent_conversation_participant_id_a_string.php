@@ -26,7 +26,7 @@ return new class extends Migration
     {
         foreach ($this->tables() as $table) {
             Schema::table($table, function (Blueprint $blueprint): void {
-                $blueprint->unsignedBigInteger('participant_id')->nullable()->change();
+                $blueprint->unsignedBigInteger('participant_id')->nullable()->using('participant_id::bigint')->change();
             });
         }
     }

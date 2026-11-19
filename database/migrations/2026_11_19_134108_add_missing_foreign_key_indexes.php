@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,7 +13,9 @@ return new class extends Migration
      * PostgreSQL does not index a foreign key column, so each of these was
      * scanned on every delete of its parent row and on every join. Eight of
      * them are organization_id on tables whose fail-closed scope filters by
-     * it. One index per column, nothing else changes.
+     * it. One index per column, nothing else changes. MySQL indexes a foreign
+     * key column itself and refuses to drop an index a foreign key needs, so
+     * there this migration adds and removes nothing.
      *
      * Each index build blocks writes to its table until it finishes, so on a
      * database that holds rows this runs in a quiet window.
@@ -45,6 +48,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (DB::connection()->getDriverName() === 'mysql') {
+            return;
+        }
+
         foreach (self::INDEXES as $tableName => $columns) {
             Schema::table($tableName, function (Blueprint $table) use ($columns): void {
                 foreach ($columns as $column) {
@@ -56,6 +63,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::connection()->getDriverName() === 'mysql') {
+            return;
+        }
+
         foreach (self::INDEXES as $tableName => $columns) {
             Schema::table($tableName, function (Blueprint $table) use ($columns): void {
                 foreach ($columns as $column) {

@@ -32,9 +32,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('agent_conversations', function (Blueprint $table): void {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['organization_id']);
             $table->dropIndex('agent_conversations_scope_index');
-            $table->dropConstrainedForeignId('user_id');
-            $table->dropConstrainedForeignId('organization_id');
+            $table->dropColumn(['user_id', 'organization_id']);
         });
     }
 };

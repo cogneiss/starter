@@ -65,13 +65,33 @@ value then needs a migration.
 Nullable is a decision: say what a null means in the design text. A flag or a
 counter has a default, not a null.
 
-## Every migration also runs on SQLite
+## Every migration runs on PostgreSQL, SQLite and MySQL
 
-The gate runs on PostgreSQL and `composer test:sqlite` reruns the suite on
-SQLite, so use the schema builder. A statement only PostgreSQL understands
-goes behind a driver check, the way
+`bin/check-migrations` runs every migration up, down and up again on all
+three, and `composer verify` runs it. It skips MySQL when no server answers,
+and `--strict` fails instead. The test suite runs on PostgreSQL,
+`composer test:sqlite` reruns it on SQLite, and nothing runs it on MySQL. So
+use the schema builder. A statement one engine does not understand goes behind
+a driver check, the way
 `database/migrations/2026_08_25_090000_create_ai_documents_table.php` uses
-`getDriverName() === 'pgsql'`.
+`getDriverName() === 'pgsql'`. MariaDB and SQL Server are not checked.
+
+Where the three differ:
+
+- MySQL indexes a foreign key column itself. PostgreSQL and SQLite do not, so
+  declare the index in the migration.
+- In `down()`, drop a foreign key before the index or column it sits on. MySQL
+  refuses the other order.
+- Name an index yourself when the generated name passes 63 characters.
+  PostgreSQL silently cuts the name to 63 and MySQL refuses one over 64.
+- A unique rule for only some rows is a partial unique index on PostgreSQL and
+  SQLite and an expression key part on MySQL.
+  `database/migrations/2026_08_23_102612_create_organization_invitations_table.php`
+  has both.
+- A column type change PostgreSQL cannot cast by itself names the cast with
+  `->using()`.
+- PostgreSQL runs a migration in a transaction. MySQL and SQLite do not, so a
+  migration that fails halfway there stays half applied.
 
 ## A migration has a `down()` that reverses its `up()`
 
@@ -87,5 +107,6 @@ and name what each answer costs.
 - A check constraint.
 - A soft delete on a table that has a unique index.
 - A partial unique index.
-- An engine other than PostgreSQL and SQLite, such as MySQL or MariaDB.
+- An engine other than PostgreSQL, SQLite and MySQL, such as MariaDB or SQL
+  Server.
 - A change to an existing migration. A change is a new migration.

@@ -599,7 +599,8 @@ green:
 | `composer test:js`        | Vitest unit tests under `resources/js`. Runs `bun run test:js`.        |
 | `composer test:strict`   | PHPStan strict-rules, deprecation, ShipMonk and cognitive-complexity. |
 | `composer test:wiki`      | `php artisan wiki:lint` — the wiki rules, all five blocking.           |
-| `composer verify`         | `test`, `test:dead-code`, `test:deps`, `test:knip`, `test:wiki`, `test:audit` and the copy-paste report, in one run. |
+| `composer test:migrations` | `bin/check-migrations`: every migration up, down and up again on SQLite, PostgreSQL and MySQL. Skips MySQL when no server answers. |
+| `composer verify`         | `test`, `test:migrations`, `test:dead-code`, `test:deps`, `test:knip`, `test:wiki`, `test:audit` and the copy-paste report, in one run. |
 | `composer test:ai`        | Only the AI layer's tests and the architecture rules. The loop while editing `app/Ai`. |
 
 Scheduled — these report, they never block:

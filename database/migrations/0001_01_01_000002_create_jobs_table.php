@@ -45,4 +45,11 @@ return new class extends Migration
             $table->index(['connection', 'queue', 'failed_at']);
         });
     }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('failed_jobs');
+        Schema::dropIfExists('job_batches');
+        Schema::dropIfExists('jobs');
+    }
 };

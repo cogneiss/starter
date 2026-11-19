@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Runs every migration up, down and up again on SQLite, PostgreSQL and MySQL.
+#
+# Each engine gets a scratch database. Nothing runs until Laravel itself names
+# that scratch database as its target, so a cached config or a DB_URL in .env
+# cannot point this at real data.
+#
+# Usage: bin/check-migrations [--strict]
+#
+# PostgreSQL uses the server and credentials in .env. MySQL defaults to root
+# with no password on 127.0.0.1:3306; MIGRATION_CHECK_MYSQL_HOST, _PORT,
+# _USERNAME and _PASSWORD override that. An unreachable MySQL is skipped with a
+# message, and fails the run under --strict.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+if [ "$#" -gt 1 ] || { [ "$#" -eq 1 ] && [ "$1" != --strict ]; }; then
+    echo "Usage: bin/check-migrations [--strict]" >&2
+    exit 2
+fi
+
+SCRATCH=migration_check_scratch
+ARGS=(--force --no-interaction)
+
+# cycle <engine> <database> [VAR=value...]
+cycle() {
+    local engine="$1" database="$2" target output command
+    shift 2
+    set -- DB_URL= DB_CONNECTION="$engine" DB_DATABASE="$database" "$@"
+
+    target="$(env "$@" php artisan tinker \
+        --execute 'echo DB::connection()->getDriverName()."|".DB::connection()->getDatabaseName();' | tail -1)"
+    if [ "$target" != "$engine|$database" ]; then
+        echo "check-migrations: expected $engine|$database but Laravel reports '$target'. Nothing was run." >&2
+        return 1
+    fi
+
+    for command in migrate:fresh migrate:reset migrate; do
+        output="$(env "$@" php artisan "$command" "${ARGS[@]}" 2>&1)" || {
+            printf '%s\n' "$output" | tail -20 >&2
+            echo "check-migrations: $command failed on $engine" >&2
+            return 1
+        }
+    done
+    echo "check-migrations: $engine ran up, down and up again"
+}
+
+sqlite_file="$(mktemp "${TMPDIR:-/tmp}/migration-check.XXXXXX")"
+trap 'rm -f "$sqlite_file"' EXIT
+cycle sqlite "$sqlite_file"
+
+cycle pgsql "$SCRATCH"
+
+mysql_host="${MIGRATION_CHECK_MYSQL_HOST:-127.0.0.1}"
+mysql_port="${MIGRATION_CHECK_MYSQL_PORT:-3306}"
+if php -r 'exit(@fsockopen($argv[1], (int) $argv[2], $code, $message, 2) ? 0 : 1);' "$mysql_host" "$mysql_port"; then
+    cycle mysql "$SCRATCH" DB_HOST="$mysql_host" DB_PORT="$mysql_port" \
+        DB_USERNAME="${MIGRATION_CHECK_MYSQL_USERNAME:-root}" DB_PASSWORD="${MIGRATION_CHECK_MYSQL_PASSWORD:-}"
+elif [ "${1:-}" = --strict ]; then
+    echo "check-migrations: MySQL is not reachable at $mysql_host:$mysql_port" >&2
+    exit 1
+else
+    echo "check-migrations: MySQL is not reachable at $mysql_host:$mysql_port, skipped"
+fi

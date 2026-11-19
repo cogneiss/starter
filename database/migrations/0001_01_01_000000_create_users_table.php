@@ -38,4 +38,11 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
     }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+    }
 };

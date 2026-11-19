@@ -1,0 +1,13 @@
+diff --git a/database/migrations/2026_08_23_102612_create_organization_invitations_table.php b/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
+index 67f950f..c7df10c 100644
+--- a/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
++++ b/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
+@@ -21,7 +21,7 @@ public function up(): void
+         $pendingUnique = match (DB::connection()->getDriverName()) {
+             'pgsql', 'sqlite' => 'create unique index organization_invitations_pending_unique
+              on organization_invitations (organization_id, email)
+-             where accepted_at is null',
++             ',
+             'mysql' => 'create unique index organization_invitations_pending_unique
+              on organization_invitations (organization_id, (if(accepted_at is null, email, null)))',
+             default => throw new RuntimeException('No pending-invitation unique index is written for this database driver.'),

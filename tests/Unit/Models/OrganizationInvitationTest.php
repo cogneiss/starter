@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 it('finds an invitation by its raw token', function (): void {
     $invitation = OrganizationInvitation::factory()->create(['token' => hash('sha256', 'raw-token')]);
@@ -30,4 +31,16 @@ it('belongs to an organization and an inviter', function (): void {
 
     expect($invitation->organization->id)->toBe($organization->id)
         ->and($invitation->invitedBy?->id)->toBe($inviter->id);
+});
+
+it('allows one pending invitation per email in an organization', function (): void {
+    $organization = Organization::factory()->create();
+    $pending = ['organization_id' => $organization->id, 'email' => 'ada@example.com'];
+
+    OrganizationInvitation::factory()->accepted()->count(2)->create($pending);
+    OrganizationInvitation::factory()->create($pending);
+    OrganizationInvitation::factory()->create([...$pending, 'organization_id' => Organization::factory()->create()->id]);
+
+    expect(fn () => OrganizationInvitation::factory()->create($pending))
+        ->toThrow(UniqueConstraintViolationException::class);
 });
