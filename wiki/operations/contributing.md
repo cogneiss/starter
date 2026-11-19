@@ -35,7 +35,7 @@ code_refs:
     - .ai/skills/triage-errors/SKILL.md
     - .claude/agents/auditor.md
     - tests/Feature/Docs/AgentKitIsSelfContainedTest.php
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Contributing

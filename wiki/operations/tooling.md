@@ -9,7 +9,7 @@ code_refs:
     - knip.json
     - composer-unused.php
     - boost.json
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Tooling
@@ -53,7 +53,7 @@ sorting and import sorting. The React Compiler runs through Babel, so manual
   plus the skill packs and the guideline files, so an agent gets version-correct
   package docs instead of guessing at an API.
 - `boost.json` records which agents and skills are installed, first-party packs
-  included. The agents are Claude Code, Amp, Codex and OpenCode. `ai-layer` and `attack-review` sit in that list next to `org-access`,
+  included. The agents are Claude Code, Amp, Codex and OpenCode. `ai-layer`, `attack-review` and `database-design` sit in that list next to `org-access`,
   `platform-ops`, `resource-spine`, `testing-gates` and `ux-kit`, as do the workflow skills `contract`, `deepen`,
   `outcome` and `triage-errors`. The list tracks the installed packages: `pest-testing`
   is gone, `testing-best-practices` replaced the Pest pack, and

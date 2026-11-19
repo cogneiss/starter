@@ -20,7 +20,7 @@ code_refs:
     - app/Support/WikiPage.php
     - routes/console.php
     - app/Support/Install/Pruner.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # Console commands
