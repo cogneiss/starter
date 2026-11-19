@@ -130,25 +130,25 @@
     {
       "id": 21,
       "name": "Codex hooks resolve from the checkout they run in, not one machine path",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact --filter=Codex"
     },
     {
       "id": 22,
       "name": "the guidelines carry the anti-yes-man rules and AGENTS.md is rendered from them",
-      "status": "failing",
+      "status": "passing",
       "command": "rg -q 'Agreement is not the default' .ai/guidelines/general.blade.php AGENTS.md && php artisan test --compact --filter=GuidelinesAreCurrent"
     },
     {
       "id": 23,
       "name": "raw SQL built from concatenation or interpolation fails the build",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan test --compact tests/Unit/Conventions/RawSqlConventionTest.php"
     },
     {
       "id": 24,
       "name": "no personal-plugin comment prefix is left in the starter",
-      "status": "failing",
+      "status": "passing",
       "command": "! rg -qi ponytail app bin config scripts"
     }
   ]
