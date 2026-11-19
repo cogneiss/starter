@@ -24,7 +24,7 @@
 #   only on their "status" lines.
 # - `git commit --only -- <files>` leaves whatever you have staged untouched.
 #
-# ponytail: stale-lock reclaim is not atomic (two runs reclaiming at the very
+# Known limit: stale-lock reclaim is not atomic (two runs reclaiming at the very
 # same instant could both go); use flock if that ever happens.
 
 cd "$(dirname "$0")/.." || exit 0

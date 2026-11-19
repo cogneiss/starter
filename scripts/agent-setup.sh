@@ -3,7 +3,7 @@
 # Prepare a cold agent VM (PHP, composer and bun on PATH; no Herd, no Postgres)
 # so the suite can run. Lockfile installs only; safe to rerun.
 #
-# ponytail: .env keeps the Postgres defaults; SQLite comes from `composer test:sqlite`.
+# Known limit: .env keeps the Postgres defaults; SQLite comes from `composer test:sqlite`.
 
 set -eu
 

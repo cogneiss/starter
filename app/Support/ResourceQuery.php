@@ -340,7 +340,7 @@ final class ResourceQuery extends Data
      * letter or digit on Postgres, keeps the substring LIKE. The term reaches
      * SQL only as a bound parameter on both paths.
      *
-     * ponytail: unindexed, so Postgres scans the table. Add a GIN expression
+     * Known limit: unindexed, so Postgres scans the table. Add a GIN expression
      * index per resource over the same `to_tsvector` expression when a table
      * grows.
      *

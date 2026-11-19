@@ -8,7 +8,7 @@
 # Called by .githooks/post-checkout when `git worktree add` (or `claude
 # --worktree`) creates a worktree; safe to rerun by hand from the worktree root.
 #
-# ponytail: databases outlive `git worktree remove`; drop starter_<slug> and
+# Known limit: databases outlive `git worktree remove`; drop starter_<slug> and
 # testing_<slug> by hand if they pile up.
 
 set -e

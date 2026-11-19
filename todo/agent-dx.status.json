@@ -144,6 +144,12 @@
       "name": "raw SQL built from concatenation or interpolation fails the build",
       "status": "failing",
       "command": "php artisan test --compact tests/Unit/Conventions/RawSqlConventionTest.php"
+    },
+    {
+      "id": 24,
+      "name": "no personal-plugin comment prefix is left in the starter",
+      "status": "failing",
+      "command": "! rg -qi ponytail app bin config scripts"
     }
   ]
 }
