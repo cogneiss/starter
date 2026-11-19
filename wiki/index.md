@@ -5,7 +5,7 @@ supersedes: []
 code_refs:
     - .ai/rules/index.md
     - config/boost.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # Wiki index
@@ -42,9 +42,10 @@ Answer in this order, and put it in exactly one place:
    which leaves `CLAUDE.md` as the one-line `@AGENTS.md` import.
 2. **Is it a procedure for a task — "when you are doing X, do Y, in this order"?**
    A skill. `.ai/skills/<name>/SKILL.md`, authored here and published into the
-   agent directories by `php artisan boost:install --skills`. Seven ship:
+   agent directories by `php artisan boost:install --skills`. Twelve ship:
    `resource-spine`, `org-access`, `testing-gates`, `ai-layer`, `ux-kit`,
-   `platform-ops`, `attack-review`. A skill is read while
+   `platform-ops`, `attack-review`, `database-design`, `contract`, `deepen`,
+   `outcome`, `triage-errors`. A skill is read while
    working, so it names exact commands and file paths and states the failure it
    prevents. About 150 lines is the ceiling.
 3. **Is it the reasoning — why the thing is shaped this way, what was rejected?**

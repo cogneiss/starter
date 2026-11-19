@@ -1,0 +1,2 @@
+- A schema change is a new or changed table, column, key, index or migration, including a storage plan nobody has called a migration yet. Read `.ai/rules/database.md` and load the `database-design` skill before you plan or write a schema change.
+- Show the design as text (tables, columns, types, keys, indexes, delete behaviour) and get a yes before the first migration. The person approves a design they can read, not a migration diff.

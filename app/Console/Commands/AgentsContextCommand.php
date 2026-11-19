@@ -40,6 +40,7 @@ final class AgentsContextCommand extends Command
     private const array SKILLS = [
         '.ai/rules/ai.md' => 'ai-layer',
         '.ai/rules/app.md' => 'org-access',
+        '.ai/rules/database.md' => 'database-design',
         '.ai/rules/policies.md' => 'org-access',
         '.ai/rules/platform-ops.md' => 'platform-ops',
         '.ai/rules/resources.md' => 'resource-spine',

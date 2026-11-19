@@ -15,6 +15,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | tests/** | .ai/rules/boost/tests.md |
 | bootstrap/** | .ai/rules/bootstrap.md |
 | .github/**, composer.json, package.json | .ai/rules/ci.md |
+| database/migrations/**, config/database.php | .ai/rules/database.md |
 | wiki/**, .ai/**, *.md | .ai/rules/docs.md |
 | **, {AGENTS,CLAUDE}.md | .ai/rules/general.md |
 | routes/api.php, app/Http/Controllers/Api/**, app/Http/Middleware/EnsureTokenMatchesOrganization.php, app/Http/Middleware/ApplyRateTier.php, app/Http/Middleware/LogApiRequest.php, app/Http/Middleware/EnsurePlatformAdmin.php, app/Http/Middleware/SetContentSecurityPolicy.php, app/Http/Middleware/ProtectPublicForm.php, app/Webhooks/**, app/Admin/**, app/Support/Analytics/**, app/Support/Reporting/**, app/Support/Health/**, config/api.php, config/webhooks.php, config/audit.php | .ai/rules/platform-ops.md |

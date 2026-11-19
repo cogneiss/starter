@@ -156,6 +156,12 @@
       "name": "agents mark a shortcut with Known limit: and the build fails on a personal-plugin prefix",
       "status": "passing",
       "command": "rg -q 'Known limit:' .ai/guidelines/general.blade.php AGENTS.md && php artisan test --compact --filter='project comment prefix'"
+    },
+    {
+      "id": 26,
+      "name": "agents read the database rule and load the database-design skill before a schema change",
+      "status": "passing",
+      "command": "! rg -q 'disable-model-invocation' .ai/skills/database-design/SKILL.md && rg -q '^name: database-design$' .ai/skills/database-design/SKILL.md && rg -q -F \"'.ai/rules/database.md' => 'database-design',\" app/Console/Commands/AgentsContextCommand.php && rg -q '\"database-design\"' boost.json && rg -q -F 'load the `database-design` skill before you plan or write a schema change' AGENTS.md && rg -q -F '.ai/skills/database-design/SKILL.md' database/migrations/AGENTS.md && [ -f .claude/skills/database-design/SKILL.md ] && php artisan agents:context --check"
     }
   ]
 }
