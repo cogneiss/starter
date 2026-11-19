@@ -11,3 +11,9 @@ it('lists the users of an organization', function (): void {
 
     expect($organization->users()->pluck('users.id')->all())->toBe([$user->id]);
 });
+
+it('builds a cache key from the organization id and a name', function (): void {
+    $organization = Organization::factory()->create();
+
+    expect($organization->cacheKey('briefing'))->toBe('org:'.$organization->id.':briefing');
+});

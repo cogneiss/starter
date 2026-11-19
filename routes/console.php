@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schedule;
 
 // The health endpoint's schedule check reads this timestamp; if the
 // scheduler stops running, the heartbeat goes stale and the check degrades.
-Schedule::call(fn () => Cache::put(ScheduleCheck::KEY, now()->getTimestamp()))
+Schedule::call(fn () => Cache::put(ScheduleCheck::KEY, now()->getTimestamp(), now()->addMinutes(config()->integer('health.schedule_max_age_minutes') * 2)))
     ->everyMinute()
     ->name('health-heartbeat');
 

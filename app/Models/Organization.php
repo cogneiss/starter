@@ -54,6 +54,11 @@ final class Organization extends Model
             ->withTimestamps();
     }
 
+    public function cacheKey(string $name): string
+    {
+        return "org:{$this->id}:{$name}";
+    }
+
     /**
      * @return array<string, string>
      */

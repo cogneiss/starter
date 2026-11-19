@@ -15,7 +15,7 @@ code_refs:
     - tests/Feature/ErrorReporterTest.php
     - app/Support/Reporting/ReportsErrors.php
     - app/Providers/AppServiceProvider.php
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # The error reporting seam

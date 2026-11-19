@@ -1,0 +1,13 @@
+diff --git a/config/cache.php b/config/cache.php
+index fcaec7b..93aa56d 100644
+--- a/config/cache.php
++++ b/config/cache.php
+@@ -83,7 +83,7 @@
+         'redis' => [
+             'driver' => 'redis',
+             'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
+-            'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'locks'),
++            'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
+         ],
+ 
+         'dynamodb' => [

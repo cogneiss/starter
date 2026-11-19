@@ -1,0 +1,13 @@
+diff --git a/routes/console.php b/routes/console.php
+index c969354..3e6edc7 100644
+--- a/routes/console.php
++++ b/routes/console.php
+@@ -9,7 +9,7 @@
+ 
+ // The health endpoint's schedule check reads this timestamp; if the
+ // scheduler stops running, the heartbeat goes stale and the check degrades.
+-Schedule::call(fn () => Cache::put(ScheduleCheck::KEY, now()->getTimestamp(), now()->addMinutes(config()->integer('health.schedule_max_age_minutes') * 2)))
++Schedule::call(fn () => Cache::put(ScheduleCheck::KEY, now()->getTimestamp()))
+     ->everyMinute()
+     ->name('health-heartbeat');
+ 

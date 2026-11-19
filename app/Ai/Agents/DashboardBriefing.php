@@ -70,7 +70,7 @@ final class DashboardBriefing implements Agent, HasMiddleware, OrganizationScope
         $tier = AiTier::for('cheap');
 
         return Cache::remember(
-            'ai:briefing:'.$this->organization->id,
+            $this->organization->cacheKey('ai:briefing'),
             now()->addSeconds(config()->integer('ai.briefing.ttl')),
             fn (): string => $this->prompt(
                 json_encode($this->figures(), JSON_THROW_ON_ERROR),

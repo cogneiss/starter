@@ -9,6 +9,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * An organization with the briefing turned on, its owner, and figures worth
@@ -83,6 +84,16 @@ it('answers a second dashboard load from the cache', function (): void {
     expect($second)->toBe($first);
 
     DashboardBriefing::assertPromptedTimes(1);
+});
+
+it('stores the briefing under the organization cache key', function (): void {
+    [$user, $organization] = briefedOrganization();
+
+    DashboardBriefing::fake(['Three members, one invitation outstanding.'])->preventStrayPrompts();
+
+    new DashboardBriefing($user, $organization)->briefing();
+
+    expect(Cache::get($organization->cacheKey('ai:briefing')))->toBe('Three members, one invitation outstanding.');
 });
 
 it('caches one organization away from another', function (): void {

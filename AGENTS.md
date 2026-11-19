@@ -8,6 +8,10 @@
 
 - Logic lives in composable Action classes in `app/Actions`, named for what they do, no suffix. Create with `php artisan make:action "{name}" --no-interaction`.
 
+=== .ai/cache rules ===
+
+- Read `.ai/rules/cache.md` before you write a `Cache::` or `Redis::` call, a cache key or a lock, or change `config/cache.php` or a Redis connection. Every cache write names a finite expiry, and an organization's data is cached under `$organization->cacheKey()`.
+
 === .ai/database rules ===
 
 - A schema change is a new or changed table, column, key, index or migration, including a storage plan nobody has called a migration yet. Read `.ai/rules/database.md` and load the `database-design` skill before you plan or write a schema change.

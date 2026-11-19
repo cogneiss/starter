@@ -168,6 +168,12 @@
       "name": "every foreign key column and every organization_id column has an index that leads with it, checked against the PostgreSQL catalog",
       "status": "passing",
       "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php --compact --fail-on-skipped"
+    },
+    {
+      "id": 28,
+      "name": "cache and Redis use follows the cache rule: finite expiry, organization cache keys, three Redis databases, no flush or KEYS from application code",
+      "status": "passing",
+      "command": "vendor/bin/pest tests/Unit/Conventions/CacheConventionTest.php --compact --fail-on-skipped"
     }
   ]
 }

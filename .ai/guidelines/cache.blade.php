@@ -1,0 +1,1 @@
+- Read `.ai/rules/cache.md` before you write a `Cache::` or `Redis::` call, a cache key or a lock, or change `config/cache.php` or a Redis connection. Every cache write names a finite expiry, and an organization's data is cached under `$organization->cacheKey()`.

@@ -18,7 +18,7 @@ code_refs:
     - app/Ai/Actions/RememberAssistantFact.php
     - app/Ai/ConfirmableActions.php
     - tests/Unit/ArchTest.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # AI agents and tools

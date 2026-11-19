@@ -14,6 +14,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Models/** | .ai/rules/boost/models.md |
 | tests/** | .ai/rules/boost/tests.md |
 | bootstrap/** | .ai/rules/bootstrap.md |
+| config/cache.php, config/database.php, config/queue.php, config/session.php, routes/console.php | .ai/rules/cache.md |
 | .github/**, composer.json, package.json | .ai/rules/ci.md |
 | database/migrations/**, config/database.php | .ai/rules/database.md |
 | wiki/**, .ai/**, *.md | .ai/rules/docs.md |

@@ -9,7 +9,7 @@ code_refs:
     - config/queue.php
     - config/mail.php
     - config/ai.php
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Runtime
