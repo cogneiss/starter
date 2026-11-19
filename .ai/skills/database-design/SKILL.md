@@ -25,7 +25,7 @@ Start from the database, not from memory and not from the migration files.
 - `php artisan migrate:status` to see that nothing is pending. A pending
   migration means the database is behind the files.
 - Read the migration and model of the nearest similar table, then hold it
-  against the rules before you copy it. Older tables have gaps (step 6).
+  against the rules before you copy it. Older tables predate the rules.
 
 ## 2. Write the design as text and wait for a yes
 
@@ -117,12 +117,12 @@ WHERE a.attname = 'organization_id' AND NOT a.attisdropped
 ) g ORDER BY 1, 2, 3
 ```
 
-No row may name a table you created or changed. A row for a table you did not
-touch is an older gap: report it, and fix it only when asked.
+The query returns no row. `tests/Unit/Conventions/SchemaConventionTest.php`
+runs this block and fails the gate on any row, so a row means a missing index,
+not an exception to record.
 
 In this query an index with a WHERE clause does not count as cover, because it
-skips rows. That is why `organization_invitations` is listed although it has
-such an index.
+skips rows.
 
 Then tell the person what exists now: the tables, the indexes, and that the
 query returns no row for them.

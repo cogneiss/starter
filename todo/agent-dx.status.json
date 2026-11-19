@@ -162,6 +162,12 @@
       "name": "agents read the database rule and load the database-design skill before a schema change",
       "status": "passing",
       "command": "! rg -q 'disable-model-invocation' .ai/skills/database-design/SKILL.md && rg -q '^name: database-design$' .ai/skills/database-design/SKILL.md && rg -q -F \"'.ai/rules/database.md' => 'database-design',\" app/Console/Commands/AgentsContextCommand.php && rg -q '\"database-design\"' boost.json && rg -q -F 'load the `database-design` skill before you plan or write a schema change' AGENTS.md && rg -q -F '.ai/skills/database-design/SKILL.md' database/migrations/AGENTS.md && [ -f .claude/skills/database-design/SKILL.md ] && php artisan agents:context --check"
+    },
+    {
+      "id": 27,
+      "name": "every foreign key column and every organization_id column has an index that leads with it, checked against the PostgreSQL catalog",
+      "status": "passing",
+      "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php --compact --fail-on-skipped"
     }
   ]
 }

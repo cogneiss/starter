@@ -6,9 +6,10 @@ paths:
 
 # Database design
 
-These rules bind new and changed tables. The existing tables do not all comply;
-the catalog query in the `database-design` skill lists the gaps. A table being
-there is not a reason to copy it.
+These rules bind new and changed tables.
+`tests/Unit/Conventions/SchemaConventionTest.php` holds every single-column
+foreign key and every `organization_id` column to the two index rules. No test
+covers the other rules, so a table being there is not a reason to copy it.
 
 ## The design is agreed as text before a migration exists
 
