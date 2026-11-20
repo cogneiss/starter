@@ -24,12 +24,12 @@ code_refs:
     - app/Http/Requests/UpdateUserNotificationPreferenceRequest.php
     - app/Http/Requests/UpdateUserPasswordRequest.php
     - app/Http/Requests/UpdateUserRequest.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # The HTTP layer
 
-Fifty-one controllers (three of them under `app/Http/Controllers/Admin`, the API
+Fifty-two controllers (four of them under `app/Http/Controllers/Admin`, the API
 controllers not counted), twenty-five form requests, eighteen middleware, two
 validation rules (`ValidEmail` and `PublicHttpsUrl`).
 
