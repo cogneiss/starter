@@ -74,6 +74,7 @@ final readonly class SessionController
     private function authenticate(CreateSessionRequest $request): ?User
     {
         $credentials = $request->only('email', 'password');
+        $credentials['email'] = $request->string('email')->lower()->value();
         $provider = Auth::getProvider();
         $user = $provider->retrieveByCredentials($credentials);
 

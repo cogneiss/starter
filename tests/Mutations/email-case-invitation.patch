@@ -1,0 +1,10 @@
+--- a/app/Actions/CreateOrganizationInvitation.php
++++ b/app/Actions/CreateOrganizationInvitation.php
+@@ -23,7 +23,6 @@
+      */
+     public function handle(Organization $organization, User $invitedBy, string $email, string $role): OrganizationInvitation
+     {
+-        $email = Str::lower($email);
+ 
+         if ($this->isMember($organization, $email)) {
+             throw ValidationException::withMessages([

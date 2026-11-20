@@ -75,3 +75,18 @@ it('redirects authenticated users away from forgot password', function (): void 
 
     $response->assertRedirectToRoute('dashboard');
 });
+
+it('sends a reset link to an address typed in mixed case', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->create(['email' => 'ada@example.com']);
+
+    $response = $this->fromRoute('password.request')
+        ->post(route('password.email'), [
+            'email' => 'Ada@Example.COM',
+        ]);
+
+    $response->assertRedirectToRoute('password.request');
+
+    Notification::assertSentTo($user, ResetPassword::class);
+})->group('email-case');

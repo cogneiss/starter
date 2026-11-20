@@ -17,7 +17,7 @@ code_refs:
     - .mcp.json
     - tests/Feature/Ai/McpServerTest.php
     - tests/Feature/Mcp/McpProtocolTest.php
-updated: 2026-11-15
+updated: 2026-11-20
 ---
 
 # AI MCP server
@@ -61,7 +61,8 @@ a member without it is refused and logged.
 A stdio process has no session, so nobody is signed in when it starts.
 `StarterAiServer::boot()` signs in the user whose email is in the
 `STARTER_MCP_USER` environment variable, and `.mcp.json` passes that variable
-through from the shell. Unset, blank or unknown leaves nobody signed in, and
+through from the shell. The value is trimmed and lower-cased before the lookup,
+because a stored address is lower case ([[domains/models]]). Unset, blank or unknown leaves nobody signed in, and
 every tool, resource and prompt refuses with a message that names the variable.
 There is no fallback to a first or default user. A caller that is already signed
 in, as in the test harness, is left alone.

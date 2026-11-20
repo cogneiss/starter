@@ -114,6 +114,8 @@ it('orders through a relation without multiplying rows', function (): void {
 
 /**
  * The invitation emails a term finds in one organization, in address order.
+ * The model stores an address in lower case, so each one is written past it:
+ * the search must fold capitals a row already holds.
  *
  * @param  list<string>  $emails
  * @return list<string>
@@ -121,7 +123,8 @@ it('orders through a relation without multiplying rows', function (): void {
 function searchInvitations(Organization $organization, array $emails, string $term): array
 {
     foreach ($emails as $email) {
-        OrganizationInvitation::factory()->create(['organization_id' => $organization->id, 'email' => $email]);
+        $invitation = OrganizationInvitation::factory()->create(['organization_id' => $organization->id]);
+        DB::table('organization_invitations')->where('id', $invitation->id)->update(['email' => $email]);
     }
 
     $resource = new OrganizationInvitationResource;

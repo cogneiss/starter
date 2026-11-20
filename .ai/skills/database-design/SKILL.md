@@ -65,7 +65,8 @@ feeds the next one.
 - **Keys.** The primary key, then for every reference what a delete does.
 - **Columns.** Type, `NOT NULL` or not, default. Money and a fixed set of
   values have their own rules. A time is a plain `timestamp()` in UTC: call
-  `->utc()` on a Carbon from another zone before you save it.
+  `->utc()` on a Carbon from another zone before you save it. A model with
+  an `email` column uses `LowercasesEmail`.
 - **Uniqueness.** What must never appear twice, and inside which organization.
   A soft-deleted row keeps its value, so look it up `withTrashed()`. A rule
   for only some rows is a partial unique index with its own test.

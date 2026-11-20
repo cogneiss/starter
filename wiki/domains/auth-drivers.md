@@ -7,7 +7,7 @@ code_refs:
     - app/Http/Controllers/SocialAuthController.php
     - app/Actions/EnabledSocialProviders.php
     - config/services.php
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # The auth driver seam

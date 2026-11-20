@@ -1,0 +1,11 @@
+--- a/app/Mcp/Servers/StarterAiServer.php
++++ b/app/Mcp/Servers/StarterAiServer.php
+@@ -88,7 +88,7 @@
+         }
+ 
+         $configured = Env::get('STARTER_MCP_USER');
+-        $email = is_string($configured) ? Str::lower(mb_trim($configured)) : '';
++        $email = is_string($configured) ? mb_trim($configured) : '';
+ 
+         $member = $email === '' ? null : User::query()->where('email', $email)->first();
+ 

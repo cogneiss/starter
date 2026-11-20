@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToOrganization;
+use App\Concerns\LowercasesEmail;
 use Carbon\CarbonInterface;
 use Database\Factories\OrganizationInvitationFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -34,6 +35,7 @@ final class OrganizationInvitation extends Model
     use HasFactory;
 
     use HasUuids;
+    use LowercasesEmail;
 
     /**
      * Find the invitation a raw token belongs to. Deliberately unscoped:

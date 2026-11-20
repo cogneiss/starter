@@ -21,7 +21,7 @@ final class GdprExportCommand extends Command
 {
     public function handle(): int
     {
-        $needle = $this->argument('user');
+        $needle = Str::lower($this->argument('user'));
 
         $user = User::query()
             ->where(Str::isUuid($needle) ? 'id' : 'email', $needle)

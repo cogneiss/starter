@@ -1,0 +1,11 @@
+--- a/app/Console/Commands/GdprExportCommand.php
++++ b/app/Console/Commands/GdprExportCommand.php
+@@ -21,7 +21,7 @@
+ {
+     public function handle(): int
+     {
+-        $needle = Str::lower($this->argument('user'));
++        $needle = $this->argument('user');
+ 
+         $user = User::query()
+             ->where(Str::isUuid($needle) ? 'id' : 'email', $needle)

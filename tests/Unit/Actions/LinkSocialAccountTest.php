@@ -72,3 +72,23 @@ it('is idempotent for an identity that is already linked', function (): void {
     expect($user->id)->toBe($existing->id)
         ->and(SocialAccount::query()->count())->toBe(1);
 });
+
+it('links an identity in mixed case to the verified account with that address', function (): void {
+    $existing = User::factory()->create(['email' => 'ada@example.com']);
+
+    $user = resolve(LinkSocialAccount::class)->handle('github', identity(email: 'Ada@Example.COM'));
+
+    expect($user->id)->toBe($existing->id)
+        ->and(User::query()->count())->toBe(1)
+        ->and(SocialAccount::query()->where('user_id', $existing->id)->count())->toBe(1);
+})->group('email-case');
+
+it('refuses an identity in mixed case that matches an unverified account', function (): void {
+    User::factory()->unverified()->create(['email' => 'ada@example.com']);
+
+    expect(fn () => resolve(LinkSocialAccount::class)->handle('github', identity(email: 'Ada@Example.COM')))
+        ->toThrow(AuthorizationException::class);
+
+    expect(SocialAccount::query()->count())->toBe(0)
+        ->and(User::query()->count())->toBe(1);
+})->group('email-case');

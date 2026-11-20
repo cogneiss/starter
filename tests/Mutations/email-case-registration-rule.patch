@@ -1,0 +1,10 @@
+--- a/app/Http/Requests/CreateUserRequest.php
++++ b/app/Http/Requests/CreateUserRequest.php
+@@ -22,7 +22,6 @@
+             'email' => [
+                 'required',
+                 'string',
+-                'lowercase',
+                 'max:255',
+                 'email',
+                 new ValidEmail,

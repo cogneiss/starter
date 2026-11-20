@@ -1,0 +1,10 @@
+--- a/app/Models/LoginHistory.php
++++ b/app/Models/LoginHistory.php
+@@ -36,7 +36,6 @@
+     use HasFactory;
+ 
+     use HasUuids;
+-    use LowercasesEmail;
+     use MassPrunable;
+ 
+     public const ?string UPDATED_AT = null;

@@ -18,7 +18,7 @@ final readonly class CreateUserMagicLinkNotification
 {
     public function handle(string $email): void
     {
-        $user = User::query()->where('email', $email)->first();
+        $user = User::query()->where('email', Str::lower($email))->first();
 
         if (! $user instanceof User) {
             return;

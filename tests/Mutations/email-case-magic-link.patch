@@ -1,0 +1,11 @@
+--- a/app/Actions/CreateUserMagicLinkNotification.php
++++ b/app/Actions/CreateUserMagicLinkNotification.php
+@@ -18,7 +18,7 @@
+ {
+     public function handle(string $email): void
+     {
+-        $user = User::query()->where('email', Str::lower($email))->first();
++        $user = User::query()->where('email', $email)->first();
+ 
+         if (! $user instanceof User) {
+             return;

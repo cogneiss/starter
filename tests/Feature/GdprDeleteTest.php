@@ -12,6 +12,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\TempUpload;
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -204,3 +205,15 @@ it('refuses to erase the last active owner and changes nothing', function (): vo
         ->and($owner->refresh()->trashed())->toBeFalse()
         ->and($owner->email)->toBe($email);
 });
+
+it('anonymises a failed sign-in whose address was typed in mixed case', function (): void {
+    $organization = Organization::factory()->create();
+    User::factory()->forOrganization($organization)->create();
+    $user = User::factory()->forOrganization($organization)->create(['email' => 'ada@example.com']);
+
+    event(new Failed('web', null, ['email' => 'Ada@Example.com', 'password' => 'wrong']));
+
+    resolve(DeleteAccount::class)->handle($user);
+
+    expect(LoginHistory::query()->pluck('email')->all())->toBe(['anonymised@example.invalid']);
+})->group('email-case');

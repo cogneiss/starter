@@ -43,7 +43,7 @@ code_refs:
     - app/Http/Requests/UpdateOrganizationMembershipRequest.php
     - app/Http/Requests/UpdateOrganizationRequest.php
     - app/Http/Requests/UpdateOrganizationSwitchRequest.php
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Organizations
@@ -92,7 +92,10 @@ instant the patch fails and a silent revert tells the person nothing.
 
 Each write is an action in `app/Actions`, called by the controller above it.
 
-- `app/Actions/CreateOrganizationInvitation.php` refuses an email that is
+- `app/Actions/CreateOrganizationInvitation.php` lower-cases the address
+  first, so one typed in capitals meets the same two checks as its lower-case
+  form. The form request already demands lower case, and it is not the only
+  caller of the action. The action refuses an email that is
   already a member (validation error on `email`). If that email already has an
   unaccepted invitation it hands the existing one to
   `app/Actions/ResendOrganizationInvitation.php` instead of creating a second.

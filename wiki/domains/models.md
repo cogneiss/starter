@@ -11,6 +11,8 @@ code_refs:
     - app/Models/ImpersonationLog.php
     - app/Models/SocialAccount.php
     - app/Enums/MembershipStatus.php
+    - app/Concerns/LowercasesEmail.php
+    - tests/Unit/Conventions/SchemaConventionTest.php
 updated: 2026-11-20
 ---
 
@@ -77,3 +79,11 @@ deletion leaves a `deleted_at` row behind rather than removing it outright
 ([[operations/ops-gdpr]]), and `HasApiTokens`, bound to the `ApiToken` model
 rather than Sanctum's own so a personal access token is pinned to the
 organization that issued it ([[operations/ops-api-tokens]]).
+
+`User`, `OrganizationInvitation` and `LoginHistory` use
+`app/Concerns/LowercasesEmail.php`, which lower-cases `email` on every Eloquent
+write. They are the models whose table has an `email` column, and
+`tests/Unit/Conventions/SchemaConventionTest.php` fails for a model that has
+the column and leaves the trait out. A query builder update or a `DB::table()`
+write goes past the trait and stores what it is given. Why the rule sits in
+the model and not in the database is in [[decisions/not-included]].

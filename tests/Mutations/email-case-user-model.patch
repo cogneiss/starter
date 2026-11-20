@@ -1,0 +1,10 @@
+--- a/app/Models/User.php
++++ b/app/Models/User.php
+@@ -62,7 +62,6 @@
+ 
+     use HasRoles;
+     use HasUuids;
+-    use LowercasesEmail;
+     use Notifiable;
+     use PasskeyAuthenticatable;
+     use SoftDeletes;

@@ -1,0 +1,11 @@
+--- a/app/Http/Controllers/UserEmailResetNotificationController.php
++++ b/app/Http/Controllers/UserEmailResetNotificationController.php
+@@ -24,7 +24,7 @@
+         CreateUserEmailResetNotificationRequest $request,
+         CreateUserEmailResetNotification $action
+     ): RedirectResponse {
+-        $action->handle(['email' => $request->string('email')->lower()->value()]);
++        $action->handle(['email' => $request->string('email')->value()]);
+ 
+         return back()->with('status', __('A reset link will be sent if the account exists.'));
+     }

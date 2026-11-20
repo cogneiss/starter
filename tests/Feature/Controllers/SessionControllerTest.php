@@ -260,3 +260,20 @@ it('never persists the attempted password in the login history', function (): vo
     expect($row->successful)->toBeFalse()
         ->and(json_encode($row->getAttributes()))->not->toContain('attempted-secret-value');
 });
+
+it('signs in with an address typed in mixed case', function (): void {
+    $user = User::factory()->withoutTwoFactor()->create([
+        'email' => 'ada@example.com',
+        'password' => Hash::make('password'),
+    ]);
+
+    $response = $this->fromRoute('login')
+        ->post(route('login.store'), [
+            'email' => 'Ada@Example.COM',
+            'password' => 'password',
+        ]);
+
+    $response->assertRedirectToRoute('dashboard');
+
+    $this->assertAuthenticatedAs($user);
+})->group('email-case');

@@ -1,0 +1,11 @@
+--- a/app/Support/AiEgress.php
++++ b/app/Support/AiEgress.php
+@@ -65,7 +65,7 @@
+             return false;
+         }
+ 
+-        return User::query()->where('email', Str::lower($address))->first()
++        return User::query()->where('email', $address)->first()
+             ?->belongsToOrganization($organization) ?? false;
+     }
+ }

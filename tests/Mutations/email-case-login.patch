@@ -1,0 +1,10 @@
+--- a/app/Http/Controllers/SessionController.php
++++ b/app/Http/Controllers/SessionController.php
+@@ -74,7 +74,6 @@
+     private function authenticate(CreateSessionRequest $request): ?User
+     {
+         $credentials = $request->only('email', 'password');
+-        $credentials['email'] = $request->string('email')->lower()->value();
+         $provider = Auth::getProvider();
+         $user = $provider->retrieveByCredentials($credentials);
+ 

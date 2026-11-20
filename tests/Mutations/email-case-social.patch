@@ -1,0 +1,11 @@
+--- a/app/Actions/LinkSocialAccount.php
++++ b/app/Actions/LinkSocialAccount.php
+@@ -28,7 +28,7 @@
+      */
+     public function handle(string $provider, SocialiteUser $identity): User
+     {
+-        $email = Str::lower((string) $identity->getEmail());
++        $email = (string) $identity->getEmail();
+         $providerUserId = $identity->getId();
+ 
+         $account = SocialAccount::query()

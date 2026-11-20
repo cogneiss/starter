@@ -146,3 +146,19 @@ it('allows keeping same email', function (): void {
     $response->assertRedirectToRoute('user-profile.edit')
         ->assertSessionDoesntHaveErrors();
 });
+
+it('refuses a profile address in mixed case', function (): void {
+    $user = User::factory()->create(['email' => 'ada@example.com']);
+
+    $response = $this->actingAs($user)
+        ->fromRoute('user-profile.edit')
+        ->patch(route('user-profile.update'), [
+            'name' => 'Ada Lovelace',
+            'email' => 'Ada.Lovelace@Example.COM',
+        ]);
+
+    $response->assertRedirectToRoute('user-profile.edit')
+        ->assertSessionHasErrors('email');
+
+    expect($user->refresh()->email)->toBe('ada@example.com');
+})->group('email-case');

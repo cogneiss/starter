@@ -212,3 +212,19 @@ it('requires verified email to delete account', function (): void {
 
     expect($user->fresh())->not->toBeNull();
 });
+
+it('refuses registration with an address in mixed case', function (): void {
+    $response = $this->fromRoute('register')
+        ->post(route('register.store'), [
+            '_friction' => frictionToken(),
+            'name' => 'Ada Lovelace',
+            'email' => 'Ada@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+    $response->assertRedirectToRoute('register')
+        ->assertSessionHasErrors('email');
+
+    expect(User::query()->count())->toBe(0);
+})->group('email-case');

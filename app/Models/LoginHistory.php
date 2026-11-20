@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LowercasesEmail;
 use Carbon\CarbonInterface;
 use Database\Factories\LoginHistoryFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,6 +36,7 @@ final class LoginHistory extends Model
     use HasFactory;
 
     use HasUuids;
+    use LowercasesEmail;
     use MassPrunable;
 
     public const ?string UPDATED_AT = null;

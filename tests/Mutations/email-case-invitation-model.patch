@@ -1,0 +1,10 @@
+--- a/app/Models/OrganizationInvitation.php
++++ b/app/Models/OrganizationInvitation.php
+@@ -35,7 +35,6 @@
+     use HasFactory;
+ 
+     use HasUuids;
+-    use LowercasesEmail;
+ 
+     /**
+      * Find the invitation a raw token belongs to. Deliberately unscoped:

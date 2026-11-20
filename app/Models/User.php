@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LowercasesEmail;
 use App\Enums\MembershipStatus;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
@@ -61,6 +62,7 @@ final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
     use HasRoles;
     use HasUuids;
+    use LowercasesEmail;
     use Notifiable;
     use PasskeyAuthenticatable;
     use SoftDeletes;

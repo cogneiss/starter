@@ -208,3 +208,13 @@ it('queues an export from the console by id or email and never prints the path',
 
     expect(Storage::disk('local')->files("gdpr/{$this->member->id}"))->toHaveCount(2);
 });
+
+it('queues an export from the console for an address typed in mixed case', function (): void {
+    $member = User::factory()->forOrganization($this->organization)->create(['email' => 'ada@example.com']);
+
+    $this->artisan('gdpr:export', ['user' => 'Ada@Example.COM'])
+        ->expectsOutputToContain('Export queued.')
+        ->assertSuccessful();
+
+    expect(Storage::disk('local')->files("gdpr/{$member->id}"))->toHaveCount(1);
+})->group('email-case');

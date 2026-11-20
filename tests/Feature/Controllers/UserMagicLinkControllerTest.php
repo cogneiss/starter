@@ -138,3 +138,20 @@ it('throttles magic link requests', function (): void {
     $this->post(route('magic-link.store'), ['email' => 'test@example.com'])
         ->assertStatus(429);
 });
+
+it('sends a magic link to an address typed in mixed case', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->create(['email' => 'ada@example.com']);
+
+    $response = $this->fromRoute('magic-link.create')
+        ->post(route('magic-link.store'), [
+            '_friction' => frictionToken(),
+            'email' => 'Ada@example.com',
+        ]);
+
+    $response->assertRedirectToRoute('magic-link.create')
+        ->assertSessionHasNoErrors();
+
+    Notification::assertSentTo($user, UserMagicLink::class);
+})->group('email-case');

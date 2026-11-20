@@ -33,6 +33,7 @@ final readonly class UserPasswordController
     {
         /** @var array<string, mixed> $credentials */
         $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
+        $credentials['email'] = $request->string('email')->lower()->value();
 
         $status = $action->handle(
             $credentials,

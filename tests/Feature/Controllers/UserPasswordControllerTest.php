@@ -221,3 +221,21 @@ it('redirects authenticated users away from reset password', function (): void {
 
     $response->assertRedirectToRoute('dashboard');
 });
+
+it('resets the password with an address typed in mixed case', function (): void {
+    $user = User::factory()->create(['email' => 'ada@example.com']);
+
+    $token = Password::createToken($user);
+
+    $response = $this->fromRoute('password.reset', ['token' => $token])
+        ->post(route('password.store'), [
+            'email' => 'Ada@Example.COM',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+            'token' => $token,
+        ]);
+
+    $response->assertRedirectToRoute('login');
+
+    expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
+})->group('email-case');

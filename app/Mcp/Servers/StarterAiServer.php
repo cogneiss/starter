@@ -17,6 +17,7 @@ use App\Mcp\Tools\ShowRecord;
 use App\Models\User;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Laravel\Mcp\Server;
 
 /**
@@ -87,7 +88,7 @@ final class StarterAiServer extends Server
         }
 
         $configured = Env::get('STARTER_MCP_USER');
-        $email = is_string($configured) ? mb_trim($configured) : '';
+        $email = is_string($configured) ? Str::lower(mb_trim($configured)) : '';
 
         $member = $email === '' ? null : User::query()->where('email', $email)->first();
 

@@ -155,3 +155,29 @@ it('refuses an invitation addressed to another email', function (): void {
     expect(fn () => resolve(AcceptOrganizationInvitation::class)->handle($invitation, $user))
         ->toThrow(ValidationException::class);
 });
+
+it('refuses to invite a member whose address is typed in mixed case', function (): void {
+    Notification::fake();
+
+    $organization = Organization::factory()->create();
+    resolve(SeedOrganizationRoles::class)->handle($organization);
+    User::factory()->forOrganization($organization)->create(['email' => 'ada@example.com']);
+
+    expect(fn (): OrganizationInvitation => invite($organization, 'Ada@Example.COM'))
+        ->toThrow(ValidationException::class);
+
+    expect(OrganizationInvitation::withoutOrganizationScope()->count())->toBe(0);
+})->group('email-case');
+
+it('resends a pending invitation when the address is typed in mixed case', function (): void {
+    Notification::fake();
+
+    $organization = Organization::factory()->create();
+    resolve(SeedOrganizationRoles::class)->handle($organization);
+
+    $first = invite($organization, 'new@example.com');
+    $second = invite($organization, 'New@Example.COM');
+
+    expect($second->id)->toBe($first->id)
+        ->and(OrganizationInvitation::withoutOrganizationScope()->count())->toBe(1);
+})->group('email-case');

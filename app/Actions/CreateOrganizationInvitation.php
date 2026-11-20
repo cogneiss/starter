@@ -23,6 +23,8 @@ final readonly class CreateOrganizationInvitation
      */
     public function handle(Organization $organization, User $invitedBy, string $email, string $role): OrganizationInvitation
     {
+        $email = Str::lower($email);
+
         if ($this->isMember($organization, $email)) {
             throw ValidationException::withMessages([
                 'email' => __('That person is already a member of this organization.'),

@@ -8,9 +8,9 @@ paths:
 
 These rules bind new and changed tables.
 `tests/Unit/Conventions/SchemaConventionTest.php` holds the two index rules,
-the UTC pin, the ban on a time zone column type and the ban on a unique rule
-that skips soft-deleted rows. No test covers the rest, so a table being there
-is not a reason to copy it.
+the UTC pin, the ban on a time zone column type, the ban on a unique rule
+that skips soft-deleted rows and the `LowercasesEmail` rule. No test covers
+the rest, so a table being there is not a reason to copy it.
 
 ## The design is agreed as text before a migration exists
 
@@ -105,6 +105,29 @@ only. That is a partial unique index on PostgreSQL and SQLite and an
 expression key part on MySQL, written per driver in the migration. The gap
 query does not count a partial index, so the rule gets its own test.
 `tests/Unit/Models/OrganizationInvitationTest.php` is the pattern.
+
+## An email address is stored in lower case
+
+PostgreSQL and SQLite compare text by case. MySQL's default collation,
+`utf8mb4_unicode_ci`, does not. Stored as typed, `Ada@Example.com` and
+`ada@example.com` are two rows on two engines and a unique violation on the
+third. So a model whose table has an `email` column uses the trait in
+`app/Concerns/LowercasesEmail.php`, and the unique index on the column stays a
+plain one. `tests/Unit/Conventions/SchemaConventionTest.php` fails for a model
+that leaves `LowercasesEmail` out.
+
+The trait covers an Eloquent write only. A query builder update or a
+`DB::table()` write stores what it is given, so lower-case the value before
+either. The side that compares an address is in `.ai/rules/app.md`.
+
+The column stays a `string`: no `citext`, no index on `lower(email)` and no
+collation change, because each of those ties the rule to one engine.
+
+Rows written before this rule are not converted. On PostgreSQL and SQLite a
+row that still holds a capital stops matching a sign-in until it is
+lower-cased. `select count(*) from users where email <> lower(email)` counts
+them. No check constraint holds the rule yet, because those rows would fail
+it.
 
 ## Every migration runs on PostgreSQL, SQLite and MySQL
 

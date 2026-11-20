@@ -83,3 +83,15 @@ it('permits a member recipient on an allowed host', function (): void {
 
     expect(true)->toBeTrue();
 });
+
+it('allows a member whose address is typed in mixed case', function (): void {
+    $organization = Organization::factory()->create();
+    User::factory()->forOrganization($organization)->create(['email' => 'ada@allowed.test']);
+
+    config()->set('ai.guardrails.egress', ['allowed.test']);
+
+    expect(fn () => resolve(OrganizationContext::class)->runAs(
+        $organization,
+        fn () => AiEgress::assertAllowed('Ada@allowed.test'),
+    ))->not->toThrow(BlockedEgressException::class);
+})->group('email-case');

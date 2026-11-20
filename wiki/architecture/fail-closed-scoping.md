@@ -9,7 +9,7 @@ code_refs:
     - config/organizations.php
     - .ai/rules/app.md
     - app/Resources/ScopedToOrganization.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # Why organization scoping is fail-closed

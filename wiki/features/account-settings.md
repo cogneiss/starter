@@ -20,7 +20,7 @@ code_refs:
     - app/Http/Requests/UpdateUserNotificationPreferenceRequest.php
     - app/Http/Requests/UpdateUserPasswordRequest.php
     - app/Http/Requests/UpdateUserRequest.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # Account settings
@@ -71,7 +71,10 @@ behind a password confirmation.
 ## Writes and their requests
 
 - **Profile.** `app/Http/Requests/UpdateUserRequest.php` requires a name and a
-  lowercase, unique email (ignoring the user's own row). `app/Actions/UpdateUser.php`
+  lowercase, unique email (ignoring the user's own row). `lowercase` stays
+  beside `unique` on purpose: `unique` compares what was typed, and the `User`
+  model would then store a different, lower-cased value ([[domains/models]]).
+  `app/Actions/UpdateUser.php`
   clears `email_verified_at` and sends a new verification email only when the
   email actually changed.
 - **Password.** `app/Http/Requests/UpdateUserPasswordRequest.php` requires the
@@ -94,6 +97,9 @@ behind a password confirmation.
   `settings/notifications` in `UserNotificationPreferenceController`.
 
 Login history rows are written by listeners rather than by these controllers
-([[domains/events-and-notifications]]). `LoginHistory` has no resource adapter,
+([[domains/events-and-notifications]]). `LoginHistory` lower-cases the address
+it stores, so a failed attempt typed as `Ada@Example.com` is filed under
+`ada@example.com`, the value account deletion looks for
+([[operations/ops-gdpr]]). `LoginHistory` has no resource adapter,
 exempted with a reason in `config/conventions.php`
 ([[architecture/convention-guards]]).

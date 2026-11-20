@@ -28,7 +28,7 @@ final readonly class LinkSocialAccount
      */
     public function handle(string $provider, SocialiteUser $identity): User
     {
-        $email = (string) $identity->getEmail();
+        $email = Str::lower((string) $identity->getEmail());
         $providerUserId = $identity->getId();
 
         $account = SocialAccount::query()

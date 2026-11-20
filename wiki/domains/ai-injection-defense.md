@@ -11,7 +11,7 @@ code_refs:
     - tests/Feature/Ai/EgressTest.php
     - app/Exceptions/BlockedEgressException.php
     - app/Exceptions/BlockedTopicException.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # AI injection defense
@@ -60,6 +60,14 @@ default and is a product decision, not a security control.
 pattern. It is empty by default, which means an agent reaches nothing at all —
 the fail-closed shape of [[architecture/fail-closed-scoping]] applied to the
 network. Adding a host is a deliberate edit someone can read in a diff.
+
+An email address as the target gets a second check: its host must be on the
+list, and the address must belong to a member of the organization the agent
+is acting for. `AiEgress` lower-cases the address before that lookup, because
+a stored address is lower case ([[domains/models]]), so `Ada@allowed.test`
+matches the member saved as `ada@allowed.test`. The host is compared as
+written: `allowed.test` on the list does not admit `Allowed.Test`.
+`tests/Feature/Ai/EgressTest.php` holds the cases for the address.
 
 ## The refusals
 

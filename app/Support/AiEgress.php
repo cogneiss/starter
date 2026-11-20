@@ -65,7 +65,7 @@ final class AiEgress
             return false;
         }
 
-        return User::query()->where('email', $address)->first()
+        return User::query()->where('email', Str::lower($address))->first()
             ?->belongsToOrganization($organization) ?? false;
     }
 }

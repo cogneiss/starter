@@ -240,3 +240,16 @@ it('walks propose over mcp, confirm over http, and refuses the replay', function
 
     expect(OrganizationInvitation::withoutOrganizationScope()->where('email', 'walked@example.com')->count())->toBe(1);
 });
+
+it('signs the stdio member in when STARTER_MCP_USER is in mixed case', function (): void {
+    $organization = Organization::factory()->create();
+    $member = User::factory()->forOrganization($organization)->create(['email' => 'ada@example.com']);
+    resolve(OrganizationContext::class)->forget();
+    startedAs('Ada@Example.COM');
+
+    $reply = mcpRpc('tools/call', ['name' => 'list-records', 'arguments' => ['resource' => 'organization-members']]);
+
+    expect(Auth::id())->toBe($member->id)
+        ->and($reply['result']['isError'] ?? false)->toBeFalse()
+        ->and(mcpText($reply))->toContain('ada@example.com');
+})->group('email-case');

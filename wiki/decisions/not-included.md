@@ -11,6 +11,7 @@ code_refs:
     - .ai/rules/database.md
     - config/database.php
     - tests/Unit/Conventions/SchemaConventionTest.php
+    - app/Concerns/LowercasesEmail.php
 updated: 2026-11-20
 ---
 
@@ -149,7 +150,7 @@ what they would add.
 
 ## Database design
 
-Three things a schema review might expect are absent. `.ai/rules/database.md`
+Four things a schema review might expect are absent. `.ai/rules/database.md`
 states each one as a rule.
 
 No `timestampTz` column. A probe on PostgreSQL saved the same instants into a
@@ -180,6 +181,26 @@ plain, and `tests/Unit/Conventions/SchemaConventionTest.php` fails on a
 `Rule::unique` that skips deleted rows. A partial unique index is still the
 tool for a rule that binds only some rows, such as one pending invitation per
 email and organization.
+
+No engine feature folds the case of an email address. PostgreSQL and SQLite
+compare text by case and MySQL's default collation does not, so an address
+stored as typed is two rows on two engines and a unique violation on the
+third. The kit stores the address in lower case instead.
+`app/Concerns/LowercasesEmail.php` lower-cases `email` on every Eloquent write
+to the models that have the column, a case in the convention test fails for a
+model that leaves the trait out, and each lookup lower-cases what it was given
+before it queries ([[features/authentication]]). Each alternative lost for its
+own reason. A `citext` column exists on PostgreSQL only. A
+functional unique index on `lower(email)` stops two rows that differ by case,
+but the stored value stays mixed, so every lookup must wrap the column in
+`lower()` and one that forgets finds nothing. A collation change is a
+different statement on each engine, and SQLite's `NOCASE` folds ASCII letters
+only. A check constraint, `email = lower(email)`, would hold the rule in the
+database and is the upgrade. It is absent for now because rows written before
+the rule would fail it. `select count(*) from users where email <> lower(email)`
+counts them, and on PostgreSQL and SQLite such a row stops matching a sign-in
+until it is lower-cased. A query builder write also goes past the trait, and
+only the constraint would catch that.
 
 ## Drafted, not shipped
 

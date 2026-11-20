@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * The two index rules in .ai/rules/database.md, checked against the PostgreSQL
@@ -71,3 +72,30 @@ it('never lets a unique validation rule skip soft-deleted rows', function (): vo
 
     expect($offenders)->toBe([]);
 });
+
+/**
+ * The email rule in .ai/rules/database.md, on every model whose table has an
+ * email column. Nothing is saved: the case reads what the model would write.
+ */
+it('stores the address in lower case on every model with an email column', function (): void {
+    $checked = [];
+    $offenders = [];
+
+    foreach (File::glob(app_path('Models/*.php')) as $path) {
+        $model = new ('App\\Models\\'.basename((string) $path, '.php'));
+
+        if (! Schema::hasColumn($model->getTable(), 'email')) {
+            continue;
+        }
+
+        $checked[] = $model::class;
+        $model->setAttribute('email', 'Ada@Example.COM');
+
+        if ($model->getAttributes()['email'] !== 'ada@example.com') {
+            $offenders[] = $model::class;
+        }
+    }
+
+    expect($offenders)->toBe([])
+        ->and($checked)->not->toBe([]);
+})->group('email-case');

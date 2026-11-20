@@ -21,7 +21,7 @@ code_refs:
     - tests/Browser/DataTableTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # The server-driven list kit
@@ -81,7 +81,10 @@ other database driver uses that case-insensitive substring `like` for every
 term. No index ships. The code comment on
 `applyTerm()` names the ceiling: Postgres scans the table, and a GIN expression
 index over the same `to_tsvector` expression is the upgrade when a table grows.
-`tests/Unit/Support/ResourceQueryTest.php` holds the cases.
+`tests/Unit/Support/ResourceQueryTest.php` holds the cases. Its invitation rows
+are written with `DB::table()`, past the model, because the model would
+lower-case the address and the search has to fold capitals a row already
+holds.
 
 ## Columns
 

@@ -27,7 +27,7 @@ code_refs:
     - app/Http/Requests/CreateUserMagicLinkRequest.php
     - app/Http/Requests/CreateUserPasswordRequest.php
     - app/Http/Requests/ShowUserTwoFactorAuthenticationRequest.php
-updated: 2026-11-18
+updated: 2026-11-20
 ---
 
 # Authentication
@@ -77,6 +77,14 @@ the kit's own screens on top of it.
   refused when its email is empty or the provider does not vouch for it: GitHub
   returns only a verified primary address, Google must say `email_verified`, and
   any other provider is refused (`app/Actions/LinkSocialAccount.php`).
+- **An address is lower-cased before it is compared.** The models store an
+  address in lower case ([[domains/models]]), and PostgreSQL and SQLite compare
+  text by case. So `SessionController`, `UserEmailResetNotificationController`,
+  `UserPasswordController`, `app/Actions/CreateUserMagicLinkNotification.php`
+  and `app/Actions/LinkSocialAccount.php` each lower-case the address once,
+  before the first query that uses it. `lowercase_usernames` in
+  `config/fortify.php` does not do this for them: it acts on Fortify's own
+  login pipeline, which these controllers do not use.
 - **Passkey sign-in is throttled like password login.** The `passkeys` limiter in
   `FortifyServiceProvider` allows 10 attempts a minute per credential id and IP,
   falling back to the session when no credential id is sent.
