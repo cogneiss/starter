@@ -4,6 +4,27 @@ declare(strict_types=1);
 
 use App\Models\Organization;
 use App\Models\User;
+use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Api\Webpage;
+
+/**
+ * Records whether the loading skeleton shows from here on. It lasts for the
+ * debounce plus the request, about a quarter of a second, so looking for it
+ * after the action is a race a loaded machine loses. Call this before the
+ * action and read `window.__skeletonSeen` after it.
+ */
+function watchForTheSkeleton(Webpage|AwaitableWebpage $page): void
+{
+    $page->script(<<<'JS'
+        window.__skeletonSeen = false;
+
+        new MutationObserver(() => {
+            if (document.querySelector('[data-test="palette-skeleton"]') !== null) {
+                window.__skeletonSeen = true;
+            }
+        }).observe(document.body, { subtree: true, childList: true });
+    JS);
+}
 
 beforeEach(function (): void {
     $organization = Organization::factory()->create();
@@ -16,15 +37,20 @@ beforeEach(function (): void {
 it('shows skeleton rows while the search is in flight', function (): void {
     $page = visit('/dashboard')->wait(1);
 
+    $page->keys('html > body', 'Meta+k')
+        ->assertPresent('[data-test="palette-hint"]');
+
+    watchForTheSkeleton($page);
+
     // The palette marks itself busy on the keystroke rather than when the
     // request leaves, so the debounce is covered too and there is no blank
     // pause between typing and results.
-    $page->keys('html > body', 'Meta+k')
-        ->type('[data-test="palette-input"]', 'Marguerite')
-        ->assertPresent('[data-test="palette-skeleton"]')
+    $page->type('[data-test="palette-input"]', 'Marguerite')
         ->waitForText('Marguerite Blythe')
         ->assertMissing('[data-test="palette-skeleton"]')
         ->assertNoJavaScriptErrors();
+
+    expect($page->script('window.__skeletonSeen'))->toBeTrue();
 });
 
 it('says so when nothing matches', function (): void {
@@ -53,18 +79,7 @@ it('offers a retry when the search fails rather than a blank list', function ():
         ->assertMissing('[data-test="palette-empty"]')
         ->assertNoJavaScriptErrors();
 
-    // The skeleton lasts for the debounce plus the request, about a quarter of
-    // a second. Looking for it after the click is a race a loaded machine
-    // loses, so an observer installed before the click records it instead.
-    $page->script(<<<'JS'
-        window.__skeletonSeen = false;
-
-        new MutationObserver(() => {
-            if (document.querySelector('[data-test="palette-skeleton"]') !== null) {
-                window.__skeletonSeen = true;
-            }
-        }).observe(document.body, { subtree: true, childList: true });
-    JS);
+    watchForTheSkeleton($page);
 
     // Retrying re-asks. The term is still too long, so the error comes back —
     // what matters is that the affordance is live and not decoration.
