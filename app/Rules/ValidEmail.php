@@ -10,7 +10,7 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 
 final readonly class ValidEmail implements ValidationRule
 {
-    private const string REGEX = '/\A[a-z0-9!#$%&*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}\z/';
+    private const string REGEX = '/\A[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:[a-z]{2,}|xn--[a-z0-9-]*[a-z0-9])\z/';
 
     /**
      * Run the validation rule.

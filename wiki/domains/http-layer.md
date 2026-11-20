@@ -154,8 +154,11 @@ draft-with-AI button renders ([[domains/ai-agents-and-tools]]).
 Every write goes through a form request in `app/Http/Requests`, named after the
 action it validates (`CreateUserRequest`, `UpdateOrganizationRequest`, and so on).
 Registration (`CreateUserRequest`) checks the email field with
-`app/Rules/ValidEmail.php`. The rule matches the whole value against a
-lower-case pattern and fails a value that is not a string.
+`app/Rules/ValidEmail.php`, and the profile form (`UpdateUserRequest`) does the
+same for an address that changed. The rule matches the whole value against a
+lower-case pattern and fails a value that is not a string. The pattern allows
+an apostrophe before the `@` and a punycode top-level domain such as
+`xn--p1ai`.
 
 The account and sign-in requests are explained where they are used:
 `CreateUserEmailResetNotificationRequest`, `CreateUserMagicLinkRequest`,
@@ -164,8 +167,8 @@ The account and sign-in requests are explained where they are used:
 `UpdateUserRequest`, `UpdateUserPasswordRequest`, `DeleteUserRequest`,
 `DeleteBrowserSessionRequest`, `UpdateUserLocaleRequest` and
 `UpdateUserNotificationPreferenceRequest` in [[features/account-settings]].
-The `ValidEmail` rule is not universal: `CreateUserEmailResetNotificationRequest`,
-`CreateUserMagicLinkRequest` and `UpdateUserRequest` use the plain `email` rule.
+The `ValidEmail` rule is not universal: `CreateUserEmailResetNotificationRequest`
+and `CreateUserMagicLinkRequest` use the plain `email` rule.
 
 Authorization does not live here; it lives in the policies
 ([[architecture/two-gate-authorization]]).

@@ -115,6 +115,39 @@ it('requires valid email', function (): void {
         ->assertSessionHasErrors('email');
 });
 
+it('refuses a profile address the sign-up form would refuse', function (): void {
+    $user = User::factory()->create(['email' => 'ada@example.com']);
+
+    $response = $this->actingAs($user)
+        ->fromRoute('user-profile.edit')
+        ->patch(route('user-profile.update'), [
+            'name' => 'Ada Lovelace',
+            'email' => 'ada@localhost',
+        ]);
+
+    // The framework `email` rule accepts a host with no dot, so the message
+    // of `ValidEmail` is what shows that rule is the one answering.
+    $response->assertRedirectToRoute('user-profile.edit')
+        ->assertSessionHasErrors(['email' => 'The email must be a valid email address.']);
+
+    expect($user->refresh()->email)->toBe('ada@example.com');
+});
+
+it('saves a new name beside a stored address the sign-up form would refuse', function (): void {
+    $user = User::factory()->create(['email' => 'ada@localhost']);
+
+    $response = $this->actingAs($user)
+        ->fromRoute('user-profile.edit')
+        ->patch(route('user-profile.update'), [
+            'name' => 'Ada Lovelace',
+            'email' => 'ada@localhost',
+        ]);
+
+    $response->assertSessionHasNoErrors();
+
+    expect($user->refresh()->name)->toBe('Ada Lovelace');
+});
+
 it('requires unique email except own', function (): void {
     $existingUser = User::factory()->create(['email' => 'existing@example.com']);
     $user = User::factory()->create(['email' => 'test@example.com']);
@@ -157,8 +190,10 @@ it('refuses a profile address in mixed case', function (): void {
             'email' => 'Ada.Lovelace@Example.COM',
         ]);
 
+    // `ValidEmail` refuses a capital too, so the message is what shows that
+    // the `lowercase` rule is the one answering.
     $response->assertRedirectToRoute('user-profile.edit')
-        ->assertSessionHasErrors('email');
+        ->assertSessionHasErrors(['email' => __('validation.lowercase', ['attribute' => 'email'])]);
 
     expect($user->refresh()->email)->toBe('ada@example.com');
 })->group('email-case');

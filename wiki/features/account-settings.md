@@ -20,6 +20,7 @@ code_refs:
     - app/Http/Requests/UpdateUserNotificationPreferenceRequest.php
     - app/Http/Requests/UpdateUserPasswordRequest.php
     - app/Http/Requests/UpdateUserRequest.php
+    - app/Rules/ValidEmail.php
 updated: 2026-11-20
 ---
 
@@ -74,6 +75,10 @@ behind a password confirmation.
   lowercase, unique email (ignoring the user's own row). `lowercase` stays
   beside `unique` on purpose: `unique` compares what was typed, and the `User`
   model would then store a different, lower-cased value ([[domains/models]]).
+  A changed address must also pass `app/Rules/ValidEmail.php`, the rule the
+  sign-up form uses. An address that is already stored is not checked again,
+  so a member whose social sign-in stored one the rule refuses can still save
+  a new name.
   `app/Actions/UpdateUser.php`
   clears `email_verified_at` and sends a new verification email only when the
   email actually changed.

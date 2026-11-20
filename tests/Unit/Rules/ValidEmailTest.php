@@ -43,6 +43,7 @@ it('works with valid email', function (string $email): void {
 
     // Emails with Special Characters
     'user@ex-ample.com',
+    "o'brien@example.com",
 
     // Emails with Subdomains
     'user@mail.example.com',
@@ -64,6 +65,9 @@ it('works with valid email', function (string $email): void {
     'admin@website.travel',
     'sales@company.agency',
     'team@startup.tech',
+
+    // Emails with a Punycode TLD
+    'user@example.xn--p1ai',
 ]);
 
 it('fails with invalid email', function (string $email): void {

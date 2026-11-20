@@ -38,7 +38,7 @@ it('compares a host without regard to case', function (string $allowed, string $
 })->with([
     'capitals in the target' => ['hooks.example.test', 'https://HOOKS.Example.test/notify'],
     'capitals in the allowlist' => ['Hooks.Example.Test', 'https://hooks.example.test/notify'],
-]);
+])->group('email-case');
 
 it('allows a member whose address has capitals in the host', function (): void {
     $organization = Organization::factory()->create();

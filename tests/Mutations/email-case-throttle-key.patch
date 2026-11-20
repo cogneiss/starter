@@ -1,0 +1,10 @@
+--- a/app/Http/Requests/CreateSessionRequest.php
++++ b/app/Http/Requests/CreateSessionRequest.php
+@@ -47,7 +47,6 @@ public function succeeded(): void
+     public function throttleKey(): string
+     {
+         return $this->string('email')
+-            ->lower()
+             ->append('|'.($this->ip() ?? ''))
+             ->transliterate()
+             ->value();

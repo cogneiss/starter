@@ -188,7 +188,7 @@ it('counts an address typed in another case against the same login limit', funct
     $response->assertSessionHasErrors('email');
 
     expect(session('errors')->get('email')[0])->toContain('Too many login attempts');
-});
+})->group('email-case');
 
 it('clears rate limit after successful login', function (): void {
     $user = User::factory()->withoutTwoFactor()->create([
