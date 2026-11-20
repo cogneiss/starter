@@ -16,7 +16,7 @@
     {
       "id": 2,
       "name": "wiki seeded and linted",
-      "status": "failing",
+      "status": "passing",
       "command": "composer test:wiki"
     },
     {
@@ -118,7 +118,7 @@
     {
       "id": 19,
       "name": "hook, CI and switch-on steps are documented",
-      "status": "failing",
+      "status": "passing",
       "command": "php artisan wiki:lint && rg -q 'Switching CI on' wiki/decisions/ci-quality.md"
     },
     {
