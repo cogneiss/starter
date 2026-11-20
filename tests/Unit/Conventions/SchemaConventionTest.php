@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Models\LoginHistory;
+use App\Models\OrganizationInvitation;
+use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -99,3 +103,56 @@ it('stores the address in lower case on every model with an email column', funct
     expect($offenders)->toBe([])
         ->and($checked)->not->toBe([]);
 })->group('email-case');
+
+/**
+ * The check constraint behind the email rule in .ai/rules/database.md: a write
+ * that goes past the model cannot store an ASCII capital.
+ *
+ * Known limit: the gate runs these cases on PostgreSQL. bin/check-migrations
+ * proves that the MySQL statement runs, and nothing standing proves that MySQL
+ * refuses a capital. A MySQL run of this file is the upgrade.
+ */
+it('refuses a capital in users email written past the model', function (): void {
+    $user = User::factory()->create();
+
+    expect(DB::table('users')->where('id', $user->id)->update(['email' => 'ada@example.com']))->toBe(1)
+        ->and(fn (): int => DB::table('users')->where('id', $user->id)->update(['email' => 'Ada@example.com']))
+        ->toThrow(QueryException::class, 'users_email_lowercase');
+})->group('email-case')->skip(fn (): bool => DB::getDriverName() === 'sqlite', 'SQLite has no check constraint on the column.');
+
+it('refuses a capital in password_reset_tokens email written past the model', function (): void {
+    DB::table('password_reset_tokens')->insert(['email' => 'reset@example.com', 'token' => 'token']);
+
+    expect(DB::table('password_reset_tokens')->where('email', 'reset@example.com')->update(['email' => 'ada@example.com']))->toBe(1)
+        ->and(fn (): int => DB::table('password_reset_tokens')->where('email', 'ada@example.com')->update(['email' => 'Ada@example.com']))
+        ->toThrow(QueryException::class, 'password_reset_tokens_email_lowercase');
+})->group('email-case')->skip(fn (): bool => DB::getDriverName() === 'sqlite', 'SQLite has no check constraint on the column.');
+
+it('refuses a capital in login_histories email written past the model', function (): void {
+    $login = LoginHistory::factory()->create();
+
+    expect(DB::table('login_histories')->where('id', $login->id)->update(['email' => 'ada@example.com']))->toBe(1)
+        ->and(fn (): int => DB::table('login_histories')->where('id', $login->id)->update(['email' => 'Ada@example.com']))
+        ->toThrow(QueryException::class, 'login_histories_email_lowercase');
+})->group('email-case')->skip(fn (): bool => DB::getDriverName() === 'sqlite', 'SQLite has no check constraint on the column.');
+
+it('refuses a capital in organization_invitations email written past the model', function (): void {
+    $invitation = OrganizationInvitation::factory()->create();
+
+    expect(DB::table('organization_invitations')->where('id', $invitation->id)->update(['email' => 'ada@example.com']))->toBe(1)
+        ->and(fn (): int => DB::table('organization_invitations')->where('id', $invitation->id)->update(['email' => 'Ada@example.com']))
+        ->toThrow(QueryException::class, 'organization_invitations_email_lowercase');
+})->group('email-case')->skip(fn (): bool => DB::getDriverName() === 'sqlite', 'SQLite has no check constraint on the column.');
+
+/**
+ * Every table with an email column, read from the catalog, so a new one cannot
+ * leave the constraint out.
+ */
+it('holds a lower-case check constraint on every table with an email column', function (): void {
+    $tables = array_column(DB::select("select table_name from information_schema.columns where table_schema = 'public' and column_name = 'email' order by table_name"), 'table_name');
+
+    $held = array_column(DB::select("select conrelid::regclass::text as table_name from pg_constraint where contype = 'c' and connamespace = 'public'::regnamespace and conname = conrelid::regclass::text || '_email_lowercase' and pg_get_constraintdef(oid) like '%email%!~ ''[A-Z]''%' order by 1"), 'table_name');
+
+    expect($tables)->not->toBe([])
+        ->and(array_values(array_diff($tables, $held)))->toBe([]);
+})->group('email-case')->skip(fn (): bool => DB::getDriverName() !== 'pgsql', 'The constraints are read from the PostgreSQL catalog.');

@@ -13,9 +13,13 @@ use Illuminate\Support\Str;
  * engine. PostgreSQL and SQLite compare text by case; MySQL's default collation
  * does not.
  *
- * Known limit: only an Eloquent write passes through here. A query builder
- * update or a DB::table() write stores what it is given; a check constraint on
- * the column is the upgrade.
+ * Only an Eloquent write passes through here. On PostgreSQL and MySQL a check
+ * constraint, <table>_email_lowercase, refuses a capital from a query builder
+ * update or a DB::table() write.
+ *
+ * Known limit: SQLite has no such constraint, because it cannot add one to an
+ * existing table, and stores what a raw write gives it. Creating the table
+ * there with raw SQL that includes the check is the upgrade.
  *
  * @phpstan-require-extends Model
  */

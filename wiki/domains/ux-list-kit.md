@@ -82,9 +82,9 @@ term. No index ships. The code comment on
 `applyTerm()` names the ceiling: Postgres scans the table, and a GIN expression
 index over the same `to_tsvector` expression is the upgrade when a table grows.
 `tests/Unit/Support/ResourceQueryTest.php` holds the cases. Its invitation rows
-are written with `DB::table()`, past the model, because the model would
-lower-case the address and the search has to fold capitals a row already
-holds.
+go through the factory with a lower-case address, because the table refuses a
+capital in `email`. The capital the search has to fold is in the `role`
+column, where each row holds `Member`.
 
 ## Columns
 

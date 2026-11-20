@@ -204,6 +204,12 @@
       "name": "ValidEmail accepts an apostrophe and a punycode top-level domain, and the profile form holds a changed address to the same rule as sign-up",
       "status": "passing",
       "command": "vendor/bin/pest tests/Unit/Rules/ValidEmailTest.php tests/Feature/Controllers/UserProfileControllerTest.php --compact --fail-on-skipped"
+    },
+    {
+      "id": 34,
+      "name": "A check constraint refuses an ASCII capital in every email column on PostgreSQL",
+      "status": "failing",
+      "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php tests/Unit/Support/ResourceQueryTest.php --compact --fail-on-skipped"
     }
   ]
 }

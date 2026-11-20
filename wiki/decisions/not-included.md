@@ -12,6 +12,7 @@ code_refs:
     - config/database.php
     - tests/Unit/Conventions/SchemaConventionTest.php
     - app/Concerns/LowercasesEmail.php
+    - database/migrations/0001_01_01_000000_create_users_table.php
 updated: 2026-11-20
 ---
 
@@ -170,10 +171,10 @@ Nothing here runs MariaDB, so its pin is untested.
 
 No check constraint on a value set. A status is a string column with an enum
 cast, since a new value would otherwise need a constraint migration on every
-engine. A check constraint is allowed for a rule that can never change, and the
-kit's schema has none today. PostgreSQL and MySQL accepted one added with
-`alter table` and refused a bad row. SQLite refused the statement, so SQLite
-goes without.
+engine. A check constraint is allowed for a rule that can never change. The
+kit's schema has one such rule, on `email`, described below. PostgreSQL and
+MySQL accepted a constraint added with `alter table` and refused a bad row.
+SQLite refused the statement, so SQLite goes without.
 
 No partial unique index that frees a soft-deleted value. A deleted
 organization keeps its slug, so a unique index on a soft-deleting table stays
@@ -195,12 +196,23 @@ functional unique index on `lower(email)` stops two rows that differ by case,
 but the stored value stays mixed, so every lookup must wrap the column in
 `lower()` and one that forgets finds nothing. A collation change is a
 different statement on each engine, and SQLite's `NOCASE` folds ASCII letters
-only. A check constraint, `email = lower(email)`, would hold the rule in the
-database and is the upgrade. It is absent for now because rows written before
-the rule would fail it. `select count(*) from users where email <> lower(email)`
-counts them, and on PostgreSQL and SQLite such a row stops matching a sign-in
-until it is lower-cased. A query builder write also goes past the trait, and
-only the constraint would catch that.
+only.
+
+A query builder write goes past the trait, so a check constraint named
+`<table>_email_lowercase` backs it on PostgreSQL and MySQL. The migration that
+creates the table adds it, and
+`database/migrations/0001_01_01_000000_create_users_table.php` is the pattern.
+The constraint refuses an ASCII capital. It is not `email = lower(email)`,
+because MySQL's default collation makes that comparison true for every value.
+MySQL gets `not regexp_like(email, '[A-Z]', 'c')` and PostgreSQL gets
+`email !~ '[A-Z]'`. SQLite cannot add a constraint to an existing table and
+has none. `tests/Unit/Conventions/SchemaConventionTest.php` writes a capital
+past the model to each table on PostgreSQL, and fails for a table that has the
+column and no constraint. No standing test proves that MySQL refuses a
+capital. A database migrated before the constraint existed has none until it
+is rebuilt. `select count(*) from users where email <> lower(email)` counts
+the rows there that still hold a capital, and on PostgreSQL and SQLite such a
+row stops matching a sign-in until it is lower-cased.
 
 ## Drafted, not shipped
 

@@ -9,8 +9,9 @@ paths:
 These rules bind new and changed tables.
 `tests/Unit/Conventions/SchemaConventionTest.php` holds the two index rules,
 the UTC pin, the ban on a time zone column type, the ban on a unique rule
-that skips soft-deleted rows and the `LowercasesEmail` rule. No test covers
-the rest, so a table being there is not a reason to copy it.
+that skips soft-deleted rows, the `LowercasesEmail` rule and the check
+constraint on `email`. No test covers the rest, so a table being there is not
+a reason to copy it.
 
 ## The design is agreed as text before a migration exists
 
@@ -85,7 +86,8 @@ rule that can never change, such as an amount that is not negative, may be a
 check constraint. `Blueprint` has no method for one: run `alter table ... add
 constraint ... check (...)` through `DB::statement` behind a driver check for
 PostgreSQL and MySQL. SQLite cannot add one to an existing table and goes
-without. Validation still states the rule, because a database error is not a
+without. `database/migrations/0001_01_01_000000_create_users_table.php` is the
+pattern. Validation still states the rule, because a database error is not a
 message for a person.
 
 ## A soft-deleted row keeps its unique value
@@ -117,8 +119,25 @@ plain one. `tests/Unit/Conventions/SchemaConventionTest.php` fails for a model
 that leaves `LowercasesEmail` out.
 
 The trait covers an Eloquent write only. A query builder update or a
-`DB::table()` write stores what it is given, so lower-case the value before
-either. The side that compares an address is in `.ai/rules/app.md`.
+`DB::table()` write goes past it, so lower-case the value before either. The
+side that compares an address is in `.ai/rules/app.md`.
+
+A check constraint named `<table>_email_lowercase` backs the trait on
+PostgreSQL and MySQL. It refuses a value that holds an ASCII capital, so a
+write that goes past the model fails there. SQLite cannot add a constraint to
+an existing table and has none. PostgreSQL states the rule as
+`email !~ '[A-Z]'`. MySQL needs `not regexp_like(email, '[A-Z]', 'c')`:
+without the `'c'` flag the default collation matches a lower-case letter too,
+and `email = lower(email)` is true for every value there. Only ASCII is
+covered: `É@example.com` passes the constraint, and the forms refuse a
+non-ASCII address through `app/Rules/ValidEmail.php`.
+
+A new table with an `email` column gets the same constraint in its create
+migration. `database/migrations/0001_01_01_000000_create_users_table.php` is
+the pattern, and `tests/Unit/Conventions/SchemaConventionTest.php` fails on
+PostgreSQL for a table that has the column and no such constraint. Nothing in
+the gate proves that MySQL refuses a capital: `bin/check-migrations` proves
+only that the statement runs there.
 
 The column stays a `string`: no `citext`, no index on `lower(email)` and no
 collation change, because each of those ties the rule to one engine.
@@ -126,8 +145,8 @@ collation change, because each of those ties the rule to one engine.
 Rows written before this rule are not converted. On PostgreSQL and SQLite a
 row that still holds a capital stops matching a sign-in until it is
 lower-cased. `select count(*) from users where email <> lower(email)` counts
-them. No check constraint holds the rule yet, because those rows would fail
-it.
+them. The check constraint is created with the table, so a database migrated
+before it existed has none until it is rebuilt.
 
 ## Every migration runs on PostgreSQL, SQLite and MySQL
 

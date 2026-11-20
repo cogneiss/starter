@@ -85,5 +85,8 @@ organization that issued it ([[operations/ops-api-tokens]]).
 write. They are the models whose table has an `email` column, and
 `tests/Unit/Conventions/SchemaConventionTest.php` fails for a model that has
 the column and leaves the trait out. A query builder update or a `DB::table()`
-write goes past the trait and stores what it is given. Why the rule sits in
-the model and not in the database is in [[decisions/not-included]].
+write goes past the trait. On PostgreSQL and MySQL the table's
+`<table>_email_lowercase` check constraint refuses a capital from such a write,
+and the same test proves that on PostgreSQL. SQLite has no such constraint and
+stores what it is given. Why the model lower-cases the address and the
+database only refuses a capital is in [[decisions/not-included]].

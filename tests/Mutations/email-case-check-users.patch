@@ -1,0 +1,10 @@
+--- a/database/migrations/0001_01_01_000000_create_users_table.php
++++ b/database/migrations/0001_01_01_000000_create_users_table.php
+@@ -20,7 +20,6 @@
+          */
+         $emailChecks = match (DB::connection()->getDriverName()) {
+             'pgsql' => [
+-                "alter table users add constraint users_email_lowercase check (email !~ '[A-Z]')",
+                 "alter table password_reset_tokens add constraint password_reset_tokens_email_lowercase check (email !~ '[A-Z]')",
+             ],
+             'mysql' => [

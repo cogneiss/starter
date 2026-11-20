@@ -114,8 +114,9 @@ it('orders through a relation without multiplying rows', function (): void {
 
 /**
  * The invitation emails a term finds in one organization, in address order.
- * The model stores an address in lower case, so each one is written past it:
- * the search must fold capitals a row already holds.
+ * The table refuses a capital in an address, so every address here is lower
+ * case. The capital a row already holds, which the search must fold, is the
+ * role `Member`.
  *
  * @param  list<string>  $emails
  * @return list<string>
@@ -123,8 +124,7 @@ it('orders through a relation without multiplying rows', function (): void {
 function searchInvitations(Organization $organization, array $emails, string $term): array
 {
     foreach ($emails as $email) {
-        $invitation = OrganizationInvitation::factory()->create(['organization_id' => $organization->id]);
-        DB::table('organization_invitations')->where('id', $invitation->id)->update(['email' => $email]);
+        OrganizationInvitation::factory()->create(['organization_id' => $organization->id, 'email' => $email, 'role' => 'Member']);
     }
 
     $resource = new OrganizationInvitationResource;
@@ -147,23 +147,24 @@ it('orders by a plain column', function (): void {
 it('matches the start of every word of the term, in any column order', function (string $term, array $expected): void {
     $organization = Organization::factory()->create();
 
-    $emails = ['user@gmail.com', 'anne-smith@example.org', 'John@acme.test', 'José.Núñez@example.org', 'Müller@corp.test'];
+    $emails = ['user@gmail.com', 'anne-smith@example.org', 'john@acme.test', 'josé.núñez@example.org', 'müller@corp.test'];
 
     expect(searchInvitations($organization, $emails, $term))->toBe($expected);
 })->with([
     'a part of an email address' => ['gmail', ['user@gmail.com']],
     'a part of a hyphenated value' => ['smith', ['anne-smith@example.org']],
-    'a word prefix' => ['joh', ['John@acme.test']],
+    'a word prefix' => ['joh', ['john@acme.test']],
     'a mid-word substring is not a match' => ['ohn', []],
-    'an accented name' => ['josé', ['José.Núñez@example.org']],
-    'an accented name in capitals' => ['JOSÉ', ['José.Núñez@example.org']],
-    'a later accented word' => ['núñ', ['José.Núñez@example.org']],
-    'a umlaut' => ['Müller', ['Müller@corp.test']],
+    'an accented name' => ['josé', ['josé.núñez@example.org']],
+    'an accented name in capitals' => ['JOSÉ', ['josé.núñez@example.org']],
+    'a later accented word' => ['núñ', ['josé.núñez@example.org']],
+    'a umlaut' => ['Müller', ['müller@corp.test']],
     'every word must match' => ['anne smith', ['anne-smith@example.org']],
     'words that never meet match nothing' => ['anne gmail', []],
-    'words in any order' => ['acme john', ['John@acme.test']],
-    'tsquery operators are only separators' => ['john:*|(', ['John@acme.test']],
+    'words in any order' => ['acme john', ['john@acme.test']],
+    'tsquery operators are only separators' => ['john:*|(', ['john@acme.test']],
     'quotes and statements are only text' => ["'; drop table x; --", []],
+    'a capital a row already holds' => ['member', ['anne-smith@example.org', 'john@acme.test', 'josé.núñez@example.org', 'müller@corp.test', 'user@gmail.com']],
 ])->skip(fn (): bool => DB::getDriverName() !== 'pgsql', 'Full-text search is Postgres only.');
 
 it('matches a term with no letters or digits as literal text on every engine', function (): void {

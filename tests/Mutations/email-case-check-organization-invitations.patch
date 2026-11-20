@@ -1,0 +1,10 @@
+--- a/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
++++ b/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
+@@ -33,7 +33,6 @@
+          */
+         $emailChecks = match (DB::connection()->getDriverName()) {
+             'pgsql' => [
+-                "alter table organization_invitations add constraint organization_invitations_email_lowercase check (email !~ '[A-Z]')",
+             ],
+             'mysql' => [
+                 "alter table organization_invitations add constraint organization_invitations_email_lowercase check (not regexp_like(email, '[A-Z]', 'c'))",

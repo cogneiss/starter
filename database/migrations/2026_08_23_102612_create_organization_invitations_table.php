@@ -27,6 +27,20 @@ return new class extends Migration
             default => throw new RuntimeException('No pending-invitation unique index is written for this database driver.'),
         };
 
+        /**
+         * The same check as on users.email. SQLite goes without. An engine
+         * with no form written has already stopped at the match above.
+         */
+        $emailChecks = match (DB::connection()->getDriverName()) {
+            'pgsql' => [
+                "alter table organization_invitations add constraint organization_invitations_email_lowercase check (email !~ '[A-Z]')",
+            ],
+            'mysql' => [
+                "alter table organization_invitations add constraint organization_invitations_email_lowercase check (not regexp_like(email, '[A-Z]', 'c'))",
+            ],
+            'sqlite' => [],
+        };
+
         Schema::create('organization_invitations', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
@@ -40,6 +54,10 @@ return new class extends Migration
         });
 
         DB::statement($pendingUnique);
+
+        foreach ($emailChecks as $emailCheck) {
+            DB::statement($emailCheck);
+        }
     }
 
     public function down(): void

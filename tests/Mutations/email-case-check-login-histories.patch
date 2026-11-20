@@ -1,0 +1,10 @@
+--- a/database/migrations/2026_08_23_110938_create_login_histories_table.php
++++ b/database/migrations/2026_08_23_110938_create_login_histories_table.php
+@@ -17,7 +17,6 @@
+          */
+         $emailChecks = match (DB::connection()->getDriverName()) {
+             'pgsql' => [
+-                "alter table login_histories add constraint login_histories_email_lowercase check (email !~ '[A-Z]')",
+             ],
+             'mysql' => [
+                 "alter table login_histories add constraint login_histories_email_lowercase check (not regexp_like(email, '[A-Z]', 'c'))",

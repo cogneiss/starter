@@ -1,12 +1,10 @@
-diff --git a/database/migrations/2026_08_23_102612_create_organization_invitations_table.php b/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
-index 67f950f..78ec99e 100644
 --- a/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
 +++ b/database/migrations/2026_08_23_102612_create_organization_invitations_table.php
-@@ -39,7 +39,6 @@ public function up(): void
+@@ -53,7 +53,6 @@
              $table->timestamps();
          });
- 
+
 -        DB::statement($pendingUnique);
-     }
- 
-     public function down(): void
+
+         foreach ($emailChecks as $emailCheck) {
+             DB::statement($emailCheck);
