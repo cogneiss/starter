@@ -16,7 +16,7 @@
     {
       "id": 2,
       "name": "wiki seeded and linted",
-      "status": "passing",
+      "status": "failing",
       "command": "composer test:wiki"
     },
     {
@@ -118,7 +118,7 @@
     {
       "id": 19,
       "name": "hook, CI and switch-on steps are documented",
-      "status": "passing",
+      "status": "failing",
       "command": "php artisan wiki:lint && rg -q 'Switching CI on' wiki/decisions/ci-quality.md"
     },
     {
@@ -196,7 +196,7 @@
     {
       "id": 32,
       "name": "ValidEmail matches the whole value and fails a non-string, the egress host is compared without case, and the sign-in forms accept an address typed with capitals",
-      "status": "failing",
+      "status": "passing",
       "command": "vendor/bin/pest tests/Unit/Rules/ValidEmailTest.php tests/Feature/Ai/EgressTest.php tests/Feature/Controllers/UserMagicLinkControllerTest.php tests/Feature/Controllers/SessionControllerTest.php tests/Feature/Controllers/UserControllerTest.php --compact --fail-on-skipped"
     }
   ]
