@@ -65,9 +65,10 @@ An email address as the target gets a second check: its host must be on the
 list, and the address must belong to a member of the organization the agent
 is acting for. `AiEgress` lower-cases the address before that lookup, because
 a stored address is lower case ([[domains/models]]), so `Ada@allowed.test`
-matches the member saved as `ada@allowed.test`. The host is compared as
-written: `allowed.test` on the list does not admit `Allowed.Test`.
-`tests/Feature/Ai/EgressTest.php` holds the cases for the address.
+matches the member saved as `ada@allowed.test`. A host name has no case, so
+`AiEgress` lower-cases the target's host and every entry on the list before it
+compares them: `allowed.test` on the list admits `Allowed.Test`.
+`tests/Feature/Ai/EgressTest.php` holds the cases for the address and the host.
 
 ## The refusals
 

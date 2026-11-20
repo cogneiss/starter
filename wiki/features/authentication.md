@@ -10,6 +10,7 @@ code_refs:
     - app/Http/Controllers/UserTwoFactorAuthenticationController.php
     - app/Http/Controllers/SocialAuthController.php
     - app/Http/Controllers/UserEmailVerificationController.php
+    - app/Http/Controllers/UserPasswordController.php
     - app/Providers/FortifyServiceProvider.php
     - config/fortify.php
     - app/Actions/CreateSessionFromMagicLink.php
@@ -124,7 +125,10 @@ Each of these is a thin controller over an action in `app/Actions`.
   in the cache under `magic-link:<token>` with the user id, for
   `auth.magic_link.expire` minutes, and notifies the user. Tokens live in the
   cache, so production needs a shared, persistent `CACHE_STORE`.
-  `CreateUserMagicLinkRequest` validates the email with `ValidEmail`. In
+  `CreateUserMagicLinkRequest` checks `required`, `string`, `max:255` and
+  `email`. Like the password login it does not use `ValidEmail`, which accepts
+  lower case only: the form looks an address up and stores nothing, so an
+  address typed with capitals is accepted and the action lower-cases it. In
   `routes/web.php` both the request and the link itself are `throttle:6,1`, and
   the request also carries `friction`.
 - **Verification email.** `UserEmailVerificationNotificationController` redirects

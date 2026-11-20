@@ -223,8 +223,10 @@ it('refuses registration with an address in mixed case', function (): void {
             'password_confirmation' => 'password',
         ]);
 
+    // `ValidEmail` refuses a capital too, so the message is what shows that
+    // the `lowercase` rule is the one answering.
     $response->assertRedirectToRoute('register')
-        ->assertSessionHasErrors('email');
+        ->assertSessionHasErrors(['email' => __('validation.lowercase', ['attribute' => 'email'])]);
 
     expect(User::query()->count())->toBe(0);
 })->group('email-case');

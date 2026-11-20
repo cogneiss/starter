@@ -153,8 +153,9 @@ draft-with-AI button renders ([[domains/ai-agents-and-tools]]).
 
 Every write goes through a form request in `app/Http/Requests`, named after the
 action it validates (`CreateUserRequest`, `UpdateOrganizationRequest`, and so on).
-Email fields use `app/Rules/ValidEmail.php` rather than each request inventing its
-own rule.
+Registration (`CreateUserRequest`) checks the email field with
+`app/Rules/ValidEmail.php`. The rule matches the whole value against a
+lower-case pattern and fails a value that is not a string.
 
 The account and sign-in requests are explained where they are used:
 `CreateUserEmailResetNotificationRequest`, `CreateUserMagicLinkRequest`,
@@ -163,9 +164,8 @@ The account and sign-in requests are explained where they are used:
 `UpdateUserRequest`, `UpdateUserPasswordRequest`, `DeleteUserRequest`,
 `DeleteBrowserSessionRequest`, `UpdateUserLocaleRequest` and
 `UpdateUserNotificationPreferenceRequest` in [[features/account-settings]].
-The `ValidEmail` rule is not universal: `CreateUserEmailResetNotificationRequest`
-and `UpdateUserRequest` use the plain `email` rule, while
-`CreateUserMagicLinkRequest` uses `ValidEmail`.
+The `ValidEmail` rule is not universal: `CreateUserEmailResetNotificationRequest`,
+`CreateUserMagicLinkRequest` and `UpdateUserRequest` use the plain `email` rule.
 
 Authorization does not live here; it lives in the policies
 ([[architecture/two-gate-authorization]]).

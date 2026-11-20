@@ -103,9 +103,9 @@ Each write is an action in `app/Actions`, called by the controller above it.
   seven days out and mails the plain token. Only the hash is kept.
 - `ResendOrganizationInvitation` rotates the token, pushes expiry seven days
   out and mails again, so the old link stops working. It refuses an accepted
-  invitation. In the code read for this page its only caller is
-  `CreateOrganizationInvitation`; whether a resend route exists is not
-  documented here.
+  invitation. Its only caller under `app/` and `routes/` is
+  `app/Actions/CreateOrganizationInvitation.php`, so no route resends an
+  invitation on its own.
 - `app/Actions/RevokeOrganizationInvitation.php` deletes the invitation row.
 - `app/Actions/UpdateOrganizationMembershipRole.php` looks the role up by name
   inside the membership's organization, and fails with a validation error on

@@ -116,4 +116,21 @@ it('fails with invalid email', function (string $email): void {
     'user@localdomain',
     'user@sub.-domain.com',
     '𝓊𝓃𝒾𝒸ℴ𝒹ℯ@𝒹ℴ𝓂𝒶𝒾𝓃.𝒸ℴ𝓂',
+
+    // A valid address with something before or after it
+    'Ada@example.com',
+    'not valid user@example.com',
+    'user@example.com<script>',
+    'user@example.com.',
+    "user@example.com\n",
 ]);
+
+it('fails a value that is not a string', function (): void {
+    $failed = false;
+
+    (new ValidEmail)->validate('email', ['user@example.com'], function () use (&$failed): void {
+        $failed = true;
+    });
+
+    expect($failed)->toBeTrue();
+});

@@ -95,7 +95,7 @@ function modelCanStart(string $skill): bool
 }
 
 it('lets the model start every workflow skill the guidelines route to', function (): void {
-    $blocked = collect(['contract', 'deepen', 'outcome', 'triage-errors'])
+    $blocked = collect(['contract', 'database-design', 'deepen', 'outcome', 'triage-errors'])
         ->reject(fn (string $name): bool => modelCanStart((string) file_get_contents(base_path(".ai/skills/{$name}/SKILL.md"))))
         ->values()
         ->all();

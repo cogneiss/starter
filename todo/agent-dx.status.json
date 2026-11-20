@@ -192,6 +192,12 @@
       "name": "An email address is stored in lower case and lower-cased before every lookup that compares it",
       "status": "passing",
       "command": "vendor/bin/pest --group=email-case --compact --fail-on-skipped --fail-on-empty-test-suite"
+    },
+    {
+      "id": 32,
+      "name": "ValidEmail matches the whole value and fails a non-string, the egress host is compared without case, and the sign-in forms accept an address typed with capitals",
+      "status": "failing",
+      "command": "vendor/bin/pest tests/Unit/Rules/ValidEmailTest.php tests/Feature/Ai/EgressTest.php tests/Feature/Controllers/UserMagicLinkControllerTest.php tests/Feature/Controllers/SessionControllerTest.php tests/Feature/Controllers/UserControllerTest.php --compact --fail-on-skipped"
     }
   ]
 }

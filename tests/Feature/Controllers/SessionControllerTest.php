@@ -165,6 +165,31 @@ it('throttles login attempts after too many failures', function (): void {
     expect($errors->get('email')[0])->toContain('Too many login attempts');
 });
 
+it('counts an address typed in another case against the same login limit', function (): void {
+    User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+
+    for ($i = 0; $i < 5; $i++) {
+        $this->fromRoute('login')
+            ->post(route('login.store'), [
+                'email' => 'test@example.com',
+                'password' => 'wrong-password',
+            ]);
+    }
+
+    $response = $this->fromRoute('login')
+        ->post(route('login.store'), [
+            'email' => 'Test@Example.com',
+            'password' => 'wrong-password',
+        ]);
+
+    $response->assertSessionHasErrors('email');
+
+    expect(session('errors')->get('email')[0])->toContain('Too many login attempts');
+});
+
 it('clears rate limit after successful login', function (): void {
     $user = User::factory()->withoutTwoFactor()->create([
         'email' => 'test@example.com',

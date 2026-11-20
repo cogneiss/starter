@@ -22,9 +22,9 @@ final class AiEgress
 {
     public static function assertAllowed(string $target): void
     {
-        $host = self::host($target);
+        $host = mb_strtolower(self::host($target));
 
-        if (! in_array($host, self::allowlist(), true)) {
+        if (! in_array($host, array_map(mb_strtolower(...), self::allowlist()), true)) {
             throw BlockedEgressException::host($target, $host);
         }
 

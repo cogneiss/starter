@@ -31,6 +31,27 @@ it('permits a URL whose host is on the allowlist', function (): void {
     expect(true)->toBeTrue();
 });
 
+it('compares a host without regard to case', function (string $allowed, string $target): void {
+    config()->set('ai.guardrails.egress', [$allowed]);
+
+    expect(fn () => AiEgress::assertAllowed($target))->not->toThrow(BlockedEgressException::class);
+})->with([
+    'capitals in the target' => ['hooks.example.test', 'https://HOOKS.Example.test/notify'],
+    'capitals in the allowlist' => ['Hooks.Example.Test', 'https://hooks.example.test/notify'],
+]);
+
+it('allows a member whose address has capitals in the host', function (): void {
+    $organization = Organization::factory()->create();
+    User::factory()->forOrganization($organization)->create(['email' => 'ada@allowed.test']);
+
+    config()->set('ai.guardrails.egress', ['allowed.test']);
+
+    expect(fn () => resolve(OrganizationContext::class)->runAs(
+        $organization,
+        fn () => AiEgress::assertAllowed('ada@Allowed.TEST'),
+    ))->not->toThrow(BlockedEgressException::class);
+});
+
 it('refuses a recipient who is not a member of the organization', function (): void {
     $membership = OrganizationMembership::factory()->create();
     $outsider = User::factory()->create(['email' => 'outsider@allowed.test']);
