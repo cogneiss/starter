@@ -202,7 +202,7 @@
     {
       "id": 33,
       "name": "ValidEmail accepts an apostrophe and a punycode top-level domain, and the profile form holds a changed address to the same rule as sign-up",
-      "status": "failing",
+      "status": "passing",
       "command": "vendor/bin/pest tests/Unit/Rules/ValidEmailTest.php tests/Feature/Controllers/UserProfileControllerTest.php --compact --fail-on-skipped"
     }
   ]
