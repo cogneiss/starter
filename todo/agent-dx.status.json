@@ -208,7 +208,7 @@
     {
       "id": 34,
       "name": "A check constraint refuses an ASCII capital in every email column on PostgreSQL",
-      "status": "failing",
+      "status": "passing",
       "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php tests/Unit/Support/ResourceQueryTest.php --compact --fail-on-skipped"
     }
   ]
