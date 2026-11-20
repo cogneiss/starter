@@ -8,7 +8,8 @@ code_refs:
     - tests/Feature/Docs/CommandsAreDocumentedTest.php
     - bin/bundle-budget
     - bin/check-migrations
-updated: 2026-11-20
+    - phpunit.xml
+updated: 2026-11-21
 ---
 
 # Commands
@@ -50,6 +51,11 @@ blocking versus reporting ([[architecture/fast-blocking-gates]]).
 The default connection is Postgres, because pgvector is where retrieval lives
 ([[domains/ai-retrieval]]). `test:sqlite` runs the other direction to prove the
 kit still boots and passes without it — everything except vector search does.
+The script passes `--exclude-group` three times, for `pgvector`, `screenshots`
+and `Evals`. A flag on the command line replaces the exclude list in
+`phpunit.xml`, so with `pgvector` alone the run also picked up the screenshot
+tests, which rewrite the README images in `docs/images`. A comma-separated list
+in one flag excludes nothing.
 
 `test:evals` is the only command here that spends money and the only one allowed
 out to a provider. It is excluded from `composer test`, skips itself with no key

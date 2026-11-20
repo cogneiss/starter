@@ -485,7 +485,9 @@ keeps working:
 composer test:sqlite
 ```
 
-That runs the whole suite on SQLite in memory with `--exclude-group=pgvector`.
+That runs the suite on SQLite in memory without the `pgvector` group, and
+without the `screenshots` and `Evals` groups that `phpunit.xml` leaves out of
+every run.
 It is also the check that catches the disagreements between the two engines —
 UUID primary keys, JSON columns, `ORDER BY` without a tiebreaker, case-sensitive
 `LIKE` — which is why it is scheduled rather than blocking.

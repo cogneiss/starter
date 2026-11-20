@@ -17,7 +17,7 @@ code_refs:
     - database/migrations/2026_08_25_090000_create_ai_documents_table.php
     - app/Support/Health/HealthReport.php
     - .work/reports/Laravel Inertia starter rebuild 2026.md
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Hosting

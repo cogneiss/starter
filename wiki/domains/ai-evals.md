@@ -11,7 +11,7 @@ code_refs:
     - tests/Evals/DashboardBriefingEvalTest.php
     - .github/workflows/evals.yml
     - composer.json
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # AI evals
@@ -46,6 +46,8 @@ fake gateway can tell you.
 skips every eval, and the bootstrap scrub above keeps the keys away, so
 `pest` on its own never spends anything. With the flag the scrub is skipped:
 the eval suite is the one place a key is meant to arrive.
+`composer test:sqlite` leaves the `Evals` group out by name in `composer.json`,
+for the reason in [[operations/commands]].
 
 Each eval prompts the real agent class, built for a factory organization and
 owner inside `OrganizationContext::runAs()`, so it grades the instructions,
