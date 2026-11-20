@@ -6,7 +6,7 @@ code_refs:
     - SETUP.md
     - .env.example
     - app/Console/Commands/DoctorCommand.php
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Setting up a clone
@@ -60,7 +60,8 @@ php artisan ai:install
 creates the `vector` extension in the current database, which is what retrieval
 stores embeddings in ([[domains/ai-retrieval]]). It is a no-op on any connection
 that is not Postgres, so running it on the commented-out SQLite setup is safe and
-pointless. Skipping it costs you vector search and nothing else.
+pointless. Skipping it costs you vector search and nothing else, and the nightly
+`composer test:sqlite` run checks that ([[operations/commands]]).
 
 AI provider keys are optional in the same way social keys are: with all three
 blank the app boots, every page renders and the full suite passes, because no
