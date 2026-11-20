@@ -91,7 +91,7 @@
         {
             "id": 14,
             "name": "sqlite run leaves the screenshots and Evals groups out",
-            "status": "failing",
+            "status": "passing",
             "command": "out=$(composer test:sqlite -- --list-tests 2>/dev/null); printf '%s' \"$out\" | rg -aq ArchTest && ! printf '%s' \"$out\" | rg -aq 'ReadmeScreenshotsTest|Tests.Evals.'",
             "note": "A command-line `--exclude-group` replaces the exclude list in phpunit.xml, so the script names every excluded group itself. Without them the run rewrites docs/images and leaves the tree unclean."
         }
