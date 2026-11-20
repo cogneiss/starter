@@ -87,6 +87,13 @@
             "status": "passing",
             "command": "composer test:lint && composer test:type-coverage && composer test:types && composer test:unit",
             "note": "This is `composer test` expanded. The last step is spelled out because a local run needs Herd's `herd coverage` wrapper to load a coverage driver; CI installs pcov and runs `composer test` as-is."
+        },
+        {
+            "id": 14,
+            "name": "sqlite run leaves the screenshots and Evals groups out",
+            "status": "failing",
+            "command": "out=$(composer test:sqlite -- --list-tests 2>/dev/null); printf '%s' \"$out\" | rg -aq ArchTest && ! printf '%s' \"$out\" | rg -aq 'ReadmeScreenshotsTest|Tests.Evals.'",
+            "note": "A command-line `--exclude-group` replaces the exclude list in phpunit.xml, so the script names every excluded group itself. Without them the run rewrites docs/images and leaves the tree unclean."
         }
     ],
     "release": {
