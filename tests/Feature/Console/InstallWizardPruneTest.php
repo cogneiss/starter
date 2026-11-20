@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Process;
 
 /**
  * The prune is only real if what is left still starts. A copy of this checkout
- * is pruned in a real process, then asked to boot and list its routes.
+ * is pruned in a real process, then asked to boot and list its routes. The
+ * mutation patches it keeps must still apply, because the pruned project
+ * inherits `MutationPatchesApplyTest`.
  */
 it('prunes the AI layer and leaves an application that boots', function (): void {
     Process::preventStrayProcesses(false);
@@ -29,6 +31,12 @@ it('prunes the AI layer and leaves an application that boots', function (): void
         }
 
         expect(File::get($copy.'/.env.example'))->toContain('ORGANIZATIONS_RESOLVER=single')->not->toContain('OPENAI_API_KEY');
+
+        foreach (File::glob($copy.'/tests/Mutations/*.patch') as $patch) {
+            $check = Process::path($copy)->run(['git', 'apply', '--check', $patch]);
+
+            expect($check->successful())->toBeTrue(basename($patch).': '.$check->errorOutput());
+        }
 
         $routes = Process::path($copy)->timeout(600)->run([PHP_BINARY, 'artisan', 'route:list', '--json']);
 

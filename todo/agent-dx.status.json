@@ -210,6 +210,20 @@
       "name": "A check constraint refuses an ASCII capital in every email column on PostgreSQL",
       "status": "passing",
       "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php tests/Unit/Support/ResourceQueryTest.php --compact --fail-on-skipped"
+    },
+    {
+      "id": 35,
+      "name": "Every mutation patch applies to the current source, in the kit and in a copy pruned with --no-ai",
+      "status": "failing",
+      "command": "vendor/bin/pest tests/Unit/Conventions/MutationPatchesApplyTest.php tests/Feature/Console/InstallWizardPruneTest.php --compact --fail-on-skipped",
+      "note": "Shows that a patch applies, not that its test still goes red. bin/prove-control.sh decides that, one patch at a time."
+    },
+    {
+      "id": 36,
+      "name": "The stop hook runs Pest on its own database, testing_stop, and the Claude and Codex copies are the same file",
+      "status": "failing",
+      "command": "cmp -s .claude/hooks/verify-on-stop.sh .codex/hooks/verify-on-stop.sh && grep -q 'DB_DATABASE=\"$pest_db\" vendor/bin/pest' .claude/hooks/verify-on-stop.sh",
+      "note": "Checks the text of the hook. The run that showed it working beside a Pest run on `testing` was done by hand on 2026-11-21: hook exit 0, seven concurrent Pest runs green."
     }
   ]
 }

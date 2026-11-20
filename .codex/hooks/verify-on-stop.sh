@@ -19,8 +19,15 @@ log="$(mktemp)"
 trap 'rm -f "$log"' EXIT
 failed=""
 
+# Pest gets a database of its own, as bin/recheck-todo does. Pre-commit and
+# your own `pest` use `testing`, and two Pest runs on one database fail with
+# duplicate-table errors. `migrate` creates testing_stop when it is missing; if
+# it cannot, the run falls back to `testing`.
+pest_db=testing_stop
+DB_CONNECTION=pgsql DB_DATABASE="$pest_db" php artisan migrate --force >/dev/null 2>&1 || pest_db=testing
+
 XDEBUG_MODE=off vendor/bin/phpstan analyse --memory-limit=2G --no-progress --error-format=raw >"$log.phpstan" 2>&1 || failed="$failed phpstan"
-XDEBUG_MODE=off vendor/bin/pest --dirty --compact >"$log.pest" 2>&1 || failed="$failed pest"
+XDEBUG_MODE=off DB_DATABASE="$pest_db" vendor/bin/pest --dirty --compact >"$log.pest" 2>&1 || failed="$failed pest"
 node_modules/.bin/tsc --noEmit >"$log.tsc" 2>&1 || failed="$failed tsc"
 
 if [ -n "$failed" ]; then

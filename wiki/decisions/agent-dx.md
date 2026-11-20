@@ -8,7 +8,7 @@ code_refs:
     - bin/recheck-todo
     - bin/prove-todo-gate.sh
     - .ai/guidelines/general.blade.php
-updated: 2026-11-19
+updated: 2026-11-21
 ---
 
 # Decision log — agent developer experience
@@ -51,7 +51,8 @@ not an explanation.
   the background and commits what changed (all of them take about 30 minutes, so
   a push is scoped to its own files). Alternatives that lost: running the recheck inside the push (adds
   minutes to a 113s push), and running it against the shared `testing` database
-  (collides with pre-commit and the Stop hook; it uses `testing_recheck`).
+  (collides with pre-commit and your own `pest`; it uses `testing_recheck`, and
+  the Stop hook later got `testing_stop` for the same reason).
   A tree that differs from the stamp only in status files skips the push gate;
   see [[operations/contributing]].
 - **Pages are superseded, never deleted.** A wrong page becomes

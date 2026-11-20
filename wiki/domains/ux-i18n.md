@@ -13,7 +13,7 @@ code_refs:
     - tests/Feature/Middleware/SetLocaleTest.php
     - tests/Browser/I18nFallbackTest.php
     - tests/Mutations/phase14-locale-key.patch
-updated: 2026-11-18
+updated: 2026-11-21
 ---
 
 # Localization

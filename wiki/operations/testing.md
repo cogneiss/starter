@@ -9,9 +9,11 @@ code_refs:
     - tests/Browser/AccessibilityTest.php
     - tests/Feature/Console/MakeResourceEndToEndTest.php
     - tests/Feature/Console/InstallWizardPruneTest.php
+    - tests/Unit/Conventions/MutationPatchesApplyTest.php
+    - config/install.php
     - phpunit.xml
     - tests/bootstrap.php
-updated: 2026-11-18
+updated: 2026-11-21
 ---
 
 # Testing
@@ -51,6 +53,15 @@ control that matters — a policy check, an organization scope, a URL serializer
 locale key check — and `bin/prove-control.sh <patch> <filter>` applies it, runs
 that filter, and fails if the suite stays green. The patch is reverted either
 way, and the script refuses to run against a dirty tree.
+
+A patch written against an older version of its file stops applying, and then
+the proof cannot be run. `tests/Unit/Conventions/MutationPatchesApplyTest.php`
+runs `git apply --check` on every patch, so a patch that has drifted fails the
+suite. It shows that a patch applies, not that its test still goes red;
+`bin/prove-control.sh` decides that. `starter:install --no-ai` deletes the
+patches for the files it deletes (`config/install.php`), and
+`tests/Feature/Console/InstallWizardPruneTest.php` checks that the patches left
+in the pruned copy still apply.
 
 ## How tests run
 

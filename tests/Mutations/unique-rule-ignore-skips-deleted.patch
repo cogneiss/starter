@@ -1,8 +1,10 @@
+diff --git a/app/Http/Requests/UpdateUserRequest.php b/app/Http/Requests/UpdateUserRequest.php
+index 23dc5b6..fa46acb 100644
 --- a/app/Http/Requests/UpdateUserRequest.php
 +++ b/app/Http/Requests/UpdateUserRequest.php
-@@ -28,7 +28,7 @@
-                 'lowercase',
+@@ -34,7 +34,7 @@ final class UpdateUserRequest extends FormRequest
                  'email',
+                 Rule::when($this->input('email') !== $user->email, [new ValidEmail]),
                  'max:255',
 -                Rule::unique(User::class)->ignore($user->id),
 +                Rule::unique(User::class)->ignore($user->id)->withoutTrashed(),

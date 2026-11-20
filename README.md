@@ -47,7 +47,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Documentation That Fails The Build**: A linted [wiki](wiki/index.md) whose pages name the files they describe, twelve loadable skill packs, and one generated source for every agent guideline file — change a documented file without updating its page and CI goes red
 - **Organizations Built In**: Fail-closed tenant scoping, membership lifecycle, and role-based access control from the first commit, instead of a security migration later
 - **Two-Gate Authorization**: Every policy check pairs an ownership policy with a named permission, enforced by a test rather than by discipline
-- **Full Testing Suite**: 2077 tests with 100% code coverage using Pest
+- **Full Testing Suite**: More than 2,100 tests with 100% code coverage using Pest
 - **Quality Gates That Block**: Every pull request runs the tests, secret and dependency scanning, dead-code and unused-dependency detection, and axe-core over every page; the SQLite and mutation runs happen on a schedule
 
 This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
@@ -55,6 +55,8 @@ This isn't just another Laravel boilerplate—it's a statement that PHP applicat
 ## Getting Started
 
 > **Requires [PHP 8.5+](https://php.net/releases/), [bun](https://bun.sh), Postgres and a code coverage driver like [xdebug](https://xdebug.org/docs/install)**. On [Herd](https://herd.laravel.com), Xdebug ships but is not loaded; [SETUP.md](SETUP.md#first-time-on-a-new-machine) has the one `php.ini` line that loads it.
+
+The tests run on PostgreSQL. `bin/check-migrations` runs every migration up, down and up again on PostgreSQL, SQLite and MySQL, and skips MySQL when no server answers. `composer test:sqlite` reruns the tests on SQLite. Nothing runs the tests on MySQL.
 
 Create a project with the Laravel installer, or pick it as a community starter kit in Herd's new-site wizard:
 

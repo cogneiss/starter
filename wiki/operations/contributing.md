@@ -35,7 +35,7 @@ code_refs:
     - .ai/skills/triage-errors/SKILL.md
     - .claude/agents/auditor.md
     - tests/Feature/Docs/AgentKitIsSelfContainedTest.php
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Contributing
@@ -98,8 +98,8 @@ about 30 minutes). The log
 is `recheck-status.log` in the git directory.
 
 Many of those commands run Pest, and two Pest runs on one database fail with
-duplicate-table errors (the Claude Code stop hook and your own `pest` use
-`testing`). So the recheck runs Pest commands, and only those, with `DB_DATABASE=testing_recheck`, created from
+duplicate-table errors (pre-commit and your own `pest` use `testing`, and the
+Claude Code stop hook uses `testing_stop`). So the recheck runs Pest commands, and only those, with `DB_DATABASE=testing_recheck`, created from
 the `.env` credentials when it is missing, and skips itself if it can't. It also
 holds a lock in the git directory (one recheck at a time, a dead pid is
 reclaimed), starts only on a clean tree with no commit, rebase or merge in
@@ -168,7 +168,10 @@ already requires.
 - `.claude/hooks/verify-on-stop.sh` runs PHPStan, the tests touching
   uncommitted files and `tsc` before the agent may report done, and hands any
   failure back to it. It runs once per stop, so an error the agent cannot fix
-  does not loop.
+  does not loop. Its Pest run uses a database of its own, `testing_stop`, so it
+  can run while you or pre-commit run Pest on `testing`. `php artisan migrate`
+  creates that database when it is missing, and the hook falls back to `testing`
+  if it cannot.
 
 The same settings file enables the `php-lsp` and `typescript-lsp` plugins, so
 the agent gets go-to-definition, references and type errors from Intelephense

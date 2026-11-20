@@ -21,7 +21,7 @@ code_refs:
     - tests/Browser/DataTableTest.php
     - tests/Mutations/phase3-scope.patch
     - tests/Mutations/phase5-export-scope.patch
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # The server-driven list kit

@@ -53,9 +53,23 @@ it('offers a retry when the search fails rather than a blank list', function ():
         ->assertMissing('[data-test="palette-empty"]')
         ->assertNoJavaScriptErrors();
 
+    // The skeleton lasts for the debounce plus the request, about a quarter of
+    // a second. Looking for it after the click is a race a loaded machine
+    // loses, so an observer installed before the click records it instead.
+    $page->script(<<<'JS'
+        window.__skeletonSeen = false;
+
+        new MutationObserver(() => {
+            if (document.querySelector('[data-test="palette-skeleton"]') !== null) {
+                window.__skeletonSeen = true;
+            }
+        }).observe(document.body, { subtree: true, childList: true });
+    JS);
+
     // Retrying re-asks. The term is still too long, so the error comes back —
     // what matters is that the affordance is live and not decoration.
     $page->click('Try again')
-        ->assertPresent('[data-test="palette-skeleton"]')
         ->waitForText('Search is not answering right now.');
+
+    expect($page->script('window.__skeletonSeen'))->toBeTrue();
 });

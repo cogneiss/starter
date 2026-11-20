@@ -1,13 +1,13 @@
 diff --git a/app/Http/Controllers/Concerns/ListsResources.php b/app/Http/Controllers/Concerns/ListsResources.php
-index 01ca1ed..02f9da2 100644
+index 1e52719..2c79e1e 100644
 --- a/app/Http/Controllers/Concerns/ListsResources.php
 +++ b/app/Http/Controllers/Concerns/ListsResources.php
-@@ -32,7 +32,7 @@ protected function listResource(string $key, Request $request, Closure $row, ?Cl
+@@ -39,7 +39,7 @@ trait ListsResources
      {
-         $resource = resolve(ResourceRegistry::class)->get($key);
- 
+         $resource = $key instanceof ResourceContract ? $key : resolve(ResourceRegistry::class)->get($key);
+
 -        $query = $resource->scopedQuery();
 +        $query = $resource->model()::query()->withoutGlobalScopes(); // control disabled
- 
+
          $query->with(ResourceQuery::relationsIn($resource->searchable()));
- 
+

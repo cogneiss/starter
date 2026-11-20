@@ -16,8 +16,9 @@
 # - One run at a time: a lock directory in the git directory holds the pid, and a
 #   lock whose pid is dead is reclaimed.
 # - Pest commands (only those) use their own database, testing_recheck, never `testing`. Two Pest runs on
-#   one database fail with duplicate-table errors, and pre-commit, the Claude Stop
-#   hook and you all use `testing`. Parallel workers become testing_recheck_test_N.
+#   one database fail with duplicate-table errors, and pre-commit and you both use
+#   `testing` (the Claude Stop hook has testing_stop). Parallel workers become
+#   testing_recheck_test_N.
 # - It starts only on a clean tree with no commit, rebase, merge or cherry-pick
 #   in flight, and commits only if HEAD did not move, nothing outside the status
 #   files (and the generated wiki/_meta) changed, and the status files changed
