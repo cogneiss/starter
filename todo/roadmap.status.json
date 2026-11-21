@@ -1,0 +1,109 @@
+{
+    "plan": "Open items of the roadmap in the 2027 readiness report (Downloads: Laravel starter kit AI era readiness.md, section Roadmap)",
+    "created": "2026-11-21",
+    "follows": ["todo/agent-dx.status.json"],
+    "baseline": "Checked against the kit files at ebe084e on 2026-11-21. D1, D7 and D8 are built and tracked in todo/agent-dx.status.json; the four deferred-by-decision items stay off this file.",
+    "phases": [
+        {
+            "id": "D2",
+            "name": "SchemaConventionTest holds rules 1, 2, 5, 6 and 10 over a table classification map, and a fixture that breaks each rule turns it red",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Unit/Conventions/SchemaConventionTest.php --compact --no-coverage --fail-on-skipped && bin/prove-control.sh schema-table-without-primary-key SchemaConventionTest 'primary key' && bin/prove-control.sh schema-unclassified-table SchemaConventionTest 'classif' && bin/prove-control.sh schema-tenant-table-without-index SchemaConventionTest 'organization_id' && bin/prove-control.sh schema-tenant-unique-without-organization SchemaConventionTest 'unique' && bin/prove-control.sh schema-money-as-decimal SchemaConventionTest 'money' && bin/prove-control.sh schema-redundant-index SchemaConventionTest 'redundant'",
+            "note": "Open part of D2: the classification map, the allow-list and rules 1, 2, 5, 6 and 10 (the index rules 2 and 3 shipped in 7560e78). The report's Done when names only the tenant-index fixture; one fixture per rule is added so each rule is proven to bite. Rule 4 moves to D3 with the other source rules. Patch names are provisional until the contract freezes."
+        },
+        {
+            "id": "D3",
+            "name": "Migration-source rules 4, 11 and 13 trip an AST test, and the commit hooks refuse an edit to a migration already on main",
+            "status": "failing",
+            "command": "bin/prove-control.sh migration-foreign-key-without-on-delete SchemaConventionTest 'on delete' && bin/prove-control.sh migration-drop-without-marker SchemaConventionTest 'marker' && bin/prove-control.sh migration-without-down SchemaConventionTest 'down' && bin/prove-control.sh migration-raw-sql-without-driver-check SchemaConventionTest 'driver' && vendor/bin/pest tests/Feature/Docs/MergedMigrationHookTest.php --compact --no-coverage",
+            "note": "Derived: the report's hook clause (a staged M of 0001_01_01_000000_create_users_table.php makes the hook exit non-zero) is decided by MergedMigrationHookTest, which stages that edit in a scratch clone and runs the hook. The escape for an owner-approved in-place edit is an owner decision."
+        },
+        {
+            "id": "D4",
+            "name": "A staged migration or snapshot runs SchemaConventionTest in pre-commit, and the Claude and Codex hooks ask before a migration write, a destructive migrate command and a commit that stages a snapshot",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Feature/Docs/DatabaseHookTest.php --compact --no-coverage",
+            "note": "Derived: the report's behavioural clauses (visible in hook output, hook returns an ask in both agents) are decided by DatabaseHookTest, which feeds tool-call JSON to both guard-gates.sh copies and runs pre-commit's test selection on a staged migration. This item also closes the hook-ask part of D6."
+        },
+        {
+            "id": "D5",
+            "name": "database/snapshots holds one sorted text file per table, a stale snapshot fails with the regenerate command in the message, and pre-commit prints the staged snapshot diff",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Unit/Conventions/SchemaSnapshotTest.php --compact --no-coverage --fail-on-skipped && bin/prove-control.sh schema-snapshot-stale SchemaSnapshotTest 'schema:snapshot'",
+            "note": "The commit-output clause (pre-commit shows the snapshot diff) is asserted in DatabaseHookTest under D4."
+        },
+        {
+            "id": "D6",
+            "name": "Human design gate: CODEOWNERS entry, pull request design note, schema criteria in contract and deepen, and the four trigger prompts run per agent",
+            "status": "failing",
+            "command": "/usr/bin/grep -q '^/database/' .github/CODEOWNERS && /usr/bin/grep -qi 'schema' .github/pull_request_template.md && /usr/bin/grep -Eqi 'schema|migration' .ai/skills/contract/SKILL.md && /usr/bin/grep -Eqi 'schema|migration' .ai/skills/deepen/SKILL.md && php artisan agents:context --check && vendor/bin/pest --filter=NestedAgentContextTest --compact --no-coverage && [ -f todo/database-verification.md ]",
+            "note": "Open part of D6 only; the rule file, skill, SKILLS entry, AGENTS.md lines and index row shipped as agent-dx phase 26. Each file is checked on its own because the report's rg over two files passes on index.md alone. The hook ask is decided under D4. The prompt-run clause is manual; the file check is a placeholder until the owner names the agents, then it counts one result per prompt per agent."
+        },
+        {
+            "id": "1",
+            "name": "Content-level tamper guard: a commit that adds a PHPStan ignore, grows a baseline, adds a skip marker or lowers a composer.json threshold is refused without a trailer",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Feature/Docs/TamperGuardTest.php --compact --no-coverage",
+            "note": "TamperGuardTest feeds one fixture diff per rule to the check and asserts it exits non-zero, and that the trailer lets it through. The check reads the commit message, so it runs from commit-msg, not pre-commit (pre-commit cannot see the message)."
+        },
+        {
+            "id": "2",
+            "name": "Agent permission and sandbox baseline committed for Claude, Codex and OpenCode, with a convention test that the keys exist",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Feature/Docs/AgentPermissionBaselineTest.php --compact --no-coverage && /usr/bin/grep -q '^## Item 2' todo/roadmap-verification.md",
+            "note": "Derived: the report's behavioural clause (a Read of .env in a fresh Claude session is refused, .env.example succeeds) is manual; its result is written once to todo/roadmap-verification.md, the form todo/platform-ops-verification.md uses."
+        },
+        {
+            "id": "3",
+            "name": "Composer native cooldown set, and a convention test fails when any of the three release-age keys (composer.json, bunfig.toml, vet.json) is removed",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Feature/Docs/DependencyCooldownTest.php --compact --no-coverage && bin/prove-control.sh cooldown-composer DependencyCooldownTest 'composer' && bin/prove-control.sh cooldown-bun DependencyCooldownTest 'bun' && bin/prove-control.sh cooldown-vet DependencyCooldownTest 'vet'"
+        },
+        {
+            "id": "4",
+            "name": "Ruleset 26004808 requires only the contexts the local gate posts, and the post-push step posts them",
+            "status": "failing",
+            "command": "gh api repos/cogneiss/starter/rulesets/26004808 --jq '[.rules[]|select(.type==\"required_status_checks\")|.parameters.required_status_checks[].context]|sort|join(\",\")' | /usr/bin/grep -qx 'secrets,verify' && /usr/bin/grep -q 'statuses' bin/recheck-todo",
+            "note": "Supersedes known-issues phase on 26004808 once built. Read-only API call, free. The context list is the report's proposal (verify plus a gitleaks-backed secrets); the ruleset edit and the status posts are outward-facing and wait on the owner."
+        },
+        {
+            "id": "5",
+            "name": "starter:install writes a stamp with the kit tag and install answers, and a starter-upgrade skill references only files the stamp says exist",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Feature/StarterInstallStampTest.php tests/Feature/Docs/StarterUpgradeSkillTest.php --compact --no-coverage"
+        },
+        {
+            "id": "6",
+            "name": "An eval command exits non-zero on a deliberately broken prompt, wired advisory into pre-push when app/Ai changes",
+            "status": "failing",
+            "command": "vendor/bin/pest tests/Feature/Docs/EvalsRunTest.php --compact --no-coverage",
+            "note": "composer test:evals exists today and calls real providers, so it is kept out of this command: the recheck runs unattended after every push. How the broken-prompt proof runs (real provider, local Ollama, or a stub) is an owner decision; EvalsRunTest is a placeholder name until then."
+        },
+        {
+            "id": "7",
+            "name": "Codex runs guard-generated.sh and require-contract.sh, and a Codex-shaped edit to a second app/ file without a verified contract is blocked",
+            "status": "failing",
+            "command": "cmp -s .claude/hooks/guard-generated.sh .codex/hooks/guard-generated.sh && cmp -s .claude/hooks/require-contract.sh .codex/hooks/require-contract.sh && jq -e '[.hooks.PreToolUse[].hooks[].command]|map(select(test(\"guard-generated|require-contract\")))|length==2' .codex/hooks.json && vendor/bin/pest tests/Feature/Docs/CodexHookParityTest.php --compact --no-coverage",
+            "note": "Derived: the report's behavioural clause (a Codex session is blocked) is decided by CodexHookParityTest feeding Codex's PreToolUse JSON to the script; a live Codex run is manual and optional."
+        },
+        {
+            "id": "8",
+            "name": "SECURITY.md gives a private reporting contact",
+            "status": "failing",
+            "command": "/usr/bin/grep -Eiq 'mailto|@|security/advisories/new' SECURITY.md"
+        },
+        {
+            "id": "9",
+            "name": "Every scheduled command has withoutOverlapping, and a local scheduled run has written its result",
+            "status": "failing",
+            "command": "[ \"$(/usr/bin/grep -c 'withoutOverlapping' routes/console.php)\" -eq \"$(/usr/bin/grep -c '^Schedule::' routes/console.php)\" ] && [ -s \"$(git rev-parse --absolute-git-dir)/scheduled-checks.log\" ]",
+            "note": "Derived: the report's second clause (a scheduled run wrote a todo status) is decided by the scheduled job's log in the git directory, next to recheck-status.log. Where the schedule lives (cron, launchd, Herd) is an owner decision."
+        },
+        {
+            "id": "10",
+            "name": "AGENTS.md is under 185 lines and guard-gates.sh asks before an edit to a skill file",
+            "status": "failing",
+            "command": "[ \"$(/usr/bin/wc -l < AGENTS.md)\" -lt 185 ] && vendor/bin/pest tests/Feature/Docs/GuardGatesSkillAskTest.php --compact --no-coverage"
+        }
+    ]
+}
