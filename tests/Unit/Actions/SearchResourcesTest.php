@@ -39,7 +39,7 @@ function searchLabels(Organization $organization, User $user, string $term, stri
 
 it('finds a member of the acting organization by name', function (): void {
     $organization = Organization::factory()->create();
-    $owner = User::factory()->forOrganization($organization)->create();
+    $owner = User::factory()->forOrganization($organization)->create(['name' => 'Owner Example', 'email' => 'owner@example.test']);
     User::factory()->forOrganization($organization, 'Member')->create(['name' => 'Marguerite Blythe']);
 
     expect(searchLabels($organization, $owner, 'Marguerite', 'organization-members'))
@@ -111,7 +111,7 @@ it('treats a wildcard in the term as a literal character', function (): void {
 // resource's where clause, so they are never loaded to be filtered out.
 it('never returns a record belonging to another organization', function (): void {
     $organization = Organization::factory()->create();
-    $owner = User::factory()->forOrganization($organization)->create();
+    $owner = User::factory()->forOrganization($organization)->create(['name' => 'Owner Example', 'email' => 'owner@example.test']);
 
     $other = Organization::factory()->create();
     User::factory()->forOrganization($other, 'Member')->create(['name' => 'Marguerite Blythe']);
