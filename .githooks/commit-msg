@@ -8,8 +8,26 @@
 # A feat that stages files under app/ or resources/js/ must also stage a
 # todo/*.status.json, so the plan files move with the code. A `Todo: none`
 # trailer in the message opts out.
+#
+# First, before any subject check, bin/tamper-guard refuses a staged change
+# that weakens a quality gate (an ignore, a skip, a baseline entry, a lowered
+# threshold) unless the message carries a `Gate-Change: <reason>` trailer.
+# Merge and fixup subjects are checked too: their content can weaken a gate.
 
 message_file="$1"
+
+if ! bin/tamper-guard "$message_file"; then
+    cat >&2 <<'EOF'
+
+Commit refused: the staged change weakens a quality gate (findings above).
+If the change is deliberate, say why in a trailer line of the message:
+
+    Gate-Change: <reason>
+
+EOF
+    exit 1
+fi
+
 subject="$(head -n 1 "$message_file")"
 
 # Merge, revert and fixup commits are written by git itself.

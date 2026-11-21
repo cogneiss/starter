@@ -1,0 +1,13 @@
+diff --git a/bin/tamper-guard b/bin/tamper-guard
+index 8755d0a..a7acfa9 100755
+--- a/bin/tamper-guard
++++ b/bin/tamper-guard
+@@ -41,7 +41,7 @@ if ($message === false) {
+     exit(2);
+ }
+ 
+-if (preg_match('/^gate-change:[ \t]*\S/im', $message) === 1) {
++if (preg_match('/^gate-change:/im', $message) === 1) {
+     exit(0);
+ }
+ 

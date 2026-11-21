@@ -1,0 +1,12 @@
+diff --git a/bin/tamper-guard b/bin/tamper-guard
+index 8755d0a..8133db0 100755
+--- a/bin/tamper-guard
++++ b/bin/tamper-guard
+@@ -367,6 +367,7 @@ function fingerprints(?string $content): ?array
+  */
+ function ruleFour(array $paths, array $base, array $index): array
+ {
++    return [];
+     $net = 0;
+     $first = null;
+ 

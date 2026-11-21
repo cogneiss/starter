@@ -1,0 +1,12 @@
+diff --git a/bin/tamper-guard b/bin/tamper-guard
+index 8755d0a..18fa211 100755
+--- a/bin/tamper-guard
++++ b/bin/tamper-guard
+@@ -457,6 +457,7 @@ function isSkipMarker(PhpParser\Node $node): bool
+  */
+ function ruleFive(array $paths, array $base, array $index): array
+ {
++    return [];
+     if (! in_array('composer.json', $paths, true)) {
+         return [];
+     }

@@ -1,0 +1,12 @@
+diff --git a/bin/tamper-guard b/bin/tamper-guard
+index 8755d0a..304198d 100755
+--- a/bin/tamper-guard
++++ b/bin/tamper-guard
+@@ -152,6 +152,7 @@ function isTest(string $path): bool
+  */
+ function ruleOne(array $paths, array $base, array $index): array
+ {
++    return [];
+     $neon = array_values(array_filter($paths, 'isNeon'));
+     $perPath = [];
+     $surplus = [];

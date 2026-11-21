@@ -1,0 +1,12 @@
+diff --git a/bin/tamper-guard b/bin/tamper-guard
+index 8755d0a..d83bcfd 100755
+--- a/bin/tamper-guard
++++ b/bin/tamper-guard
+@@ -306,6 +306,7 @@ function ignoreComments(?string $content): int
+  */
+ function ruleThree(array $paths, array $base, array $index): array
+ {
++    return [];
+     $findings = [];
+ 
+     foreach ($paths as $path) {

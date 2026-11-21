@@ -14,7 +14,8 @@ code_refs:
     - config/ai.php
     - config/inertia.php
     - vet.json
-updated: 2026-11-19
+    - bin/tamper-guard
+updated: 2026-11-21
 ---
 
 # Packages
@@ -89,6 +90,7 @@ boots the app with the keys empty and fails a change that makes one required.
 | `shipmonk/phpstan-rules` | More strict rules in `composer test:strict`. | `phpstan-strict.neon` | [[operations/commands]] |
 | `tomasvotruba/cognitive-complexity` | Caps method and class complexity in `composer test:strict`. | `phpstan-strict.neon` | [[operations/commands]] |
 | `shipmonk/dead-code-detector` | `composer test:dead-code`. | `phpstan-deadcode.neon` | [[operations/tooling]] |
+| `nikic/php-parser` | Reads PHP as a syntax tree for `bin/tamper-guard`, which refuses a commit that adds a skipped test, and for `tests/Unit/Conventions/RawSqlConventionTest.php`. Required directly, since otherwise only dev tools would pull it in. | none | [[operations/contributing]] |
 | `rector/rector` | Automated refactors, run by `composer lint` and the pre-commit hook. | `rector.php` | [[operations/tooling]] |
 | `driftingly/rector-laravel` | Laravel rule sets for Rector. | `rector.php` | [[operations/tooling]] |
 | `laravel/pint` | Code style. | `pint.json` | [[operations/tooling]] |

@@ -1,0 +1,642 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * Refuse a commit whose staged content weakens a quality gate, unless the
+ * message carries a `Gate-Change: <reason>` trailer. It runs from
+ * .githooks/commit-msg, the only hook that can read the message.
+ *
+ *   R1  an ignoreErrors entry added or changed in a .neon or .neon.dist file
+ *   R2  more phpstan-ignore comments across the staged PHP files
+ *   R3  a .sloppy-baseline.json fingerprint that is new or counts higher
+ *   R4  more skip markers across the staged PHP files under tests/
+ *   R5  a --min or --exactly threshold in a composer.json script lowered or removed
+ *   R6  this guard, its hook, its test, its patches or the phase "1" command changed
+ *
+ * It reads the index, never the working tree, and inherits GIT_INDEX_FILE, so
+ * `git commit -a` and `git commit <paths>` are judged on what git is about to
+ * commit. During a merge only a finding present against every parent counts.
+ *
+ * Known limit: an amend is checked only against the commit being amended, so a
+ * trailer dropped by `git commit --amend` is not re-checked against the commit
+ * before it. Checking amends would mean diffing against HEAD^ when the hook can
+ * tell it is amending, which git does not expose to commit-msg.
+ *
+ * Known limit: gate weakening outside R1-R6 is not detected (PHPStan level and
+ * paths, phpunit.xml, a step removed from composer verify or pre-push, audit
+ * ignores). Add a rule here once one of those is weakened in practice.
+ *
+ * Exit codes: 0 clean or trailer, 1 findings, 2 misuse or a failing git call.
+ *
+ * Usage: bin/tamper-guard <message-file>
+ */
+
+$messageFile = $argv[1] ?? '';
+$message = $messageFile !== '' && is_file($messageFile) && is_readable($messageFile) ? file_get_contents($messageFile) : false;
+
+if ($message === false) {
+    fwrite(STDERR, 'usage: bin/tamper-guard <message-file>'.PHP_EOL);
+    exit(2);
+}
+
+if (preg_match('/^gate-change:[ \t]*\S/im', $message) === 1) {
+    exit(0);
+}
+
+try {
+    git(['rev-parse', '--git-dir']);
+    $findings = findings();
+} catch (RuntimeException $exception) {
+    fwrite(STDERR, rtrim($exception->getMessage()).PHP_EOL);
+    exit(2);
+}
+
+foreach ($findings as $finding) {
+    fwrite(STDERR, $finding['line'].PHP_EOL);
+}
+
+exit($findings === [] ? 0 : 1);
+
+/**
+ * @return list<array{key: string, line: string}>
+ */
+function findings(): array
+{
+    [$hasHead] = gitStatus(['rev-parse', '--verify', '-q', 'HEAD^{commit}']);
+    $bases = $hasHead ? ['HEAD'] : [trim(git(['hash-object', '-t', 'tree', '/dev/null']))];
+
+    $mergeHeadFile = trim(git(['rev-parse', '--git-path', 'MERGE_HEAD']));
+
+    if ($hasHead && is_file($mergeHeadFile)) {
+        foreach (preg_split('/\s+/', trim((string) file_get_contents($mergeHeadFile))) ?: [] as $parent) {
+            if ($parent !== '') {
+                $bases[] = $parent;
+            }
+        }
+    }
+
+    $index = new BlobCache(':');
+    $common = null;
+
+    foreach ($bases as $base) {
+        $found = findingsAgainst($base, $index);
+        $keys = array_column($found, 'key');
+        $common = $common === null ? $found : array_values(array_filter($common, fn (array $finding): bool => in_array($finding['key'], $keys, true)));
+    }
+
+    return $common ?? [];
+}
+
+/**
+ * @return list<array{key: string, line: string}>
+ */
+function findingsAgainst(string $base, BlobCache $index): array
+{
+    $paths = stagedPaths($base);
+    $relevant = array_values(array_filter($paths, fn (string $path): bool => isRelevant($path)));
+    $baseBlobs = (new BlobCache($base.':'))->fetch($relevant);
+    $indexBlobs = $index->fetch($relevant);
+
+    return [
+        ...ruleOne($paths, $baseBlobs, $indexBlobs),
+        ...ruleTwo($paths, $baseBlobs, $indexBlobs),
+        ...ruleThree($paths, $baseBlobs, $indexBlobs),
+        ...ruleFour($paths, $baseBlobs, $indexBlobs),
+        ...ruleFive($paths, $baseBlobs, $indexBlobs),
+        ...ruleSix($paths, $baseBlobs, $indexBlobs),
+    ];
+}
+
+/**
+ * @return list<string> staged paths, sorted; a rename is an add plus a delete
+ */
+function stagedPaths(string $base): array
+{
+    $fields = explode("\0", rtrim(git(['diff', '--cached', '--no-renames', '--no-ext-diff', '--name-status', '-z', $base]), "\0"));
+    $paths = [];
+
+    for ($i = 1; $i < count($fields); $i += 2) {
+        $paths[] = $fields[$i];
+    }
+
+    sort($paths, SORT_STRING);
+
+    return $paths;
+}
+
+function isRelevant(string $path): bool
+{
+    return isNeon($path) || str_ends_with($path, '.php') || basename($path) === '.sloppy-baseline.json'
+        || $path === 'composer.json' || $path === 'todo/roadmap.status.json';
+}
+
+function isNeon(string $path): bool
+{
+    return str_ends_with($path, '.neon') || str_ends_with($path, '.neon.dist');
+}
+
+function isTest(string $path): bool
+{
+    return str_starts_with($path, 'tests/') && str_ends_with($path, '.php');
+}
+
+/**
+ * R1: the multiset of ignoreErrors entries across the staged neon files grows.
+ *
+ * @param  list<string>  $paths
+ * @param  array<string, ?string>  $base
+ * @param  array<string, ?string>  $index
+ * @return list<array{key: string, line: string}>
+ */
+function ruleOne(array $paths, array $base, array $index): array
+{
+    $neon = array_values(array_filter($paths, 'isNeon'));
+    $perPath = [];
+    $surplus = [];
+
+    foreach ($neon as $path) {
+        $perPath[$path] = [countValues(neonEntries($index[$path] ?? null)), countValues(neonEntries($base[$path] ?? null))];
+
+        foreach ($perPath[$path][0] as $entry => $count) {
+            $surplus[$entry] = ($surplus[$entry] ?? 0) + $count;
+        }
+
+        foreach ($perPath[$path][1] as $entry => $count) {
+            $surplus[$entry] = ($surplus[$entry] ?? 0) - $count;
+        }
+    }
+
+    foreach ($perPath as $path => [$now, $before]) {
+        foreach ($now as $entry => $count) {
+            if ($surplus[$entry] > 0 && $count > ($before[$entry] ?? 0)) {
+                return [['key' => 'R1', 'line' => "R1 {$path}: an ignoreErrors entry is added or changed"]];
+            }
+        }
+    }
+
+    return [];
+}
+
+/**
+ * @return list<string> each ignoreErrors entry, comment lines dropped, lines trimmed
+ */
+function neonEntries(?string $content): array
+{
+    if ($content === null) {
+        return [];
+    }
+
+    $entries = [];
+    $lines = preg_split('/\R/', $content) ?: [];
+    $keyIndent = null;
+    $entryIndent = null;
+    $entry = [];
+
+    $close = function () use (&$entries, &$entry, &$entryIndent): void {
+        if ($entryIndent !== null) {
+            $entries[] = implode("\n", $entry);
+        }
+
+        $entry = [];
+        $entryIndent = null;
+    };
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+
+        if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+            continue;
+        }
+
+        $indent = strlen($line) - strlen(ltrim($line));
+
+        if ($keyIndent !== null && $entryIndent !== null && $indent > $entryIndent) {
+            $entry[] = $trimmed;
+
+            continue;
+        }
+
+        if ($keyIndent !== null && $indent > $keyIndent && str_starts_with($trimmed, '-')) {
+            $close();
+            $entryIndent = $indent;
+            $entry = [$trimmed];
+
+            continue;
+        }
+
+        if ($keyIndent !== null && $indent <= $keyIndent) {
+            $close();
+            $keyIndent = null;
+        } elseif ($keyIndent !== null) {
+            $close();
+
+            continue;
+        }
+
+        if (preg_match('/^ignoreErrors:\s*(.*)$/', $trimmed, $match) === 1) {
+            $value = trim($match[1]);
+
+            if ($value !== '' && ! str_starts_with($value, '#')) {
+                $entries[] = $value;
+            } else {
+                $keyIndent = $indent;
+            }
+        }
+    }
+
+    $close();
+
+    return $entries;
+}
+
+/**
+ * R2: the net number of phpstan-ignore occurrences in comment tokens rises.
+ *
+ * @param  list<string>  $paths
+ * @param  array<string, ?string>  $base
+ * @param  array<string, ?string>  $index
+ * @return list<array{key: string, line: string}>
+ */
+function ruleTwo(array $paths, array $base, array $index): array
+{
+    $php = array_values(array_filter($paths, fn (string $path): bool => str_ends_with($path, '.php')));
+    $net = 0;
+    $first = null;
+
+    foreach ($php as $path) {
+        $delta = ignoreComments($index[$path] ?? null) - ignoreComments($base[$path] ?? null);
+        $net += $delta;
+
+        if ($delta > 0 && $first === null) {
+            $first = $path;
+        }
+    }
+
+    return $net > 0 && $first !== null
+        ? [['key' => 'R2', 'line' => "R2 {$first}: {$net} more phpstan-ignore comment(s) across the staged files"]]
+        : [];
+}
+
+function ignoreComments(?string $content): int
+{
+    if ($content === null) {
+        return 0;
+    }
+
+    $count = 0;
+
+    foreach (token_get_all($content) as $token) {
+        if (is_array($token) && ($token[0] === T_COMMENT || $token[0] === T_DOC_COMMENT)) {
+            $count += substr_count($token[1], '@phpstan-ignore');
+        }
+    }
+
+    return $count;
+}
+
+/**
+ * R3: a .sloppy-baseline.json fingerprint is new or its summed count rises.
+ *
+ * @param  list<string>  $paths
+ * @param  array<string, ?string>  $base
+ * @param  array<string, ?string>  $index
+ * @return list<array{key: string, line: string}>
+ */
+function ruleThree(array $paths, array $base, array $index): array
+{
+    $findings = [];
+
+    foreach ($paths as $path) {
+        if (basename($path) !== '.sloppy-baseline.json' || ($index[$path] ?? null) === null) {
+            continue;
+        }
+
+        $now = fingerprints($index[$path]);
+
+        if ($now === null) {
+            $findings[] = ['key' => "R3 {$path}", 'line' => "R3 {$path}: not valid JSON with an entries array"];
+
+            continue;
+        }
+
+        $before = fingerprints($base[$path] ?? null) ?? [];
+
+        foreach ($now as $fingerprint => $count) {
+            if (! isset($before[$fingerprint]) || $count > $before[$fingerprint]) {
+                $findings[] = ['key' => "R3 {$path}", 'line' => "R3 {$path}: fingerprint {$fingerprint} is new or counts higher"];
+
+                break;
+            }
+        }
+    }
+
+    return $findings;
+}
+
+/**
+ * @return array<string, int>|null summed count per fingerprint, or null when unreadable
+ */
+function fingerprints(?string $content): ?array
+{
+    $data = $content === null ? null : json_decode($content, true);
+
+    if (! is_array($data) || ! is_array($data['entries'] ?? null)) {
+        return null;
+    }
+
+    $sums = [];
+
+    foreach ($data['entries'] as $entry) {
+        $fingerprint = is_array($entry) && is_scalar($entry['fingerprint'] ?? null) ? (string) $entry['fingerprint'] : (string) json_encode($entry);
+        $count = is_array($entry) && is_numeric($entry['count'] ?? null) ? (int) $entry['count'] : 1;
+        $sums[$fingerprint] = ($sums[$fingerprint] ?? 0) + $count;
+    }
+
+    return $sums;
+}
+
+/**
+ * R4: the net number of skip markers across the staged tests rises.
+ *
+ * @param  list<string>  $paths
+ * @param  array<string, ?string>  $base
+ * @param  array<string, ?string>  $index
+ * @return list<array{key: string, line: string}>
+ */
+function ruleFour(array $paths, array $base, array $index): array
+{
+    $net = 0;
+    $first = null;
+
+    foreach (array_filter($paths, 'isTest') as $path) {
+        $now = skipMarkers($index[$path] ?? null);
+
+        if ($now === null) {
+            return [['key' => 'R4', 'line' => "R4 {$path}: the staged file does not parse"]];
+        }
+
+        $delta = $now - (skipMarkers($base[$path] ?? null) ?? 0);
+        $net += $delta;
+
+        if ($delta > 0 && $first === null) {
+            $first = $path;
+        }
+    }
+
+    return $net > 0 && $first !== null
+        ? [['key' => 'R4', 'line' => "R4 {$first}: {$net} more skip marker(s) across the staged tests"]]
+        : [];
+}
+
+/**
+ * @return int|null the number of skip markers, or null when the file does not parse
+ */
+function skipMarkers(?string $content): ?int
+{
+    if ($content === null) {
+        return 0;
+    }
+
+    require_once dirname(__DIR__).'/vendor/autoload.php';
+
+    try {
+        $ast = (new PhpParser\ParserFactory)->createForNewestSupportedVersion()->parse($content) ?? [];
+    } catch (PhpParser\Error) {
+        return null;
+    }
+
+    return count((new PhpParser\NodeFinder)->find($ast, 'isSkipMarker'));
+}
+
+function isSkipMarker(PhpParser\Node $node): bool
+{
+    $roots = ['it', 'test', 'describe', 'arch'];
+
+    if ($node instanceof PhpParser\Node\Expr\FuncCall && $node->name instanceof PhpParser\Node\Name) {
+        $function = strtolower($node->name->getLast());
+
+        return $function === 'todo' || (in_array($function, ['it', 'test'], true) && count($node->args) === 1);
+    }
+
+    $isCall = $node instanceof PhpParser\Node\Expr\MethodCall || $node instanceof PhpParser\Node\Expr\NullsafeMethodCall || $node instanceof PhpParser\Node\Expr\StaticCall;
+
+    if (! $isCall || ! $node->name instanceof PhpParser\Node\Identifier) {
+        return false;
+    }
+
+    $method = $node->name->toLowerString();
+
+    if ($method === 'marktestskipped' || $method === 'marktestincomplete') {
+        return true;
+    }
+
+    if ($node instanceof PhpParser\Node\Expr\StaticCall || ! preg_match('/^(skip|only)|^(todo|flaky)$/', $method)) {
+        return false;
+    }
+
+    $receiver = $node->var;
+
+    while ($receiver instanceof PhpParser\Node\Expr\MethodCall || $receiver instanceof PhpParser\Node\Expr\NullsafeMethodCall
+        || $receiver instanceof PhpParser\Node\Expr\PropertyFetch || $receiver instanceof PhpParser\Node\Expr\NullsafePropertyFetch) {
+        $receiver = $receiver->var;
+    }
+
+    return $receiver instanceof PhpParser\Node\Expr\FuncCall && $receiver->name instanceof PhpParser\Node\Name
+        && in_array(strtolower($receiver->name->getLast()), $roots, true);
+}
+
+/**
+ * R5: a --min or --exactly threshold in a composer.json script is lowered or removed.
+ *
+ * @param  list<string>  $paths
+ * @param  array<string, ?string>  $base
+ * @param  array<string, ?string>  $index
+ * @return list<array{key: string, line: string}>
+ */
+function ruleFive(array $paths, array $base, array $index): array
+{
+    if (! in_array('composer.json', $paths, true)) {
+        return [];
+    }
+
+    $now = thresholds($index['composer.json'] ?? null);
+
+    if ($now === null && ($index['composer.json'] ?? null) !== null) {
+        return [['key' => 'R5 composer.json', 'line' => 'R5 composer.json: not valid JSON']];
+    }
+
+    $findings = [];
+
+    foreach (thresholds($base['composer.json'] ?? null) ?? [] as $key => $value) {
+        if (! isset($now[$key])) {
+            $findings[] = ['key' => "R5 {$key}", 'line' => "R5 composer.json: {$key} removed"];
+        } elseif ($now[$key] < $value) {
+            $findings[] = ['key' => "R5 {$key}", 'line' => "R5 composer.json: {$key} lowered from {$value} to {$now[$key]}"];
+        }
+    }
+
+    return $findings;
+}
+
+/**
+ * @return array<string, float>|null threshold per "script flag #ordinal", or null when unreadable
+ */
+function thresholds(?string $content): ?array
+{
+    $data = $content === null ? null : json_decode($content, true);
+
+    if (! is_array($data)) {
+        return null;
+    }
+
+    $thresholds = [];
+
+    foreach (is_array($data['scripts'] ?? null) ? $data['scripts'] : [] as $script => $value) {
+        $commands = array_filter(is_array($value) ? $value : [$value], 'is_string');
+        $ordinals = [];
+        preg_match_all('/(?<![\w-])(--min[\w-]*|--exactly)(?:=|[ \t]+)(\d+(?:\.\d+)?)/', implode("\n", $commands), $matches, PREG_SET_ORDER);
+
+        foreach ($matches as [, $flag, $number]) {
+            $ordinals[$flag] = ($ordinals[$flag] ?? 0) + 1;
+            $thresholds["scripts.{$script} {$flag} #{$ordinals[$flag]}"] = (float) $number;
+        }
+    }
+
+    return $thresholds;
+}
+
+/**
+ * R6: the guard, its hook, its test, its patches or the phase "1" command changed.
+ *
+ * @param  list<string>  $paths
+ * @param  array<string, ?string>  $base
+ * @param  array<string, ?string>  $index
+ * @return list<array{key: string, line: string}>
+ */
+function ruleSix(array $paths, array $base, array $index): array
+{
+    $protected = ['bin/tamper-guard', '.githooks/commit-msg', 'bin/prove-control.sh', 'tests/Feature/Docs/TamperGuardTest.php'];
+    $findings = [];
+
+    foreach ($paths as $path) {
+        if (in_array($path, $protected, true) || fnmatch('tests/Mutations/tamper-guard-*.patch', $path)) {
+            $findings[] = ['key' => "R6 {$path}", 'line' => "R6 {$path}: a protected file changed"];
+        }
+
+        if ($path === 'todo/roadmap.status.json' && phaseOneCommand($base[$path] ?? null) !== phaseOneCommand($index[$path] ?? null)) {
+            $findings[] = ['key' => "R6 {$path}", 'line' => "R6 {$path}: the command of phase \"1\" changed"];
+        }
+    }
+
+    return $findings;
+}
+
+function phaseOneCommand(?string $content): ?string
+{
+    $data = $content === null ? null : json_decode($content, true);
+
+    foreach (is_array($data) && is_array($data['phases'] ?? null) ? $data['phases'] : [] as $phase) {
+        if (is_array($phase) && ($phase['id'] ?? null) === '1') {
+            return is_string($phase['command'] ?? null) ? $phase['command'] : null;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * @param  list<string>  $values
+ * @return array<string, int>
+ */
+function countValues(array $values): array
+{
+    $counts = [];
+
+    foreach ($values as $value) {
+        $counts[$value] = ($counts[$value] ?? 0) + 1;
+    }
+
+    return $counts;
+}
+
+/**
+ * Blobs read through one `git cat-file --batch` per prefix (`HEAD:`, `:` for the index).
+ */
+final class BlobCache
+{
+    /** @var array<string, ?string> */
+    private array $blobs = [];
+
+    public function __construct(private readonly string $prefix) {}
+
+    /**
+     * @param  list<string>  $paths
+     * @return array<string, ?string> content per path, null when the path does not exist there
+     */
+    public function fetch(array $paths): array
+    {
+        $missing = array_values(array_filter($paths, fn (string $path): bool => ! array_key_exists($path, $this->blobs) && ! str_contains($path, "\n")));
+
+        if ($missing !== []) {
+            $output = git(['cat-file', '--batch'], implode('', array_map(fn (string $path): string => $this->prefix.$path."\n", $missing)));
+            $offset = 0;
+
+            foreach ($missing as $path) {
+                $end = (int) strpos($output, "\n", $offset);
+                $header = explode(' ', substr($output, $offset, $end - $offset));
+                $offset = $end + 1;
+
+                if (count($header) === 3 && $header[1] === 'blob') {
+                    $this->blobs[$path] = substr($output, $offset, (int) $header[2]);
+                    $offset += (int) $header[2] + 1;
+                } else {
+                    $this->blobs[$path] = null;
+                    $offset += count($header) === 3 ? (int) $header[2] + 1 : 0;
+                }
+            }
+        }
+
+        return array_intersect_key($this->blobs, array_flip($paths));
+    }
+}
+
+/**
+ * @param  list<string>  $args
+ */
+function git(array $args, string $input = ''): string
+{
+    [$ok, $output, $error] = gitStatus($args, $input);
+
+    if (! $ok) {
+        throw new RuntimeException($error !== '' ? $error : 'git '.implode(' ', $args).' failed');
+    }
+
+    return $output;
+}
+
+/**
+ * @param  list<string>  $args
+ * @return array{bool, string, string} whether git exited 0, its stdout and its stderr
+ */
+function gitStatus(array $args, string $input = ''): array
+{
+    $stdin = tmpfile();
+    fwrite($stdin, $input);
+    rewind($stdin);
+    $stderr = tmpfile();
+
+    $process = proc_open(['git', ...$args], [0 => $stdin, 1 => ['pipe', 'w'], 2 => $stderr], $pipes);
+
+    if (! is_resource($process)) {
+        throw new RuntimeException('could not start git');
+    }
+
+    $output = (string) stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    $exitCode = proc_close($process);
+    rewind($stderr);
+
+    return [$exitCode === 0, $output, (string) stream_get_contents($stderr)];
+}
