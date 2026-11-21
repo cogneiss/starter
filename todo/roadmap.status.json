@@ -55,9 +55,17 @@
         },
         {
             "id": "3",
-            "name": "Composer native cooldown set, and a convention test fails when any of the three release-age keys (composer.json, bunfig.toml, vet.json) is removed",
+            "name": "Composer native cooldown set, and a convention test fails when either release-age key (composer.json, bunfig.toml) is removed",
             "status": "failing",
-            "command": "vendor/bin/pest tests/Feature/Docs/DependencyCooldownTest.php --compact --no-coverage && bin/prove-control.sh cooldown-composer DependencyCooldownTest 'composer' && bin/prove-control.sh cooldown-bun DependencyCooldownTest 'bun' && bin/prove-control.sh cooldown-vet DependencyCooldownTest 'vet'"
+            "command": "vendor/bin/pest tests/Feature/Docs/DependencyCooldownTest.php --compact --no-coverage && bin/prove-control.sh cooldown-composer DependencyCooldownTest 'composer' && bin/prove-control.sh cooldown-bun DependencyCooldownTest 'bun'",
+            "note": "The vet.json key left this item on 2026-11-21 by owner decision: laravel/vet is abandoned upstream and is removed under item 11."
+        },
+        {
+            "id": "11",
+            "name": "laravel/vet removed: abandoned upstream with no replacement, so its require-dev entry, plugin allowance, vet.json and ignore-abandoned entry are gone",
+            "status": "failing",
+            "command": "! jq -e '.\"require-dev\" | has(\"laravel/vet\")' composer.json >/dev/null && ! jq -e '.config.\"allow-plugins\" | has(\"laravel/vet\")' composer.json >/dev/null && [ ! -e vet.json ] && ! jq -e '.config.audit.\"ignore-abandoned\" | index(\"laravel/vet\")' composer.json >/dev/null",
+            "note": "Added 2026-11-21 when composer audit failed the pre-push gate on the abandoned flag that the 8d253f4 lock refresh recorded. laravel/vet sits in ignore-abandoned until this lands. Built with P1, next to item 3."
         },
         {
             "id": "4",
