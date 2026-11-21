@@ -5,6 +5,7 @@ supersedes: []
 code_refs:
     - CONTRIBUTING.md
     - .githooks/commit-msg
+    - bin/tamper-guard
     - .githooks/pre-commit
     - .githooks/pre-push
     - bin/recheck-todo
@@ -56,6 +57,40 @@ that decides it live. A `Todo: none` line in the message skips the check for a
 feature that needs no item. Other commit types, and a feat that only touches
 tests or docs, are not looked at. The check is one `git diff --cached`, so it adds
 well under 0.1s.
+
+## A commit that weakens a gate needs a reason
+
+Before the subject check, `.githooks/commit-msg` runs `bin/tamper-guard`. It
+compares the staged content with `HEAD` (during a merge, with every parent) and
+refuses a commit that does any of these:
+
+- R1: adds or changes an `ignoreErrors` entry in a `.neon` or `.neon.dist`
+  file, which covers `phpstan-deadcode-baseline.neon` too.
+- R2: adds `@phpstan-ignore` comments across the staged PHP files.
+- R3: adds a `.sloppy-baseline.json` fingerprint or raises its count.
+- R4: adds a net `markTestSkipped`, `->skip(`, `->todo(` or `->flaky(` under
+  `tests/`, counted on the parsed syntax tree, so a moved test is not a new one.
+- R5: lowers or removes a `--min=` or `--exactly=` threshold in a
+  `composer.json` script.
+- R6: changes the guard, the hook, `bin/prove-control.sh`, the guard's test or
+  mutation patches, or the command of roadmap phase `"1"`.
+
+A deliberate change goes through with a `Gate-Change: <reason>` line in the
+message. The guard reads the index, never the working tree, so `git commit -a`
+is judged on what git is about to record. `tests/Feature/Docs/TamperGuardTest.php`
+runs it as a real process against a throwaway repository per case, and the
+eight `tests/Mutations/tamper-guard-*.patch` files prove through
+`bin/prove-control.sh` that each rule, the hook wiring and the trailer check are
+load-bearing. Over the kit's 308 test files a check takes about 1s on an idle
+machine.
+
+The `Known limit:` comments in `bin/tamper-guard` name what it leaves out: an
+amend is checked only against the commit being amended, and a gate weakened
+outside these six rules (the PHPStan level, `phpunit.xml`, a step removed from
+`composer verify`) passes. Don't run Pint on the guard by hand. The project's
+`mb_str_functions` rule would turn the byte offsets it reads from
+`git cat-file --batch` into character offsets. Pre-commit formats `*.php` files
+only, so the hooks never do this.
 
 ## Format and static checks run before code leaves the machine
 

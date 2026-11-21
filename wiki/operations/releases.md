@@ -6,7 +6,7 @@ code_refs:
     - .github/workflows/release-please.yml
     - .githooks/commit-msg
     - release-please-config.json
-updated: 2026-11-19
+updated: 2026-11-21
 ---
 
 # Releases
@@ -18,7 +18,10 @@ updated: 2026-11-19
 `composer install` — rejects anything else locally, because the prefix is an
 input to the version number rather than a style preference. For a `feat` it also
 checks that the commit carries a todo item, or a `Todo: none` line in the message
-([[operations/contributing]]); that check never touches the version.
+([[operations/contributing]]); that check never touches the version. Before
+either check the hook runs `bin/tamper-guard`, which refuses a commit that
+weakens a quality gate unless the message carries a `Gate-Change: <reason>`
+line ([[operations/contributing]]).
 
 ## release-please owns the version and the changelog
 
