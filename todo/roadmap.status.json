@@ -42,7 +42,7 @@
         {
             "id": "1",
             "name": "Content-level tamper guard: a commit that adds a PHPStan ignore, grows a baseline, adds a skip marker or lowers a composer.json threshold is refused without a trailer",
-            "status": "failing",
+            "status": "passing",
             "command": "vendor/bin/pest tests/Feature/Docs/TamperGuardTest.php --compact --no-coverage && bin/prove-control.sh tamper-guard-r1-off TamperGuardTest 'R1 refuses' && bin/prove-control.sh tamper-guard-r2-off TamperGuardTest 'R2 refuses' && bin/prove-control.sh tamper-guard-r3-off TamperGuardTest 'R3 refuses' && bin/prove-control.sh tamper-guard-r4-off TamperGuardTest 'R4 refuses' && bin/prove-control.sh tamper-guard-r5-off TamperGuardTest 'R5 refuses' && bin/prove-control.sh tamper-guard-r6-off TamperGuardTest 'R6 refuses' && bin/prove-control.sh tamper-guard-unwired TamperGuardTest 'commit-msg refuses' && bin/prove-control.sh tamper-guard-bare-trailer TamperGuardTest 'Gate-Change does not count'",
             "note": "TamperGuardTest feeds one fixture diff per rule to the check and asserts it exits non-zero, and that the trailer lets it through. The check reads the commit message, so it runs from commit-msg, not pre-commit (pre-commit cannot see the message)."
         },
